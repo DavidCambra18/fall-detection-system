@@ -1,0 +1,41 @@
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# IDEs (VS Code, IntelliJ, Eclipse)
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.classpath
+.project
+.settings/
+
+# --- BACKEND & FRONTEND (Node.js / React / Angular) ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- DEVICE (ESP32 / Arduino / PlatformIO) ---
+.pio/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+*.bin
+*.elf
+*.hex
+*.o
+*.a
+*.d
+*.tmp
+*.bak
