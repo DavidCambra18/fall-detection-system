@@ -101,6 +101,13 @@ void loop() {
         }
     }
 
-    // Aquí puedes añadir más tarde la lógica automática de detección de caídas
-    delay(10); // Pequeña pausa para estabilidad
+    // Envio automatico de datos cada 5 segundos
+    static unsigned long lastSend = 0;
+    if (millis() - lastSend > 5000) {
+        sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, false);
+        lastSend = millis();
+    }
+    
+
+    delay(100); // Frecuencia de muestreo (10Hz)
 }
