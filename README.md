@@ -63,3 +63,15 @@ En la carpeta `/docs` se encuentran disponibles los siguientes entregables:
 * Diagrama Entidad-Relación (ER).
 * Manual de usuario y manual técnico.
 * Reparto de tareas del grupo.
+
+
+## 🛠️ Configuración de la Base de Datos en local
+
+El sistema utiliza una arquitectura híbrida con **PostgreSQL 15** (persistencia) y **Redis 7** (tiempo real).
+
+### Pre-requisitos
+* Docker y Docker Compose instalados.
+
+### Pasos para el despliegue
+1. **Configurar variables de entorno:**
+   Copia el archivo de plantilla y edita las credenciales si es necesario
