@@ -7,9 +7,9 @@
 #include <ArduinoJson.h>
 
 // --- Configuración ---
-const char* ssid = "CBM_alumnos";
-const char* password = "denodado";
-const char* serverUrl = "http://tu-backend-propio.com/api/sensor"; // Tu futura ruta
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
+const char* serverUrl = SERVER_URL; // Tu futura ruta
 
 Adafruit_MPU6050 mpu;
 String deviceId;
