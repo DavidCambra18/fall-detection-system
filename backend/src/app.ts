@@ -1,12 +1,20 @@
-import express from 'express';
-import authRoutes from './routes/auth.routes'; // <--- sin .js
+// import cors from 'cors';
 import dotenv from 'dotenv';
+import express from 'express';
+import authRoutes from './routes/auth.routes';
 dotenv.config();
 
 const app = express();
 
 // Middleware global
 app.use(express.json());
+
+// USAR SOLO EN DESARROLLO, COMENTAR EN PRODUCCION
+// app.use(cors({
+//   origin: 'http://localhost:5000',
+//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//   credentials: true
+// }));
 
 // Rutas
 app.use('/api/auth', authRoutes);
