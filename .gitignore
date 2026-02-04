@@ -1,9 +1,9 @@
-# OS
+# --- OS & System Files ---
 .DS_Store
 Thumbs.db
 *.swp
 
-# IDEs (VS Code, IntelliJ, Eclipse)
+# --- IDEs (VS Code, IntelliJ, Eclipse) ---
 .vscode/
 .idea/
 *.sublime-project
@@ -12,18 +12,42 @@ Thumbs.db
 .project
 .settings/
 
-# --- BACKEND & FRONTEND (Node.js / React / Angular) ---
+# --- NODE.JS / DEPENDENCIES (Global, Backend & Frontend) ---
 node_modules/
+**/node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+
+# --- BUILD & OUTPUTS ---
 dist/
 build/
+out/
+/coverage
+*.tsbuildinfo
+
+# --- NEXT.JS SPECIFIC ---
+.next/
+**/ .next/
+next-env.d.ts
+.vercel
+
+# --- ENV & SECRETS (NUNCA SUBIR) ---
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.sample
+*.pem
 
 # --- DEVICE (ESP32 / Arduino / PlatformIO) ---
 .pio/
@@ -40,5 +64,5 @@ build/
 *.tmp
 *.bak
 
-# LOCAL DATABASE
-pg_data
+# --- LOCAL DATABASE ---
+pg_data/
