@@ -10,19 +10,10 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const router = useRouter();
 
+  // Validaciones visuales del formulario
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isPasswordValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
+  const isPasswordValid = password.length > 0;
   const isFormValid = isEmailValid && isPasswordValid;
-
-  const redirectByUserRole = (user: any) => {
-    // Usamos role_id para total consistencia con la base de datos
-    const roleId = user.role_id; 
-    
-    if (roleId === 1) router.push('/dashboard/admin');
-    else if (roleId === 2) router.push('/dashboard/cuidador');
-    else if (roleId === 3) router.push(`/dashboard/usuario/${user.device_id || '1'}`);
-    else router.push('/dashboard');
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,39 +21,56 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // CAMBIO CLAVE: Usamos ruta relativa '/api' para que pase por el proxy de Next.js
-      // Esto elimina el error de CORS automáticamente.
+      // Usamos trim() para evitar errores por espacios accidentales
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          email: email.trim().toLowerCase(), 
+          password: password.trim() 
+        }),
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        console.log('✅ Acceso real concedido');
-        redirectByUserRole(data.user);
-      } else {
-        console.error('Detalles del error:', data);
-        
-        let cleanedMessage = data.message || 'Error en la petición (400)';
-        
-        // Manejo de errores de conexión y codificación
-        if (cleanedMessage.toLowerCase().includes('autenticaci') || cleanedMessage.toLowerCase().includes('password')) {
-            cleanedMessage = "ERROR: El servidor no puede conectar con PostgreSQL. Revisa el .env";
-        } else {
-            cleanedMessage = cleanedMessage.replace(/[^\x00-\x7F]/g, "");
-        }
-
-        setErrorMsg(cleanedMessage);
+      if (!response.ok) {
+        setErrorMsg(data.message || 'Error en la autenticación');
         setIsLoading(false);
+        return;
       }
+
+      // 1. GUARDADO DOBLE DE SESIÓN
+      // Guardamos en LocalStorage para la lógica del Frontend
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
+      // Guardamos en Cookies para que el Middleware/Layout pueda leerlo inmediatamente
+      document.cookie = `token=${data.token}; path=/; max-age=28800; SameSite=Lax`;
+
+      console.log('✅ Sesión guardada. Datos de usuario:', data.user);
+
+      // 2. REDIRECCIÓN CONTROLADA
+      // Añadimos un pequeño delay (100ms) para asegurar que el navegador termine de escribir los datos
+      setTimeout(() => {
+        setIsLoading(false);
+        
+        // Normalizamos el ID del rol (soportamos roleId y role_id)
+        const roleId = Number(data.user.roleId || data.user.role_id);
+        
+        let targetPath = '/dashboard';
+        if (roleId === 1) targetPath = '/dashboard/admin';
+        else if (roleId === 2) targetPath = '/dashboard/cuidador';
+        else if (roleId === 3) targetPath = `/dashboard/usuario/${data.user.device_id || '1'}`;
+
+        console.log('✈️ Redirigiendo a:', targetPath);
+        
+        // Usamos window.location.href para forzar una carga limpia y evitar bloqueos del Router
+        window.location.href = targetPath;
+      }, 100);
+
     } catch (error) {
       console.error('Fallo de red:', error);
-      setErrorMsg('No se pudo establecer conexión con el backend (Proxy Error).');
+      setErrorMsg('No se pudo conectar con el servidor.');
       setIsLoading(false);
     }
   };
@@ -75,7 +83,7 @@ export default function LoginPage() {
             <span className="text-white text-3xl font-bold">📡</span>
           </div>
           <h1 className="text-3xl font-black text-slate-800 italic tracking-tighter">FallDetector</h1>
-          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-2">Login Real (PostgreSQL)</p>
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-2">Acceso al Sistema Real</p>
         </div>
 
         {errorMsg && (
@@ -113,7 +121,9 @@ export default function LoginPage() {
             type="submit"
             disabled={!isFormValid || isLoading}
             className={`w-full py-5 rounded-2xl text-white font-black text-sm uppercase transition-all ${
-              !isFormValid || isLoading ? 'bg-slate-300' : 'bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-lg shadow-blue-100'
+              !isFormValid || isLoading 
+                ? 'bg-slate-300 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-lg shadow-blue-100'
             }`}
           >
             {isLoading ? 'Verificando...' : 'Acceder al Dashboard'}

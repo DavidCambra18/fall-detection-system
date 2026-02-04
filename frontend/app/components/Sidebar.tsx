@@ -21,20 +21,28 @@ export default function Sidebar() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Error al leer usuario en Sidebar", e);
+      }
+    }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    // También borramos la cookie por seguridad si la creamos en el login
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
     router.push('/login');
   };
 
+  // Normalizamos el ID del Rol para usarlo en todo el componente
+  const roleId = user ? Number(user.roleId || user.role_id) : null;
+
   const getMenuItems = () => {
-    // CAMBIO: Usamos role_id (snake_case) para coincidir con la base de datos
-    const role = user?.role_id; 
-    
-    if (role === 1) {
+    if (roleId === 1) {
       return [
         { name: 'Inicio Admin', href: '/dashboard/admin', icon: <ShieldCheck size={20} /> },
         { name: 'Gestión Usuarios', href: '/dashboard/admin/users', icon: <Users size={20} /> },
@@ -43,7 +51,7 @@ export default function Sidebar() {
       ];
     }
 
-    if (role === 2) {
+    if (roleId === 2) {
       return [
         { name: 'Mis Pacientes', href: '/dashboard/cuidador', icon: <LayoutDashboard size={20} /> },
         { name: 'Historial Reciente', href: '/dashboard/history', icon: <History size={20} /> },
@@ -56,6 +64,7 @@ export default function Sidebar() {
         href: `/dashboard/usuario/${user?.device_id || '1'}`, 
         icon: <Smartphone size={20} /> 
       },
+      { name: 'Mi Historial', href: '/dashboard/history', icon: <History size={20} /> },
     ];
   };
 
@@ -72,8 +81,7 @@ export default function Sidebar() {
 
       <nav className="flex-1 p-4 space-y-1">
         <p className="px-4 text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-widest italic">
-          {/* CAMBIO: Sincronizado con role_id */}
-          Menú de {user?.role_id === 1 ? 'Admin' : user?.role_id === 2 ? 'Cuidador' : 'Paciente'}
+          Menú de {roleId === 1 ? 'Admin' : roleId === 2 ? 'Cuidador' : 'Paciente'}
         </p>
         
         {menuItems.map((item) => (
@@ -99,11 +107,10 @@ export default function Sidebar() {
           </div>
           <div className="flex flex-col overflow-hidden">
             <span className="text-xs font-bold text-slate-800 truncate">
-              {user?.name || 'Usuario'} {user?.surnames || ''}
+              {user?.name || 'Usuario'}
             </span>
             <span className="text-[9px] font-black text-blue-500 uppercase">
-              {/* CAMBIO: Sincronizado con role_id */}
-              {user?.role_id === 1 ? 'Administrator' : user?.role_id === 2 ? 'Cuidador' : 'Paciente'}
+              {roleId === 1 ? 'Administrator' : roleId === 2 ? 'Cuidador' : 'Paciente'}
             </span>
           </div>
         </div>

@@ -13,21 +13,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const userStr = localStorage.getItem('user');
     
     try {
-      const user = userStr ? JSON.parse(userStr) : null;
+      if (!userStr) {
+        router.replace('/login');
+        return;
+      }
 
-      // Verificamos role_id (Admin = 1)
-      if (!user || user.role_id !== 1) {
-        router.replace('/dashboard'); // Usamos replace para no ensuciar el historial
+      const user = JSON.parse(userStr);
+
+      // NORMALIZACIÓN CRÍTICA: Aceptamos roleId o role_id
+      const rId = Number(user.roleId || user.role_id);
+
+      // Verificamos si es Admin (Rol 1)
+      if (rId !== 1) {
+        console.warn("Acceso denegado: Se requiere rol de administrador. Rol detectado:", rId);
+        router.replace('/dashboard'); 
       } else {
         setIsAdmin(true);
       }
     } catch (e) {
-      console.error("Error al verificar permisos de admin");
+      console.error("Error al verificar permisos de admin:", e);
       router.replace('/login');
     }
   }, [router]);
 
-  // Mientras se monta o si no es admin, no mostramos nada
+  // Mientras se monta o si no es admin, mostramos el spinner de carga
   if (!isMounted || !isAdmin) {
     return (
       <div className="flex h-[50vh] w-full items-center justify-center">
