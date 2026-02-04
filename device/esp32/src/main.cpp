@@ -24,6 +24,11 @@ const float FALL_THRESHOLD = 25.0; // m/s^2 (aprox 2.5G)
 unsigned long lastDebounceTime = 0;
 const unsigned long debounceDelay = 300; // Milisegundos para ignorar rebotes
 
+// variable de deteccion de falsa alarma
+bool potentialFall = false;
+unsigned long timeOfImpact = 0;
+const unsigned long CONFIRMATION_WINDOW = 10000; // 10 segundos
+
 void setup() {
     Serial.begin(115200);
 
@@ -85,6 +90,10 @@ void loop() {
     sensors_event_t a, g, temp;
     mpu.getEvent(&a, &g, &temp);
 
+
+    // Calcular Magnitud Vectorial Total
+    float accelMag = sqrt(sq(a.acceleration.x) + sq(a.acceleration.y) + sq(a.acceleration.z));
+
     // Lógica del botón de alerta
     // Leemos LOW porque usamos INPUT_PULLUP (el botón conecta a GND al pulsar)
     if (digitalRead(BUTTON_PIN) == LOW) {
@@ -101,9 +110,33 @@ void loop() {
         }
     }
 
+    // Lógica de Detección Automática
+    if (accelMag > FALL_THRESHOLD && !potentialFall) {
+        Serial.println("¡Impacto fuerte detectado! Esperando confirmación...");
+        potentialFall = true;
+        timeOfImpact = millis();
+        // Aquí podrías encender un LED de aviso
+    }
+
+    // Ventana de Confirmación / Cancelación
+    if (potentialFall) {
+        // Si el usuario pulsa el botón, cancelamos la alarma
+        if (digitalRead(BUTTON_PIN) == LOW) {
+            Serial.println("Alarma cancelada por el usuario (Falsa alarma).");
+            potentialFall = false;
+            delay(1000); // Evitar rebotes
+        } 
+        // Si pasan 10 segundos y no se canceló, enviamos la alerta real
+        else if (millis() - timeOfImpact > CONFIRMATION_WINDOW) {
+            Serial.println("¡CAÍDA CONFIRMADA! Enviando alerta...");
+            sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, true);
+            potentialFall = false;
+        }
+    }
+
     // Envio automatico de datos cada 5 segundos
     static unsigned long lastSend = 0;
-    if (millis() - lastSend > 5000) {
+    if (millis() - lastSend > 5000 && !potentialFall) {
         sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, false);
         lastSend = millis();
     }
