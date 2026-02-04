@@ -1,0 +1,78 @@
+import { pool } from '../db';
+import { isValidDeviceId, isValidMAC } from '../utils/validators';
+
+export interface DeviceInput {
+  device_id_logic: string;
+  mac: string;
+  alias?: string;
+  status?: 'active' | 'inactive' | 'low battery';
+  user_id?: number;
+}
+
+export const createDevice = async (input: DeviceInput) => {
+  const { device_id_logic, mac, alias, status = 'inactive', user_id } = input;
+
+  if (!isValidDeviceId(device_id_logic)) throw new Error('Identificador inválido');
+  if (!isValidMAC(mac)) throw new Error('MAC inválida');
+
+  const exists = await pool.query(
+    'SELECT id FROM devices WHERE device_id_logic=$1 OR mac=$2', 
+    [device_id_logic, mac]
+  );
+  if (exists.rows.length > 0) throw new Error('Dispositivo ya registrado');
+
+  const result = await pool.query(
+    `INSERT INTO devices (device_id_logic, mac, alias, status, user_id)
+     VALUES ($1,$2,$3,$4,$5)
+     RETURNING *`,
+    [device_id_logic, mac, alias || null, status, user_id || null]
+  );
+
+  return result.rows[0];
+};
+
+export const getDevices = async () => {
+  const result = await pool.query('SELECT * FROM devices ORDER BY id ASC');
+  return result.rows;
+};
+
+export const getDeviceById = async (id: number) => {
+  const result = await pool.query('SELECT * FROM devices WHERE id=$1', [id]);
+  return result.rows[0];
+};
+
+export const updateDevice = async (id: number, input: Partial<DeviceInput>) => {
+  const fields = [];
+  const values: any[] = [];
+  let idx = 1;
+
+  for (const [key, value] of Object.entries(input)) {
+    if (['device_id_logic','mac','alias','status','user_id'].includes(key)) {
+      fields.push(`${key}=$${idx}`);
+      values.push(value);
+      idx++;
+    }
+  }
+
+  if (fields.length === 0) throw new Error('Nada que actualizar');
+
+  values.push(id);
+  const result = await pool.query(
+    `UPDATE devices SET ${fields.join(', ')} WHERE id=$${idx} RETURNING *`,
+    values
+  );
+
+  return result.rows[0];
+};
+
+export const updateDeviceStatus = async (id: number, status: 'active' | 'inactive' | 'low battery') => {
+  const result = await pool.query(
+    'UPDATE devices SET status=$1 WHERE id=$2 RETURNING *',
+    [status, id]
+  );
+  return result.rows[0];
+};
+
+export const deleteDevice = async (id: number) => {
+  await pool.query('DELETE FROM devices WHERE id=$1', [id]);
+};
