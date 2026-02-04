@@ -1,211 +1,245 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { UserPlus, Mail, Lock, User, Calendar, Shield, CheckCircle2, AlertCircle, Trash2, RefreshCcw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { 
+  Search, UserPlus, X, Save, Mail, Shield, 
+  User as UserIcon, Activity, Smartphone, 
+  Edit2, Trash2, ChevronDown, Lock, UserCircle 
+} from 'lucide-react';
 
-export default function AdminUsersPage() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    name: '',
-    surnames: '',
-    date_born: ''
-  });
-  
-  const [usuarios, setUsuarios] = useState<any[]>([]);
-  const [status, setStatus] = useState<{ type: 'success' | 'error' | null, msg: string }>({ type: null, msg: '' });
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
+export default function UsersManagementPage() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [users, setUsers] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 1. Cargar usuarios reales desde el backend
-  const fetchUsers = async () => {
-    setIsFetching(true);
-    try {
-      const token = localStorage.getItem('token');
-      // Nota: Si aún no tienes esta ruta GET /api/auth/users, dará error 404
-      const response = await fetch('http://localhost:3000/api/auth/users', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUsuarios(data);
+  // 1. Carga inicial de usuarios
+  useEffect(() => {
+    const fetchInitialUsers = async () => {
+      try {
+        const mockUsers = [
+          { id: 1, name: 'Admin', surnames: 'Principal', email: 'admin@sistema.com', roleId: 1 },
+          { id: 2, name: 'Juan', surnames: 'Pérez', email: 'juan.cuidador@email.com', roleId: 2 },
+          { id: 3, name: 'María', surnames: 'García', email: 'maria.paciente@email.com', roleId: 3 },
+        ];
+        setUsers(mockUsers);
+      } catch (error) {
+        console.error("Error cargando usuarios:", error);
       }
-    } catch (error) {
-      console.error("Error cargando usuarios:", error);
-    } finally {
-      setIsFetching(false);
+    };
+    fetchInitialUsers();
+  }, []);
+
+  const handleDelete = (id: number) => {
+    if (confirm('¿Está seguro de que desea eliminar este registro médico?')) {
+      setUsers(prev => prev.filter(user => user.id !== id));
     }
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  const handleEdit = (user: any) => {
+    alert(`Modo edición para: ${user.name}`);
+  };
 
-  // Validación de contraseña (Coincide con validators.ts del backend)
-  const isPasswordValid = (pass: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pass);
+  const filteredUsers = users.filter(user => 
+    `${user.name} ${user.surnames} ${user.email}`.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Gestión de Usuarios</h1>
+          <p className="text-sm text-slate-500 font-medium">Administración de personal y pacientes</p>
+        </div>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95"
+        >
+          <UserPlus size={18} />
+          Nuevo Usuario
+        </button>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+        <input 
+          type="text"
+          placeholder="Filtrar por nombre..."
+          className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm text-slate-900 font-medium"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase w-20 text-center">ID</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase">Información</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase">Rol</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredUsers.map((user) => (
+                <tr key={user.id} className="hover:bg-blue-50/30 transition-colors group">
+                  <td className="px-6 py-4 text-center text-xs font-medium text-slate-400">
+                    {user.id.toString().padStart(4, '0')}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm uppercase">
+                        {user.name ? user.name[0] : 'U'}{user.surnames ? user.surnames[0] : ''}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 text-sm leading-none">{user.name} {user.surnames}</p>
+                        <p className="text-xs text-slate-500 mt-1">{user.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <RoleBadge roleId={user.roleId} />
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end gap-1">
+                      <button onClick={() => handleEdit(user)} className="p-2 text-slate-400 hover:text-blue-700 rounded-lg transition-all"><Edit2 size={15} /></button>
+                      <button onClick={() => handleDelete(user.id)} className="p-2 text-slate-400 hover:text-red-600 rounded-lg transition-all"><Trash2 size={15} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {isModalOpen && (
+        <AddUserModal 
+          onClose={() => setIsModalOpen(false)} 
+          onSuccess={(newUser: any) => {
+            // USAMOS UNA FUNCIÓN DE ACTUALIZACIÓN PARA ASEGURARNOS DE TENER EL ESTADO MÁS RECIENTE
+            setUsers((prevUsers) => [...prevUsers, newUser]);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function AddUserModal({ onClose, onSuccess }: any) {
+  const [formData, setFormData] = useState({ name: '', surnames: '', email: '', password: '', roleId: 3 });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setStatus({ type: null, msg: '' });
-
-    if (!isPasswordValid(formData.password)) {
-      setStatus({ type: 'error', msg: 'Contraseña débil: requiere 8 caracteres, mayúscula, minúscula y número.' });
-      setIsLoading(false);
-      return;
-    }
-
+    setIsSubmitting(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+      const response = await fetch('http://localhost:4000/api/auth/register', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        setStatus({ type: 'success', msg: 'Usuario guardado en PostgreSQL correctamente.' });
-        setFormData({ email: '', password: '', name: '', surnames: '', date_born: '' });
-        fetchUsers(); // Refrescar la tabla automáticamente
-      } else {
-        setStatus({ type: 'error', msg: data.message || 'Error en el registro.' });
-      }
-    } catch (error) {
-      setStatus({ type: 'error', msg: 'Error de conexión con el servidor.' });
+      if (!response.ok) throw new Error(data.message || 'Error en el registro');
+
+      // IMPORTANTE: El objeto que enviamos a onSuccess debe tener la estructura de la tabla
+      const userToAdd = {
+        id: data.user?.id || Math.floor(Math.random() * 1000) + 10,
+        name: formData.name,
+        surnames: formData.surnames,
+        email: formData.email,
+        roleId: formData.roleId
+      };
+
+      onSuccess(userToAdd);
+      alert("Registro completado con éxito.");
+      onClose(); // Cerramos el modal después de todo
+    } catch (error: any) {
+      alert(error.message);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="space-y-10 pb-20">
-      <header>
-        <h1 className="text-2xl font-black text-slate-800 tracking-tight italic">Panel de Administración</h1>
-        <p className="text-slate-500 text-sm font-medium">Control de acceso y registro de usuarios</p>
-      </header>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* FORMULARIO DE REGISTRO */}
-        <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-2 mb-6">
-            <UserPlus size={20} className="text-blue-600" />
-            <h2 className="font-bold text-slate-800">Registrar Nuevo Usuario</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px]">
+      <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800 tracking-tight uppercase">Alta de Nuevo Usuario</h2>
           </div>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="text" required placeholder="Nombre"
-                value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all"
-              />
-              <input
-                type="text" placeholder="Apellidos (Opcional)"
-                value={formData.surnames} onChange={(e) => setFormData({...formData, surnames: e.target.value})}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all"
-              />
+          <button onClick={onClose} className="p-2 hover:bg-white rounded-lg text-slate-400 transition-colors"><X size={20} /></button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-8 space-y-5">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-600 uppercase">Nombre</label>
+              <input required className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 font-semibold" 
+                onChange={e => setFormData({...formData, name: e.target.value})} value={formData.name} />
             </div>
-
-            <input
-              type="email" required placeholder="Correo Electrónico"
-              value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all"
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="password" required placeholder="Contraseña Segura"
-                value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all"
-              />
-              <input
-                type="date" placeholder="Fecha Nacimiento"
-                value={formData.date_born} onChange={(e) => setFormData({...formData, date_born: e.target.value})}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all"
-              />
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-600 uppercase">Apellidos</label>
+              <input required className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 font-semibold" 
+                onChange={e => setFormData({...formData, surnames: e.target.value})} value={formData.surnames} />
             </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-slate-600 uppercase">Email Corporativo</label>
+            <div className="relative text-slate-900">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+              <input type="email" required className="w-full pl-9 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-sm font-semibold" 
+                onChange={e => setFormData({...formData, email: e.target.value})} value={formData.email} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Contraseña Temporal</label>
+            <div className="relative text-slate-900">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+              <input type="password" required className="w-full pl-9 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-sm font-semibold" 
+                onChange={e => setFormData({...formData, password: e.target.value})} value={formData.password} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Rol de Seguridad</label>
+            <div className="relative text-slate-900">
+              <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+              <select className="w-full pl-9 pr-10 py-3 bg-white border border-slate-200 rounded-lg text-sm font-bold appearance-none cursor-pointer" 
+                value={formData.roleId} onChange={e => setFormData({...formData, roleId: Number(e.target.value)})}>
+                <option value={1}>Administrador</option>
+                <option value={2}>Personal Médico</option>
+                <option value={3}>Paciente</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+            </div>
+          </div>
 
-            {status.msg && (
-              <div className={`p-4 rounded-2xl flex items-center gap-3 text-xs font-black uppercase tracking-wider ${
-                status.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-              }`}>
-                {status.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-                {status.msg}
-              </div>
-            )}
-
-            <button
-              type="submit" disabled={isLoading}
-              className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:bg-slate-300"
-            >
-              {isLoading ? 'Procesando...' : 'Crear Cuenta en Base de Datos'}
+          <div className="flex gap-3 pt-4">
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-3 border border-slate-200 text-slate-600 rounded-lg font-bold text-xs uppercase hover:bg-slate-50 transition-all">Cancelar</button>
+            <button type="submit" disabled={isSubmitting} className="flex-1 bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition-all shadow-md flex items-center justify-center gap-2 text-xs uppercase">
+              {isSubmitting ? <Activity className="animate-spin" size={16} /> : <Save size={16} />}
+              Finalizar Registro
             </button>
-          </form>
-        </div>
-
-        {/* INFO CARD */}
-        <div className="space-y-4">
-          <div className="bg-slate-900 p-6 rounded-3xl text-white shadow-xl shadow-slate-200">
-            <Shield className="mb-4 text-blue-400" size={32} />
-            <h3 className="font-bold text-sm mb-2 uppercase tracking-tight">Restricción de Backend</h3>
-            <p className="text-slate-400 text-[11px] leading-relaxed">
-              La función <code className="text-blue-300 font-mono">registerUser</code> asigna por defecto el <b>Rol 3 (Paciente)</b>. Para otros roles, modificar la DB manualmente.
-            </p>
           </div>
-        </div>
-      </div>
-
-      {/* TABLA DE USUARIOS EXISTENTES */}
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="font-black text-slate-800 text-lg uppercase tracking-tight">Usuarios Registrados</h2>
-          <button onClick={fetchUsers} className="text-slate-400 hover:text-blue-600 p-2 transition-colors">
-            <RefreshCcw size={20} className={isFetching ? 'animate-spin' : ''} />
-          </button>
-        </div>
-
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden text-sm">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 border-b border-slate-100 text-[10px] font-black uppercase text-slate-400 tracking-widest">
-              <tr>
-                <th className="px-6 py-4">Nombre Completo</th>
-                <th className="px-6 py-4">Email</th>
-                <th className="px-6 py-4">Rol</th>
-                <th className="px-6 py-4 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {usuarios.length > 0 ? (
-                usuarios.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-slate-700">{u.name} {u.surnames}</td>
-                    <td className="px-6 py-4 text-slate-500 font-medium">{u.email}</td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-blue-50 text-blue-600 text-[9px] font-black rounded-md uppercase">
-                        {u.roleId === 1 ? 'Admin' : u.roleId === 2 ? 'Cuidador' : 'Paciente'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button className="text-slate-300 hover:text-red-500 transition-colors">
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center text-slate-400 italic">
-                    {isFetching ? 'Conectando con PostgreSQL...' : 'Sin usuarios para mostrar.'}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        </form>
       </div>
     </div>
+  );
+}
+
+function RoleBadge({ roleId }: { roleId: number }) {
+  const roles: any = {
+    1: { label: 'Administrador', color: 'bg-slate-100 text-slate-700 border-slate-200', icon: <Shield size={12} /> },
+    2: { label: 'Personal Médico', color: 'bg-blue-50 text-blue-700 border-blue-100', icon: <Activity size={12} /> },
+    3: { label: 'Paciente', color: 'bg-emerald-50 text-emerald-700 border-emerald-100', icon: <UserCircle size={12} /> }
+  };
+  const role = roles[roleId] || { label: 'Usuario', color: 'bg-slate-50 text-slate-500 border-slate-100', icon: null };
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-[11px] font-bold ${role.color}`}>
+      {role.icon} {role.label}
+    </span>
   );
 }
