@@ -3,11 +3,30 @@ POST http://localhost:3000/api/auth/register
 Content-Type: application/json
 
 {
-  "email": "usuario1@test.com",
-  "password": "Test1234!",
-  "name": "Juan",
+  "email": "manolo@gmail.com",
+  "password": "Manolo1234!",
+  "name": "Manolo",
   "surnames": "Pérez López",
   "date_born": "1950-05-20"
+}
+
+###
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "admin@gmail.com",
+  "password": "Admin1234!",
+  "name": "Admin"
+}
+
+###
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@gmail.com",
+  "password": "Admin1234!"
 }
 
 ### registro incorrecto
@@ -34,6 +53,6 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "usuario1@test.com",
-  "password": "Test1234!"
+  "email": "manolo@gmail.com",
+  "password": "Manolo1234!"
 }

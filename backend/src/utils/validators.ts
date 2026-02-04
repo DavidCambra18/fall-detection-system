@@ -52,3 +52,11 @@ export const isValidDate = (dateStr: string): boolean => {
   const date = new Date(dateStr);
   return !isNaN(date.getTime());
 };
+
+export const isValidDeviceId = (id: string): boolean => {
+  return /^[A-Za-z0-9\-_]+$/.test(id);
+};
+
+export const isValidMAC = (mac: string): boolean => {
+  return /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/.test(mac);
+};

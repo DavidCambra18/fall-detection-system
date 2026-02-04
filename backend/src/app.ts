@@ -2,6 +2,8 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import authRoutes from './routes/auth.routes';
+import deviceRoutes from './routes/devices.routes';
+
 dotenv.config();
 
 const app = express();
@@ -22,6 +24,8 @@ app.use('/api/auth', authRoutes);
 app.get('/', (req, res) => {
   res.send('Backend funcionando correctamente');
 });
+
+app.use('/api/devices', deviceRoutes);
 
 // Puerto
 const PORT = process.env.PORT || 3000;
