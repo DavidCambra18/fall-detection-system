@@ -12,6 +12,7 @@ CREATE TABLE roles (
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(150) UNIQUE NOT NULL,
+    phone_num VARCHAR(20) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
     surnames VARCHAR(150),
@@ -48,18 +49,14 @@ CREATE TABLE reports (
     date_rep TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- =========================================================
 -- 2. OPTIMIZACIÓN E ÍNDICES
--- =========================================================
 
 CREATE INDEX idx_reports_device_date ON reports (device_id, date_rep DESC);
 CREATE INDEX idx_reports_user ON reports (user_id);
 CREATE INDEX idx_reports_only_falls ON reports (id) WHERE fall_detected = TRUE;
 CREATE INDEX idx_users_email ON users (email);
 
--- =========================================================
 -- 3. CARGA DE DATOS INICIALES (DML)
--- =========================================================
 
 -- 3.1 ROLES
 INSERT INTO roles (name, description) VALUES 
