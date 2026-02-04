@@ -7,41 +7,36 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // 1. Obtenemos el usuario del almacenamiento local
-    const storedUser = localStorage.getItem('user');
-    
-    if (!storedUser) {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
       router.replace('/login');
       return;
     }
 
-    const user = JSON.parse(storedUser);
-
-    // 2. Lógica de redirección basada en tu estructura de carpetas
-    switch (user.role_id) {
-      case 1: // Admin
-        router.replace('/dashboard/admin');
-        break;
-      case 2: // Cuidador
-        router.replace('/dashboard/cuidador');
-        break;
-      case 3: // Paciente / Usuario
-        // Redirigimos a su dispositivo (si no hay ID, por defecto al 1)
-        router.replace(`/dashboard/usuario/${user.device_id || '1'}`);
-        break;
-      default:
-        router.replace('/login');
-        break;
+    const user = JSON.parse(userStr);
+    
+    // --- SINCRONIZACIÓN CON ROLE_ID ---
+    // Admin = 1, Cuidador = 2, Paciente = 3
+    if (user.role_id === 1) {
+      router.replace('/dashboard/admin');
+    } else if (user.role_id === 2) {
+      router.replace('/dashboard/cuidador');
+    } else if (user.role_id === 3) {
+      // Si es paciente, lo mandamos a su dispositivo asignado o al '1' por defecto
+      router.replace(`/dashboard/usuario/${user.device_id || '1'}`);
+    } else {
+      // Por si acaso hay un rol no definido
+      router.replace('/login');
     }
   }, [router]);
 
-  // Mientras decide a dónde ir, mostramos un spinner centrado
+  // Se muestra un estado de carga breve mientras se redirige
   return (
-    <div className="flex h-[80vh] w-full items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
-        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest animate-pulse">
-          Cargando tu panel...
+    <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">
+          Redirigiendo según tu rol...
         </p>
       </div>
     </div>

@@ -14,37 +14,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setIsMounted(true);
     const token = localStorage.getItem('token');
     
-    // El backend devuelve 'roleId' en lugar de 'role_id'
+    // Recuperamos el usuario del localStorage
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    // 1. Verificación de sesión
-    if (!token || user.roleId === undefined) {
+    // 1. Verificación de sesión usando 'role_id'
+    // Cambiado user.roleId por user.role_id para coincidir con tu DB
+    if (!token || user.role_id === undefined) {
       setAuthorized(false);
       router.replace('/login');
       return;
     }
 
-    // 2. Control de acceso por carpetas según los roles del backend
-    // Admin = 1, Cuidador = 2, Paciente = 3
-    
+    // 2. Control de acceso por carpetas según los roles (Admin=1, Cuidador=2, Paciente=3)
     const isAdminPath = pathname.startsWith('/dashboard/admin');
     const isCuidadorPath = pathname.startsWith('/dashboard/cuidador');
     const isUsuarioPath = pathname.startsWith('/dashboard/usuario');
 
     // Bloqueo para Admin (Solo Role 1)
-    if (isAdminPath && user.roleId !== 1) {
+    if (isAdminPath && user.role_id !== 1) {
       router.replace('/dashboard');
       return;
     }
 
-    // Bloqueo para Cuidador (Role 2 o Role 1)
-    if (isCuidadorPath && user.roleId !== 2 && user.roleId !== 1) {
+    // Bloqueo para Cuidador (Role 2 o Role 1 que también supervisa)
+    if (isCuidadorPath && user.role_id !== 2 && user.role_id !== 1) {
       router.replace('/dashboard');
       return;
     }
 
-    // Bloqueo para Usuario/Paciente (Role 3 o superior para supervisión)
-    if (isUsuarioPath && ![1, 2, 3].includes(user.roleId)) {
+    // Bloqueo para Usuario/Paciente (Role 3 o superior)
+    if (isUsuarioPath && ![1, 2, 3].includes(user.role_id)) {
       router.replace('/dashboard');
       return;
     }
@@ -52,7 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setAuthorized(true);
   }, [router, pathname]);
 
-  // Pantalla de carga profesional para evitar parpadeos de contenido privado
+  // Pantalla de carga profesional
   if (!isMounted || !authorized) {
     return (
       <div className="h-screen w-screen bg-white flex flex-col items-center justify-center gap-4">
