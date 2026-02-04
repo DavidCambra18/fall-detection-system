@@ -31,8 +31,8 @@ export default function Sidebar() {
   };
 
   const getMenuItems = () => {
-    // CAMBIO: El backend usa camelCase para roleId
-    const role = user?.roleId; 
+    // CAMBIO: Usamos role_id (snake_case) para coincidir con la base de datos
+    const role = user?.role_id; 
     
     if (role === 1) {
       return [
@@ -72,8 +72,8 @@ export default function Sidebar() {
 
       <nav className="flex-1 p-4 space-y-1">
         <p className="px-4 text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-widest italic">
-          {/* CAMBIO: Actualizado a roleId */}
-          Menú de {user?.roleId === 1 ? 'Admin' : user?.roleId === 2 ? 'Cuidador' : 'Paciente'}
+          {/* CAMBIO: Sincronizado con role_id */}
+          Menú de {user?.role_id === 1 ? 'Admin' : user?.role_id === 2 ? 'Cuidador' : 'Paciente'}
         </p>
         
         {menuItems.map((item) => (
@@ -102,8 +102,8 @@ export default function Sidebar() {
               {user?.name || 'Usuario'} {user?.surnames || ''}
             </span>
             <span className="text-[9px] font-black text-blue-500 uppercase">
-              {/* CAMBIO: Actualizado a roleId */}
-              {user?.roleId === 1 ? 'Administrator' : user?.roleId === 2 ? 'Cuidador' : 'Paciente'}
+              {/* CAMBIO: Sincronizado con role_id */}
+              {user?.role_id === 1 ? 'Administrator' : user?.role_id === 2 ? 'Cuidador' : 'Paciente'}
             </span>
           </div>
         </div>
