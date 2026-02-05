@@ -9,43 +9,46 @@
 // --- Configuración ---
 const char* ssid = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
-const char* serverUrl = SERVER_URL; // Tu futura ruta
+const char* serverUrl = SERVER_URL;
 
 Adafruit_MPU6050 mpu;
+sensors_event_t a, g, temp; // Globales para que el botón tenga acceso a datos frescos
 String deviceId;
 
-// Pines
-const int BUTTON_PIN = 4; // Pin donde conectarás el botón (GPIO 4)
-
-// Umbral de caída (ajustable)
-const float FALL_THRESHOLD = 25.0; // m/s^2 (aprox 2.5G)
-
+const int BUTTON_PIN = 4;
+const float FALL_THRESHOLD = 25.0;
 
 unsigned long lastDebounceTime = 0;
-const unsigned long debounceDelay = 300; // Milisegundos para ignorar rebotes
+const unsigned long debounceDelay = 300;
+unsigned long lastSensorRead = 0;
+const unsigned long SENSOR_INTERVAL = 20; 
 
-void setup() {
-    Serial.begin(115200);
+// Variables de detección y reconexión
+bool potentialFall = false;
+unsigned long timeOfImpact = 0;
+const unsigned long CONFIRMATION_WINDOW = 10000;
 
-    WiFi.mode(WIFI_STA); // Inicializa el driver de Wi-Fi
-    
-    // 1. Obtener ID único (MAC Address)
-    deviceId = getDeviceId();
+unsigned long lastWiFiCheck = 0;
+const unsigned long WIFI_RETRY_INTERVAL = 5000; // Reintento cada 5 seg
 
-    // 2. Iniciar WiFi
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
+// --- Funciones Auxiliares ---
+
+String getDeviceId() {
+    String id = WiFi.macAddress();
+    id.replace(":", "");
+    return id;
+}
+
+void checkWiFi() {
+    if (WiFi.status() != WL_CONNECTED) {
+        unsigned long currentMillis = millis();
+        if (currentMillis - lastWiFiCheck >= WIFI_RETRY_INTERVAL) {
+            lastWiFiCheck = currentMillis;
+            Serial.println("WiFi desconectado. Intentando reconectar...");
+            WiFi.disconnect();
+            WiFi.begin(ssid, password);
+        }
     }
-    Serial.println("\nWiFi Conectado");
-
-    // 3. Iniciar Sensor
-    if (!mpu.begin()) {
-        Serial.println("¡No se encuentra el sensor MPU6050!");
-        while (1) yield();
-    }
-    Serial.println("MPU6050 listo.");
 }
 
 void sendData(float x, float y, float z, bool fall) {
@@ -53,8 +56,8 @@ void sendData(float x, float y, float z, bool fall) {
         HTTPClient http;
         http.begin(serverUrl);
         http.addHeader("Content-Type", "application/json");
+        http.setTimeout(2000); // Evita que el ESP32 se quede colgado si el servidor no responde
 
-        // Crear el JSON
         StaticJsonDocument<200> doc;
         doc["deviceId"] = deviceId;
         doc["accX"] = x;
@@ -66,48 +69,89 @@ void sendData(float x, float y, float z, bool fall) {
         serializeJson(doc, requestBody);
 
         int httpResponseCode = http.POST(requestBody);
-        
-        Serial.print("Enviado. Respuesta: ");
-        Serial.println(httpResponseCode);
+        Serial.printf("Envío -> Código: %d\n", httpResponseCode);
         
         http.end();
+    } else {
+        Serial.println("Error: Datos no enviados (Sin WiFi)");
     }
 }
 
-String getDeviceId() {
-    String id = WiFi.macAddress();
-    id.replace(":", "");
-    return id;
+// --- Setup ---
+
+void setup() {
+    Serial.begin(115200);
+
+    WiFi.mode(WIFI_STA);
+    WiFi.setAutoReconnect(true); // El ESP32 intentará reconectar automáticamente
+    
+    deviceId = getDeviceId();
+
+    Serial.print("Conectando a WiFi");
+    WiFi.begin(ssid, password);
+    
+    // Solo bloqueamos en el setup inicial. Una vez en el loop, será no bloqueante.
+    unsigned long startAttempt = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - startAttempt < 10000) {
+        delay(500);
+        Serial.print(".");
+    }
+
+    if (!mpu.begin()) {
+        Serial.println("\n¡Error MPU6050!");
+        while (1) yield();
+    }
+    Serial.println("\nSistema listo.");
 }
 
-void loop() {
-    // Lectura continua del sensor
-    sensors_event_t a, g, temp;
-    mpu.getEvent(&a, &g, &temp);
+// --- Loop Principal ---
 
-    // Lógica del botón de alerta
-    // Leemos LOW porque usamos INPUT_PULLUP (el botón conecta a GND al pulsar)
-    if (digitalRead(BUTTON_PIN) == LOW) {
-        unsigned long currentTime = millis();
-        
-        // Verificamos si ha pasado suficiente tiempo desde el último clic
-        if (currentTime - lastDebounceTime > debounceDelay) {
-            Serial.println("¡Botón de emergencia pulsado!");
-            
-            // Enviamos los datos actuales indicando que hay una "caída" (alerta manual)
+void loop() {
+    unsigned long currentMillis = millis();
+
+    // Gestión de WiFi (No bloqueante)
+    checkWiFi();
+
+    // 1. LECTURA DEL SENSOR (50Hz)
+    if (currentMillis - lastSensorRead >= SENSOR_INTERVAL) {
+        lastSensorRead = currentMillis;
+        mpu.getEvent(&a, &g, &temp);
+
+        float accelMag = sqrt(sq(a.acceleration.x) + sq(a.acceleration.y) + sq(a.acceleration.z));
+
+        // Detección de impacto
+        if (accelMag > FALL_THRESHOLD && !potentialFall) {
+            Serial.println("¡Impacto detectado!");
+            potentialFall = true;
+            timeOfImpact = currentMillis;
+        }
+
+        // Confirmación de caída tras ventana de 10s
+        if (potentialFall && (currentMillis - timeOfImpact > CONFIRMATION_WINDOW)) {
             sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, true);
-            
-            lastDebounceTime = currentTime; 
+            potentialFall = false;
+        }
+
+        // Telemetría normal cada 5s
+        static unsigned long lastSend = 0;
+        if (currentMillis - lastSend > 5000 && !potentialFall) {
+             sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, false);
+             lastSend = currentMillis;
         }
     }
 
-    // Envio automatico de datos cada 5 segundos
-    static unsigned long lastSend = 0;
-    if (millis() - lastSend > 5000) {
-        sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, false);
-        lastSend = millis();
+    // 2. LECTURA DEL BOTÓN
+    if (digitalRead(BUTTON_PIN) == LOW) {
+        if (currentMillis - lastDebounceTime > debounceDelay) {
+            if (potentialFall) {
+                Serial.println("Alarma cancelada.");
+                potentialFall = false;
+            } else {
+                Serial.println("Alerta manual enviada.");
+                // Ahora 'a' tiene los últimos valores leídos en el timer de arriba
+                sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, true); 
+            }
+            lastDebounceTime = currentMillis; 
+        }
     }
-    
-
-    delay(100); // Frecuencia de muestreo (10Hz)
 }

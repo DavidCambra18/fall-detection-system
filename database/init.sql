@@ -1,43 +1,47 @@
+-- 1. CREACIÓN DE ESTRUCTURAS (DDL)
+
 -- 1. Tablas de soporte
-CREATE TABLE role (
+CREATE TABLE roles (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     description TEXT
 );
 
 -- 2. Tabla de Usuarios
-CREATE TABLE "user" (
+-- Eliminamos las comillas dobles porque 'users' no es palabra reservada
+CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(150) UNIQUE NOT NULL,
+    phone_num VARCHAR(20) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
     surnames VARCHAR(150),
     date_born DATE,
-    role_id INTEGER NOT NULL REFERENCES role (id),
-    carer_id INTEGER REFERENCES "user" (id) ON DELETE SET NULL
+    role_id INTEGER NOT NULL REFERENCES roles (id),
+    carer_id INTEGER REFERENCES users (id) ON DELETE SET NULL
 );
 
 -- 3. Tabla de Dispositivos
-CREATE TABLE device (
+CREATE TABLE devices (
     id SERIAL PRIMARY KEY,
     device_id_logic VARCHAR(50) UNIQUE NOT NULL,
     mac VARCHAR(17) UNIQUE NOT NULL,
     alias VARCHAR(100),
     status VARCHAR(20) CHECK (
         status IN (
-            'Inactive',
+            'inactive',
             'active',
             'low battery'
         )
     ) NOT NULL,
-    user_id INTEGER NOT NULL REFERENCES "user" (id) ON DELETE CASCADE
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE
 );
 
 -- 4. Tabla de Reportes
-CREATE TABLE report (
+CREATE TABLE reports (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES "user" (id) ON DELETE CASCADE,
-    device_id INTEGER NOT NULL REFERENCES device (id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    device_id INTEGER NOT NULL REFERENCES devices (id) ON DELETE CASCADE,
     acc_x FLOAT NOT NULL,
     acc_y FLOAT NOT NULL,
     acc_z FLOAT NOT NULL,
@@ -45,16 +49,35 @@ CREATE TABLE report (
     date_rep TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 1. Índice para búsquedas rápidas de historial por dispositivo y fecha
-CREATE INDEX idx_report_device_date ON report (device_id, date_rep DESC);
+-- 2. OPTIMIZACIÓN E ÍNDICES
 
--- 2. Índice para el Cuidador
-CREATE INDEX idx_report_user ON report (user_id);
+CREATE INDEX idx_reports_device_date ON reports (device_id, date_rep DESC);
+CREATE INDEX idx_reports_user ON reports (user_id);
+CREATE INDEX idx_reports_only_falls ON reports (id) WHERE fall_detected = TRUE;
+CREATE INDEX idx_users_email ON users (email);
 
--- 3. Índice Parcial para Emergencias
-CREATE INDEX idx_report_only_falls ON report (id)
-WHERE
-    fall_detected = TRUE;
+-- 3. CARGA DE DATOS INICIALES (DML)
 
--- 4. Índice para la tabla User (Búsqueda por email en Login)
-CREATE INDEX idx_user_email ON "user" (email);
+-- 3.1 ROLES
+INSERT INTO roles (name, description) VALUES 
+('Admin', 'Gestión de usuarios y dispositivos del sistema'),
+('Cuidador', 'Visualiza alertas y estado de los pacientes asignados'),
+('Usuario', 'Paciente asociado a un dispositivo IoT');
+
+-- 3.2 USUARIOS
+INSERT INTO users (email, phone_num, password_hash, name, surnames, date_born, role_id, carer_id) 
+VALUES 
+('admin@sistema.com', '600111222', '$2b$10$X7...', 'Administrador', 'Principal', '1980-01-01', 1, NULL),
+('cuidador@familia.com', '600333444', '$2b$10$Y8...', 'Laura', 'García Pérez', '1985-05-20', 2, NULL),
+('paciente@familia.com', '600555666', '$2b$10$Z9...', 'Antonio', 'García López', '1945-03-15', 3, 2);
+
+-- 3.3 DISPOSITIVOS
+INSERT INTO devices (device_id_logic, mac, alias, status, user_id) 
+VALUES ('ESP32-001', 'AA:BB:CC:11:22:33', 'Dispositivo de Antonio', 'active', 3);
+
+-- 3.4 REPORTES DE EJEMPLO
+INSERT INTO reports (user_id, device_id, acc_x, acc_y, acc_z, fall_detected, date_rep) 
+VALUES (3, 1, 0.02, 0.05, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '1 hour');
+
+INSERT INTO reports (user_id, device_id, acc_x, acc_y, acc_z, fall_detected, date_rep) 
+VALUES (3, 1, -1.23, 0.45, 9.81, TRUE, CURRENT_TIMESTAMP);
