@@ -53,10 +53,31 @@ export const isValidDate = (dateStr: string): boolean => {
   return !isNaN(date.getTime());
 };
 
+/**
+ * Valida que el ID del dispositivo tenga un formato correcto (solo letras, números, guiones y guiones bajos)
+ * @param id string
+ * @returns boolean
+ */
 export const isValidDeviceId = (id: string): boolean => {
   return /^[A-Za-z0-9\-_]+$/.test(id);
 };
 
+/**
+ * Valida que la dirección MAC tenga un formato correcto (XX:XX:XX:XX:XX:XX)
+ * @param mac string
+ * @returns boolean
+ */
 export const isValidMAC = (mac: string): boolean => {
   return /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/.test(mac);
+};
+
+/**
+ * Valida que el número de teléfono tenga un formato correcto (permite +34, espacios y números)
+ * @param phone string
+ * @returns boolean
+ */
+export const isValidPhone = (phone: string): boolean => {
+  // Permite +34, espacios y números
+  const regex = /^\+?[0-9\s]{7,20}$/;
+  return regex.test(phone);
 };
