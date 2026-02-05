@@ -8,7 +8,7 @@ Content-Type: application/json
   "name": "Manolo",
   "surnames": "Pérez López",
   "date_born": "1950-05-20",
-  "phone_num": "3248832"
+  "phone_num": "+34600111222"
 }
 
 ###
@@ -19,7 +19,7 @@ Content-Type: application/json
   "email": "admin@gmail.com",
   "password": "Admin1234!",
   "name": "Admin",
-  "phone_num": "3245348832"
+  "phone_num": "+34600111223"
 
 }
 
