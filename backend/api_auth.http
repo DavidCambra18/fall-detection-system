@@ -7,7 +7,8 @@ Content-Type: application/json
   "password": "Manolo1234!",
   "name": "Manolo",
   "surnames": "Pérez López",
-  "date_born": "1950-05-20"
+  "date_born": "1950-05-20",
+  "phone_num": "3248832"
 }
 
 ###
@@ -17,7 +18,9 @@ Content-Type: application/json
 {
   "email": "admin@gmail.com",
   "password": "Admin1234!",
-  "name": "Admin"
+  "name": "Admin",
+  "phone_num": "3245348832"
+
 }
 
 ###
