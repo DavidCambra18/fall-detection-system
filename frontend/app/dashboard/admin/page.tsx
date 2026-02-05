@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 import Link from 'next/link';
-import TelemetryChart from '../../components/TelemetryChart';
+import TelemetryChart from '../../components/charts/TelemetryChart';
 
 export default function AdminDashboardPage() {
   // 1. Estado inicializado para evitar errores de undefined en el primer render
