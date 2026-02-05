@@ -35,7 +35,7 @@ const unsigned long WIFI_RETRY_INTERVAL = 5000; // Reintento cada 5 seg
 
 String getDeviceId() {
     String id = WiFi.macAddress();
-    id.replace(":", "");
+    // id.replace(":", "");
     return id;
 }
 
@@ -81,6 +81,15 @@ void sendData(float x, float y, float z, bool fall) {
 
 void setup() {
     Serial.begin(115200);
+   
+    // 2. ESPERAR A QUE EL MONITOR SERIAL ESTÉ LISTO
+    // Este delay es vital para que te dé tiempo a ver los mensajes
+    delay(2000); 
+
+    Serial.println("\n--- [DEBUG] ESP32 DESPIERTO ---");
+    Serial.println("Configurando WiFi...");
+
+    
 
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(true); // El ESP32 intentará reconectar automáticamente
