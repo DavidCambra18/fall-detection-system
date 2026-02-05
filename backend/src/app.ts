@@ -10,8 +10,8 @@ dotenv.config();
 const app = express();
 
 const FRONTEND_ORIGIN = process.env.NODE_ENV === 'production'
-  ? 'https://falldetectionsystem.com' // dominio real
-  : 'http://127.0.0.1:4000';
+  ? 'https://falldetectionsystem.com'
+  : 'http://localhost:4000';
 
 app.use(cors({
   origin: FRONTEND_ORIGIN,
