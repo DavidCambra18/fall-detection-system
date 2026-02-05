@@ -1,6 +1,6 @@
 import { pool } from '../db';
 import jwt from 'jsonwebtoken';
-import { isValidEmail, isValidPassword, isValidName } from '../utils/validators';
+import { isValidEmail, isValidPassword, isValidName, isValidPhone } from '../utils/validators';
 
 const SALT_ROUNDS = 10;
 
@@ -10,6 +10,7 @@ export interface RegisterInput {
   name: string;
   surnames?: string;
   date_born?: string; // YYYY-MM-DD
+  phone_num: string;
 }
 
 export interface LoginInput {
@@ -18,16 +19,25 @@ export interface LoginInput {
 }
 
 export const registerUser = async (input: RegisterInput) => {
-  const { email, password, name, surnames, date_born } = input;
+  const { email, password, name, surnames, date_born, phone_num } = input;
 
   if (!isValidEmail(email)) throw new Error('Email inválido');
   if (!isValidPassword(password)) throw new Error('Contraseña inválida');
   if (!isValidName(name)) throw new Error('Nombre inválido');
+  if (!isValidPhone(phone_num)) throw new Error('Número de teléfono inválido');
 
   const existingUser = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
   if (existingUser.rows.length > 0) throw new Error('El email ya está registrado');
 
-  // bcrypt puede ser ESM-only en algunas instalaciones; importar dinámicamente
+  const existingPhone = await pool.query(
+    'SELECT id FROM users WHERE phone_num = $1',
+    [phone_num]
+  );
+
+  if (existingPhone.rows.length > 0) {
+    throw new Error('El número de teléfono ya está registrado');
+  }
+
   const bcryptPkg = await import('bcrypt');
   const bcrypt: any = (bcryptPkg && (bcryptPkg.default ?? bcryptPkg));
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -35,10 +45,18 @@ export const registerUser = async (input: RegisterInput) => {
   const roleId = 3;
 
   const result = await pool.query(
-    `INSERT INTO users (email, password_hash, name, surnames, date_born, role_id)
-     VALUES ($1, $2, $3, $4, $5, $6)
-     RETURNING id, email, name, surnames, date_born, role_id`,
-    [email, hashedPassword, name, surnames || null, date_born || null, roleId]
+    `INSERT INTO users (email, password_hash, name, surnames, date_born, phone_num, role_id)
+   VALUES ($1, $2, $3, $4, $5, $6, $7)
+   RETURNING id, email, name, surnames, date_born, phone_num, role_id`,
+    [
+      email,
+      hashedPassword,
+      name,
+      surnames || null,
+      date_born || null,
+      phone_num,
+      roleId
+    ]
   );
 
   const row = result.rows[0];
@@ -48,6 +66,7 @@ export const registerUser = async (input: RegisterInput) => {
     name: row.name,
     surnames: row.surnames,
     date_born: row.date_born,
+    phone_num: row.phone_num,
     roleId: row.role_id,
   };
 };
