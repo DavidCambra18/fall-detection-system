@@ -5,6 +5,7 @@
 El proyecto **fall-detection-system** implementa un sistema distribuido para la detección automática de caídas en personas mayores, combinando tecnologías IoT, backend y frontend web.
 
 La arquitectura separa claramente:
+
 - Captura de datos
 - Procesamiento en tiempo real
 - Persistencia de información
