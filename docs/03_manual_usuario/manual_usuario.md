@@ -19,6 +19,7 @@ Las personas usuarias pueden:
 ## 3.4 Uso para cuidadores
 
 Los cuidadores pueden:
+
 - Visualizar alertas de caídas
 - Consultar el historial de eventos
 - Identificar el usuario y dispositivo asociados
