@@ -9,6 +9,15 @@ export interface DeviceInput {
   user_id?: number;
 }
 
+// Define la interfaz según lo que envía tu ESP32
+export interface TelemetryInput {
+  deviceId: string; // Es el "device_id_logic" o MAC que manda el ESP
+  accX: number;
+  accY: number;
+  accZ: number;
+  fallDetected: boolean;
+}
+
 export const createDevice = async (input: DeviceInput) => {
   const { device_id_logic, mac, alias, status = 'inactive', user_id } = input;
 
@@ -75,4 +84,24 @@ export const updateDeviceStatus = async (id: number, status: 'active' | 'inactiv
 
 export const deleteDevice = async (id: number) => {
   await pool.query('DELETE FROM devices WHERE id=$1', [id]);
+};
+
+
+
+export const registerTelemetry = async (data: TelemetryInput) => {
+  const { deviceId, accX, accY, accZ, fallDetected } = data;
+
+  // verificacion de existencia del dispositivo
+  const device = await pool.query('SELECT id FROM devices WHERE device_id_logic=$1', [deviceId]);
+  if (device.rows.length === 0) throw new Error('Dispositivo no reconocido');
+
+  // 2. Insertar la lectura en la base de datos
+  const result = await pool.query(
+    `INSERT INTO telemetry_logs (device_id_logic, acc_x, acc_y, acc_z, fall_detected)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING *`,
+    [deviceId, accX, accY, accZ, fallDetected]
+  );
+
+  return result.rows[0];
 };
