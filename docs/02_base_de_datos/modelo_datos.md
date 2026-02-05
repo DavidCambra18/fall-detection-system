@@ -9,6 +9,7 @@ El sistema utiliza un modelo de datos híbrido que combina una base de datos en 
 Redis se utiliza para procesar los datos recibidos del ESP32 debido a su alta velocidad de acceso.
 
 Sus funciones principales son:
+
 - Almacenamiento temporal de lecturas del acelerómetro
 - Cálculo de umbrales de aceleración
 - Determinación de caídas mediante un valor booleano
