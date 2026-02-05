@@ -29,7 +29,7 @@ CREATE TABLE devices (
     alias VARCHAR(100),
     status VARCHAR(20) CHECK (
         status IN (
-            'Inactive',
+            'inactive',
             'active',
             'low battery'
         )
@@ -65,17 +65,11 @@ INSERT INTO roles (name, description) VALUES
 ('Usuario', 'Paciente asociado a un dispositivo IoT');
 
 -- 3.2 USUARIOS
--- Admin
-INSERT INTO users (email, password_hash, name, surnames, date_born, role_id, carer_id) 
-VALUES ('admin@sistema.com', '$2b$10$X7...', 'Administrador', 'Principal', '1980-01-01', 1, NULL);
-
--- Cuidador
-INSERT INTO users (email, password_hash, name, surnames, date_born, role_id, carer_id) 
-VALUES ('cuidador@familia.com', '$2b$10$Y8...', 'Laura', 'García Pérez', '1985-05-20', 2, NULL);
-
--- Usuario/Paciente (referencia al ID 2 del cuidador)
-INSERT INTO users (email, password_hash, name, surnames, date_born, role_id, carer_id) 
-VALUES ('paciente@familia.com', '$2b$10$Z9...', 'Antonio', 'García López', '1945-03-15', 3, 2);
+INSERT INTO users (email, phone_num, password_hash, name, surnames, date_born, role_id, carer_id) 
+VALUES 
+('admin@sistema.com', '600111222', '$2b$10$X7...', 'Administrador', 'Principal', '1980-01-01', 1, NULL),
+('cuidador@familia.com', '600333444', '$2b$10$Y8...', 'Laura', 'García Pérez', '1985-05-20', 2, NULL),
+('paciente@familia.com', '600555666', '$2b$10$Z9...', 'Antonio', 'García López', '1945-03-15', 3, 2);
 
 -- 3.3 DISPOSITIVOS
 INSERT INTO devices (device_id_logic, mac, alias, status, user_id) 

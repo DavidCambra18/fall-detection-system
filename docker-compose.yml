@@ -15,8 +15,8 @@ services:
     volumes:
       
       # En Fedora añadir ":Z" al final de cada ruta, para que (SELinux) no bloquee el acceso
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./database/pg_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:Z
+      - ./database/pg_data:/var/lib/postgresql/data:Z
       
 
   # Base de Datos en Tiempo Real (NoSQL)
