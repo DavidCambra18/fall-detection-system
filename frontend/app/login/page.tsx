@@ -48,6 +48,12 @@ export default function LoginPage() {
       return;
     }
 
+    // Guardar token y usuario en localStorage
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+    }
+    localStorage.setItem('user', JSON.stringify(data.user));
+
     // Redirección según rol
     const roleId = Number(data.user.roleId ?? data.user.role_id);
     let targetPath = '/dashboard';
@@ -55,11 +61,9 @@ export default function LoginPage() {
     else if (roleId === 2) targetPath = '/dashboard/cuidador';
     else if (roleId === 3) targetPath = `/dashboard/usuario/${data.user.device_id ?? '1'}`;
 
-    // Redirección con pequeño delay para mostrar loading
-    setTimeout(() => {
-      setIsLoading(false);
-      window.location.href = targetPath;
-    }, 100);
+    // Redirección usando Next.js router
+    setIsLoading(false);
+    router.push(targetPath);
 
   } catch (error: any) {
     console.error('Fallo de red o parsing:', error);
