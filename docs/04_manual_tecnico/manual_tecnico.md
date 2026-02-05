@@ -7,8 +7,9 @@ Este documento describe el funcionamiento técnico del sistema y su arquitectura
 ## 4.2 Hardware
 
 - ESP32
-- Acelerómetro externo
 - Botón de emergencia
+- Acelerómetro externo
+
 
 El dispositivo envía lecturas continuas al backend mediante HTTP.
 

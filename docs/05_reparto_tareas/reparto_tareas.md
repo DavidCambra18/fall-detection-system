@@ -4,9 +4,6 @@ El proyecto se ha desarrollado de forma colaborativa desde el 29 de enero.
 
 ## Miembros del equipo
 
-- Gabriel Acevedo  
-  Desarrollo de hardware y apoyo en integración
-
 - Lucas Pérez  
   Programación del ESP32 en C++
 
@@ -22,5 +19,5 @@ El proyecto se ha desarrollado de forma colaborativa desde el 29 de enero.
 - Daniel Gayoso  
   Diseño y gestión de la base de datos
 
-- [Tu nombre]  
+- Gabriel Acevedo  
   Elaboración de la documentación técnica y funcional
