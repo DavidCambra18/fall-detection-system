@@ -72,23 +72,6 @@ El sistema utiliza una arquitectura híbrida con **PostgreSQL 15** (persistencia
 ### Pre-requisitos
 * Docker y Docker Compose instalados.
 
-### Despliegue
-**Configurar variables de entorno:**
+### Pasos para el despliegue
+1. **Configurar variables de entorno:**
    Copia el archivo de plantilla y edita las credenciales si es necesario
-
-### Acceder a las bases de datos
-**Comando para acceder a la base de datos SQL en docker**
-docker exec -it {nombre_contenedor} psql -U {nombre_usuario} -d {nombre_bd}
-
-**Comando para acceder a la base de datos Redis en docker**
-sudo docker exec -it {nombre_bd} redis-cli
-
-### Interactuar con la base de datos
-**Guía de comandos básicos para interactuar con la base de datos**
-| Acción               | PostgreSQL (Relacional)    | Redis (Clave-Valor)  |
-|----------------------|----------------------------|----------------------|
-| Listar contenido     | \dt (Tablas)               | KEYS *               |
-| Ver datos            | SELECT * FROM users;       | GET nombre_llave     |
-| Insertar             | INSERT INTO users ...      | SET llave valor      |
-| Borrar todo          | DROP TABLE users;          | FLUSHALL             |
-| Salir                | \q                         | exit                 |

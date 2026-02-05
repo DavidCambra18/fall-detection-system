@@ -5,27 +5,21 @@ services:
   postgres_db:
     image: postgres:15-alpine
     container_name: fall_detection_pg
-    restart: "no"
+    restart: 'no'
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password123}
-      POSTGRES_DB: ${POSTGRES_DB:-fall_detection_pg}
+      POSTGRES_DB: ${POSTGRES_DB:-mi_base_de_datos}
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      
-      # En Fedora añadir ":Z" al final de cada ruta, para que (SELinux) no bloquee el acceso
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:Z
-      - ./database/pg_data:/var/lib/postgresql/data:Z
-      
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/pg_data:/var/lib/postgresql/data
 
   # Base de Datos en Tiempo Real (NoSQL)
   redis_cache:
     image: redis:7-alpine
     container_name: fall_detection_redis
-    restart: "no"
+    restart: 'no'
     ports:
       - "${REDIS_PORT}:6379"
-
-volumes:
-  pg_data:
