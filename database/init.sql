@@ -67,17 +67,31 @@ INSERT INTO roles (name, description) VALUES
 -- 3.2 USUARIOS
 INSERT INTO users (email, phone_num, password_hash, name, surnames, date_born, role_id, carer_id) 
 VALUES 
-('admin@sistema.com', '600111222', '$2b$10$X7...', 'Administrador', 'Principal', '1980-01-01', 1, NULL),
-('cuidador@familia.com', '600333444', '$2b$10$Y8...', 'Laura', 'García Pérez', '1985-05-20', 2, NULL),
-('paciente@familia.com', '600555666', '$2b$10$Z9...', 'Antonio', 'García López', '1945-03-15', 3, 2);
+('admin@gmail.com', '+34600111223', '$2b$10$cvxrU5dZo2sN2cxdXO09ieB3AjWuLBv.HV1SxRvvQrGFOIh/4d3nm', 'Administrador', NULL, '1980-01-01', 1, NULL),
+('manolo@gmail.com', '+34600111222', '$2b$10$USC3AQnQSwky6snTRORElu76RSJXqqisaCs7j.924wtfC/INN1fRS', 'Manolo', 'García Pérez', '1985-05-20', 2, NULL),
+('marta@gmail.com', '+34600111124', '$2b$10$7E8i6czm3zT2qXURJxgyMOFvfDCEOHoDk9hfhtx17QULNfDESyLEO', 'Marta', 'Rövanpera', '1945-03-15', 3, 2),
+('roberto@gmail.com', '+34600111226', '$2b$10$B0Uga5i7uR6H.ubcsJYsg.7jEi9AAsmDxlrh7QAjOCJjL5AS7.o2u', 'Roberto', 'Gómez Ruiz', '1945-03-15', 3, 2),
+('ana@gmail.com', '+34600111228', '$2b$10$yzE8dfVOmFzNG47U39pvSunSskcTF90TT9g2pcWLLEh1GPZX0QzYK', 'Ana', 'Sánchez Moreno', '1950-12-05', 3, 3);
 
 -- 3.3 DISPOSITIVOS
 INSERT INTO devices (device_id_logic, mac, alias, status, user_id) 
-VALUES ('ESP32-001', 'AA:BB:CC:11:22:33', 'Dispositivo de Antonio', 'active', 3);
+('ESP32-001', 'AA:BB:CC:11:22:33', 'Dispositivo de Marta', 'active', 3),
+('ESP32-002', 'AA:BB:CC:11:22:34', 'Dispositivo de Roberto', 'active', 4),
+('ESP32-003', 'AA:BB:CC:11:22:35', 'Dispositivo de Ana', 'low battery', 5);
 
 -- 3.4 REPORTES DE EJEMPLO
 INSERT INTO reports (user_id, device_id, acc_x, acc_y, acc_z, fall_detected, date_rep) 
-VALUES (3, 1, 0.02, 0.05, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '1 hour');
+VALUES 
+-- Marta
+(3, 1, 0.02, 0.05, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '2 hours'),
+(3, 1, 0.01, 0.02, 9.78, FALSE, CURRENT_TIMESTAMP - INTERVAL '90 minutes'),
+(3, 1, -1.20, 0.40, 9.81, TRUE, CURRENT_TIMESTAMP - INTERVAL '30 minutes'),
 
-INSERT INTO reports (user_id, device_id, acc_x, acc_y, acc_z, fall_detected, date_rep) 
-VALUES (3, 1, -1.23, 0.45, 9.81, TRUE, CURRENT_TIMESTAMP);
+-- Roberto
+(4, 2, 0.00, 0.03, 9.79, FALSE, CURRENT_TIMESTAMP - INTERVAL '1 hour'),
+(4, 2, 0.05, 0.01, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '45 minutes'),
+(4, 2, -0.80, 0.60, 9.82, TRUE, CURRENT_TIMESTAMP - INTERVAL '15 minutes'),
+
+-- Ana
+(5, 3, 0.03, 0.02, 9.78, FALSE, CURRENT_TIMESTAMP - INTERVAL '1 hour'),
+(5, 3, 0.02, 0.01, 9.77, FALSE, CURRENT_TIMESTAMP - INTERVAL '50 minutes');
