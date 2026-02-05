@@ -10,70 +10,64 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const router = useRouter();
 
-  // Validaciones visuales del formulario
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isPasswordValid = password.length > 0;
   const isFormValid = isEmailValid && isPasswordValid;
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-    setIsLoading(true);
+  e.preventDefault();
+  setErrorMsg(null);
+  setIsLoading(true);
 
+  try {
+    // URL del backend según entorno
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        password: password.trim()
+      }),
+    });
+
+    // Intentamos parsear JSON
+    let data: any = null;
     try {
-      // Usamos trim() para evitar errores por espacios accidentales
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: email.trim().toLowerCase(), 
-          password: password.trim() 
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrorMsg(data.message || 'Error en la autenticación');
-        setIsLoading(false);
-        return;
-      }
-
-      // 1. GUARDADO DOBLE DE SESIÓN
-      // Guardamos en LocalStorage para la lógica del Frontend
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
-      // Guardamos en Cookies para que el Middleware/Layout pueda leerlo inmediatamente
-      document.cookie = `token=${data.token}; path=/; max-age=28800; SameSite=Lax`;
-
-      console.log('✅ Sesión guardada. Datos de usuario:', data.user);
-
-      // 2. REDIRECCIÓN CONTROLADA
-      // Añadimos un pequeño delay (100ms) para asegurar que el navegador termine de escribir los datos
-      setTimeout(() => {
-        setIsLoading(false);
-        
-        // Normalizamos el ID del rol (soportamos roleId y role_id)
-        const roleId = Number(data.user.roleId || data.user.role_id);
-        
-        let targetPath = '/dashboard';
-        if (roleId === 1) targetPath = '/dashboard/admin';
-        else if (roleId === 2) targetPath = '/dashboard/cuidador';
-        else if (roleId === 3) targetPath = `/dashboard/usuario/${data.user.device_id || '1'}`;
-
-        console.log('✈️ Redirigiendo a:', targetPath);
-        
-        // Usamos window.location.href para forzar una carga limpia y evitar bloqueos del Router
-        window.location.href = targetPath;
-      }, 100);
-
-    } catch (error) {
-      console.error('Fallo de red:', error);
-      setErrorMsg('No se pudo conectar con el servidor.');
-      setIsLoading(false);
+      data = await response.json();
+    } catch {
+      throw new Error('El servidor no devolvió JSON válido');
     }
-  };
+
+    // Si el backend respondió con error
+    if (!response.ok) {
+      setErrorMsg(data?.message || 'Error en la autenticación');
+      setIsLoading(false);
+      return;
+    }
+
+    // Redirección según rol
+    const roleId = Number(data.user.roleId ?? data.user.role_id);
+    let targetPath = '/dashboard';
+    if (roleId === 1) targetPath = '/dashboard/admin';
+    else if (roleId === 2) targetPath = '/dashboard/cuidador';
+    else if (roleId === 3) targetPath = `/dashboard/usuario/${data.user.device_id ?? '1'}`;
+
+    // Redirección con pequeño delay para mostrar loading
+    setTimeout(() => {
+      setIsLoading(false);
+      window.location.href = targetPath;
+    }, 100);
+
+  } catch (error: any) {
+    console.error('Fallo de red o parsing:', error);
+    setErrorMsg(error.message || 'No se pudo conectar con el servidor.');
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 font-sans">
@@ -120,11 +114,10 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={!isFormValid || isLoading}
-            className={`w-full py-5 rounded-2xl text-white font-black text-sm uppercase transition-all ${
-              !isFormValid || isLoading 
-                ? 'bg-slate-300 cursor-not-allowed' 
+            className={`w-full py-5 rounded-2xl text-white font-black text-sm uppercase transition-all ${!isFormValid || isLoading
+                ? 'bg-slate-300 cursor-not-allowed'
                 : 'bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-lg shadow-blue-100'
-            }`}
+              }`}
           >
             {isLoading ? 'Verificando...' : 'Acceder al Dashboard'}
           </button>
