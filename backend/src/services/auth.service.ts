@@ -94,3 +94,5 @@ export const loginUser = async (input: LoginInput) => {
 
   return { token, user: { id: user.id, email: user.email, roleId: user.role_id } };
 };
+
+

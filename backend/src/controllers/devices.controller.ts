@@ -5,8 +5,10 @@ import {
   getDeviceById, 
   updateDevice, 
   updateDeviceStatus, 
-  deleteDevice 
+  deleteDevice ,
+  registerTelemetry,
 } from '../services/devices.service';
+
 
 export const createDeviceController = async (req: Request, res: Response) => {
   try {
@@ -60,5 +62,38 @@ export const deleteDeviceController = async (req: Request, res: Response) => {
     res.json({ message: 'Dispositivo eliminado' });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const receiveTelemetry = async (req: Request, res: Response) => {
+  try {
+    // Extraemos los campos exactos que envía tu ESP32
+    const { deviceId, accX, accY, accZ, fallDetected } = req.body;
+
+    // Validación básica inicial
+    if (!deviceId) {
+      return res.status(400).json({ error: 'deviceId es requerido' });
+    }
+
+    // Llamamos a una función del servicio para guardar (la crearemos a continuación)
+    const log = await registerTelemetry({
+      deviceId,
+      accX,
+      accY,
+      accZ,
+      fallDetected
+    });
+
+    console.log(`[IoT] Datos de ${deviceId} guardados. Caída: ${fallDetected}`);
+
+    // Respondemos con 201 Created
+    res.status(201).json({
+      status: 'success',
+      message: 'Lectura registrada',
+      data: log
+    });
+  } catch (error: any) {
+    console.error('Error en el controlador de telemetría:', error.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

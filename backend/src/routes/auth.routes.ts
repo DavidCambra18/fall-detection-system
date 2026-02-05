@@ -1,6 +1,7 @@
 // src/routes/auth.routes.ts
 import { Router } from 'express';
 import { registerController, loginController } from '../controllers/auth.controller';
+import { receiveTelemetry } from '../controllers/devices.controller';
 
 const router = Router();
 
@@ -9,5 +10,8 @@ router.post('/register', registerController);
 
 // POST /api/auth/login
 router.post('/login', loginController);
+
+// Esta es la URL que pondrás en el ESP32 POST /api/auth/telemetry
+router.post('/telemetry', receiveTelemetry);
 
 export default router;
