@@ -1,4 +1,5 @@
 # Documentación del proyecto  
+
 ## fall-detection-system
 
 Este directorio contiene la documentación técnica y funcional del proyecto **fall-detection-system**, desarrollado en el Ciclo Formativo de Grado Superior en Desarrollo de Aplicaciones Multiplataforma (DAM), dentro de la asignatura **Desarrollo de Interfaces**.
