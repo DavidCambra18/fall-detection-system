@@ -35,7 +35,7 @@ const unsigned long WIFI_RETRY_INTERVAL = 5000; // Reintento cada 5 seg
 
 String getDeviceId() {
     String id = WiFi.macAddress();
-    id.replace(":", "");
+    // id.replace(":", "");
     return id;
 }
 
