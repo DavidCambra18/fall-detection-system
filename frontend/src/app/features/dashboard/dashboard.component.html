@@ -1,0 +1,78 @@
+<div class="p-8 bg-slate-50 min-h-screen font-sans">
+  
+  <div [ngSwitch]="authService.userRole()">
+
+    <div *ngSwitchCase="1" class="animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <header class="mb-8">
+        <h1 class="text-3xl font-black text-slate-800 tracking-tighter">Panel de Administración</h1>
+        <p class="text-slate-500 font-medium">Resumen general de la infraestructura FallDetector</p>
+      </header>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-blue-600 mb-4 text-xl">👥</div>
+          <p class="text-3xl font-black text-slate-800">{{ totalUsers() }}</p>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Usuarios Totales</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-purple-600 mb-4 text-xl">📱</div>
+          <p class="text-3xl font-black text-slate-800">{{ totalDevices() }}</p>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dispositivos Reg.</p>
+        </div>
+
+        <div routerLink="/history" class="bg-white p-6 rounded-2xl border-2 border-red-500 shadow-md cursor-pointer hover:bg-red-50 transition-colors group">
+          <div class="text-red-600 mb-4 text-xl group-hover:animate-bounce">🛡️</div>
+          <p class="text-3xl font-black text-slate-800">{{ todayFalls() }}</p>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-black">Caídas Hoy</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="text-amber-500 mb-4 text-xl">🔋</div>
+          <p class="text-3xl font-black text-slate-800">1</p>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Offline / Low Bat</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div routerLink="/users" class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden">
+          <div class="bg-blue-600 w-12 h-12 rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg shadow-blue-200">👥</div>
+          <h3 class="font-black text-slate-800 text-lg">Gestionar Usuarios</h3>
+          <p class="text-sm text-slate-400 mt-1">Altas, bajas y permisos de rol.</p>
+          <span class="absolute top-8 right-8 text-slate-200 group-hover:text-blue-600 transition-colors text-2xl">↗</span>
+        </div>
+
+        <div routerLink="/devices" class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden">
+          <div class="bg-purple-600 w-12 h-12 rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg shadow-purple-200">💾</div>
+          <h3 class="font-black text-slate-800 text-lg">Inventario Hardware</h3>
+          <p class="text-sm text-slate-400 mt-1">Configuración de nodos MPU6050.</p>
+          <span class="absolute top-8 right-8 text-slate-200 group-hover:text-purple-600 transition-colors text-2xl">↗</span>
+        </div>
+
+        <div routerLink="/history" class="bg-white p-8 rounded-[2rem] border-2 border-emerald-50 shadow-sm hover:shadow-xl hover:border-emerald-200 transition-all cursor-pointer group relative overflow-hidden">
+          <div class="bg-emerald-500 w-12 h-12 rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg shadow-emerald-200">📈</div>
+          <h3 class="font-black text-slate-800 text-lg">Historial de Alertas</h3>
+          <p class="text-sm text-slate-400 mt-1">Logs de telemetría y eventos reales.</p>
+          <span class="absolute top-8 right-8 text-slate-200 group-hover:text-emerald-600 transition-colors text-2xl">↗</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 rounded-3xl p-6 text-white flex items-center justify-between shadow-2xl">
+        <div class="flex items-center gap-6">
+          <div class="h-10 w-10 bg-slate-800 rounded-xl flex items-center justify-center font-bold">⚙️</div>
+          <div>
+            <h4 class="text-sm font-bold tracking-tight text-slate-200">Servidor de Recepción IoT</h4>
+            <div class="flex gap-4 mt-1">
+              <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Status: <span class="text-green-400">Stable</span></span>
+              <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">API: <span class="text-blue-400">Connected</span></span>
+            </div>
+          </div>
+        </div>
+        <button class="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-900/20">
+          Logs del Sistema
+        </button>
+      </div>
+    </div>
+
+    </div>
+</div>

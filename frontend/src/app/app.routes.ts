@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './features/login/login.component'; // Quitamos .component para seguir tu estándar
-import { DashboardComponent } from './features/dashboard/dashboard';
-import { UsersComponent } from './features/users/users';
+import { LoginComponent } from './features/login/login.component';
+import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { UsersComponent } from './features/users/users.component';
+import { AlertsComponent } from './features/alerts/alerts.component'; // Importamos el nuevo componente
 import { authGuard } from './core/guards/auth-guard';
 
 export const routes: Routes = [
@@ -18,12 +19,12 @@ export const routes: Routes = [
   },
   { 
     path: 'devices', 
-    component: DashboardComponent, // Volvemos a Dashboard temporalmente hasta crear el componente
+    component: DashboardComponent, // Temporal hasta que crees DevicesComponent
     canActivate: [authGuard] 
   },
   { 
     path: 'history', 
-    component: DashboardComponent, 
+    component: AlertsComponent, // <--- ¡CAMBIADO! Ahora apunta a tus alertas reales
     canActivate: [authGuard] 
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },

@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable, tap } from 'rxjs';
-import { AuthResponse, LoginInput } from '../models/auth.models';
+import { AuthResponse, LoginInput, UserSession } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root'
@@ -11,11 +11,17 @@ export class AuthService {
   private http = inject(HttpClient);
   private readonly API_URL = `${environment.apiUrl}/auth`;
 
+  // Signal que contiene los datos del usuario o null si no está logueado
+  currentUser = signal<UserSession | null>(this.getUserFromStorage());
+
+  // Signals derivados para usar en el HTML de forma reactiva
+  isLoggedIn = computed(() => !!this.currentUser());
+  userRole = computed(() => this.currentUser()?.roleId ?? null);
+
   login(credentials: LoginInput): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials).pipe(
       tap(res => {
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('user', JSON.stringify(res.user));
+        this.saveSession(res.token, res.user);
       })
     );
   }
@@ -23,26 +29,31 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    // localStorage.clear() es un poco agresivo si usas otras keys, 
-    // mejor borrar solo lo relacionado con la sesión.
+    this.currentUser.set(null);
   }
 
-  isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+  // Métodos de utilidad para validaciones rápidas
+  isAdmin(): boolean { return this.userRole() === 1; }
+  isCuidador(): boolean { return this.userRole() === 2; }
+  isPaciente(): boolean { return this.userRole() === 3; }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 
-  // Corregido para asegurar que devuelve un número y maneja role_id
-  getRole(): number | null {
+  private saveSession(token: string, user: UserSession): void {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    this.currentUser.set(user); // Actualizamos el signal
+  }
+
+  private getUserFromStorage(): UserSession | null {
     const userJson = localStorage.getItem('user');
     if (!userJson) return null;
-    
-    const user = JSON.parse(userJson);
-    // Algunos backends devuelven roleId y otros role_id, cubrimos ambos:
-    return Number(user.roleId || user.role_id || null);
+    try {
+      return JSON.parse(userJson);
+    } catch {
+      return null;
+    }
   }
-
-  // Helpers de rol para que tu Sidebar sea fácil de leer
-  isAdmin(): boolean { return this.getRole() === 1; }
-  isCuidador(): boolean { return this.getRole() === 2; }
-  isPaciente(): boolean { return this.getRole() === 3; }
 }
