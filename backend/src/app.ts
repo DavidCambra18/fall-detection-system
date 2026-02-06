@@ -12,7 +12,7 @@ const app = express();
 
 const FRONTEND_ORIGIN = process.env.NODE_ENV === 'production'
   ? 'https://falldetectionsystem.com'
-  : 'http://localhost:4000';
+  : 'http://localhost:4200';
 
 app.use(cors({
   origin: FRONTEND_ORIGIN,
