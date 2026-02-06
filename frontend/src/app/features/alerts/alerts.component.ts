@@ -4,11 +4,12 @@ import { ActivatedRoute } from '@angular/router';
 import { EventService } from '../../core/services/event.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Report } from '../../core/models/report.models';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-alerts',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './alerts.component.html'
 })
 export class AlertsComponent implements OnInit {
@@ -16,11 +17,41 @@ export class AlertsComponent implements OnInit {
   private route = inject(ActivatedRoute); 
   public authService = inject(AuthService);
 
-  alerts = signal<Report[]>([]);
+  allAlerts: Report[] = [];
+  filteredAlerts = signal<Report[]>([]);
+  
+  searchTerm: string = '';
   viewTitle = signal<string>('Historial de Eventos');
+  currentPage: number = 1;
+  pageSize: number = 10;
+
+  // Mapeo basado en tu init.sql
+  private userMap: { [key: number]: { name: string, device: string } } = {
+    3: { name: 'Marta Rövanpera', device: 'ESP32-001 (Marta)' },
+    4: { name: 'Roberto Gómez Ruiz', device: 'ESP32-002 (Roberto)' },
+    5: { name: 'Ana Sánchez Moreno', device: 'ESP32-003 (Ana)' }
+  };
 
   ngOnInit(): void {
     this.loadAlerts();
+  }
+
+  getUserInfo(user_id: number) {
+    return this.userMap[user_id] || { name: `Usuario ${user_id}`, device: 'Desconocido' };
+  }
+
+  get paginatedAlerts() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredAlerts().slice(start, start + this.pageSize);
+  }
+
+  get totalPages() {
+    return Math.ceil(this.filteredAlerts().length / this.pageSize) || 1;
+  }
+
+  get skeletonRows() {
+    const remaining = this.pageSize - this.paginatedAlerts.length;
+    return remaining > 0 ? Array(remaining).fill(0) : [];
   }
 
   loadAlerts() {
@@ -31,38 +62,41 @@ export class AlertsComponent implements OnInit {
       const isTodayFilter = params['filter'] === 'today';
 
       this.eventService.getEvents().subscribe(data => {
-        let filteredData = [...data];
+        let result = [...data];
 
-        // 1. FILTRO DE SEGURIDAD POR ROL
-        if (role === 2) {
-          filteredData = filteredData.filter(a => a.carer_id === userId);
-        } else if (role === 3) {
-          filteredData = filteredData.filter(a => a.user_id === userId);
-        }
+        // Seguridad por rol (Admin ve todo, cuidador ve a sus pacientes 3, 4, 5)
+        if (role === 2) result = result.filter(a => a.carer_id === userId);
+        if (role === 3) result = result.filter(a => a.user_id === userId);
 
-        // 2. FILTRO INTELIGENTE PARA EL BOTÓN "CAÍDAS HOY"
         if (isTodayFilter) {
-          // Obtenemos la fecha local actual
-          const hoy = new Date();
-          const fechaHoy = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
-          
-          filteredData = filteredData.filter(a => {
-            // Convertimos a String para comparar la fecha con seguridad
-            const fechaRegistro = a.date_rep ? String(a.date_rep) : '';
-            
-            // Eliminamos la comparación con 'true' (string) para evitar el error ts(2367)
-            // Simplemente usamos el valor booleano directamente
-            return a.fall_detected === true && fechaRegistro.includes(fechaHoy);
-          });
-          
+          const hoy = new Date().toISOString().split('T')[0];
+          result = result.filter(a => a.fall_detected && String(a.date_rep).includes(hoy));
           this.viewTitle.set('Alertas Críticas de Hoy');
         } else {
-          this.viewTitle.set(role === 1 ? 'Historial Global' : 'Mis Registros');
+          this.viewTitle.set(role === 1 ? 'Historial Global' : 'Mis Alertas');
         }
 
-        this.alerts.set(filteredData);
+        this.allAlerts = result;
+        this.applySearchFilter();
       });
     });
+  }
+
+  applySearchFilter() {
+    const search = this.searchTerm.toLowerCase().trim();
+    let filtered = this.allAlerts;
+
+    if (search) {
+      filtered = this.allAlerts.filter(a => {
+        const info = this.getUserInfo(a.user_id);
+        return info.name.toLowerCase().includes(search) || 
+               info.device.toLowerCase().includes(search) ||
+               (a.fall_detected ? 'caída' : 'normal').includes(search);
+      });
+    }
+
+    this.filteredAlerts.set(filtered);
+    this.currentPage = 1;
   }
 
   onConfirm(id: number, status: boolean) {
