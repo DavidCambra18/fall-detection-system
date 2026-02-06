@@ -1,0 +1,146 @@
+<div class="p-8 bg-slate-50 min-h-screen font-sans">
+  <header class="mb-8 flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-black text-slate-800 tracking-tighter">Gestión de Usuarios</h1>
+      <p class="text-slate-500 font-medium">Administra accesos y roles de la plataforma</p>
+    </div>
+  </header>
+
+  <div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm mb-6 flex flex-wrap gap-4 items-center justify-between">
+    <div class="relative flex-1 max-w-md">
+      <span class="absolute left-4 top-3.5 text-slate-400 text-sm">🔍</span>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="applyFilters()"
+        placeholder="Buscar por nombre, email o teléfono..." 
+        class="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm font-medium transition-all outline-none"
+      />
+    </div>
+    
+    <button (click)="toggleSort()" class="px-6 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2">
+      Ordenar por Nombre {{ sortAsc ? '↑' : '↓' }}
+    </button>
+  </div>
+
+  <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-slate-50/50 border-b border-slate-50 font-black text-[10px] text-slate-400 uppercase tracking-widest">
+          <th class="px-6 py-4">Usuario</th>
+          <th class="px-6 py-4">Contacto</th>
+          <th class="px-6 py-4">Rol / Dependencia</th>
+          <th class="px-6 py-4 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+        <tr *ngIf="paginatedUsers.length === 0">
+          <td colspan="4" class="px-6 py-12 text-center text-slate-400 italic font-medium">
+            No se encontraron usuarios en la base de datos.
+          </td>
+        </tr>
+        
+        <tr *ngFor="let user of paginatedUsers" class="hover:bg-slate-50/50 transition-colors group">
+          <td class="px-6 py-4">
+            <div class="flex flex-col">
+              <span class="font-bold text-slate-700">{{ user.name }} {{ user.surnames }}</span>
+              <span class="text-[10px] text-slate-400 font-medium tracking-tight">
+                Nacimiento: {{ user.date_born | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex flex-col">
+              <span class="text-slate-600 text-sm font-bold">{{ user.email }}</span>
+              <span class="text-[10px] text-blue-500 font-black tracking-widest">{{ user.phone_num }}</span>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex flex-col gap-1">
+              <span class="w-fit px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter"
+                [ngClass]="{
+                  'bg-blue-100 text-blue-600': user.role_id === 1,
+                  'bg-purple-100 text-purple-600': user.role_id === 2,
+                  'bg-emerald-100 text-emerald-600': user.role_id === 3
+                }">
+                {{ getRoleName(user.role_id) }}
+              </span>
+              <span *ngIf="user.role_id === 3 && user.carer_id" class="text-[9px] text-slate-400 font-bold ml-1">
+                ID CUIDADOR: #{{ user.carer_id }}
+              </span>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-right space-x-1">
+            <button (click)="openEditModal(user)" class="p-2 hover:bg-blue-50 text-blue-600 rounded-xl transition-all">✏️</button>
+            <button (click)="deleteUser(user.id!)" class="p-2 hover:bg-red-50 text-red-600 rounded-xl transition-all">🗑️</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="p-6 bg-slate-50/30 border-t border-slate-50 flex justify-between items-center">
+      <p class="text-xs text-slate-400 font-black uppercase tracking-widest">
+        Página {{ currentPage }} de {{ totalPages }}
+      </p>
+      <div class="flex gap-2">
+        <button [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1" class="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black uppercase tracking-tighter disabled:opacity-30 hover:bg-slate-100 transition-all">Anterior</button>
+        <button [disabled]="currentPage >= totalPages" (click)="currentPage = currentPage + 1" class="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-black uppercase tracking-tighter disabled:opacity-30 hover:bg-slate-100 transition-all">Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+    <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100">
+      <div class="p-8">
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-2xl font-black text-slate-800 tracking-tighter">Editar Perfil</h2>
+          <button (click)="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl">✕</button>
+        </div>
+
+        <form (ngSubmit)="saveUser()" class="space-y-6">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Nombre</label>
+              <input type="text" [(ngModel)]="selectedUser.name" name="name" required class="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Apellidos</label>
+              <input type="text" [(ngModel)]="selectedUser.surnames" name="surnames" class="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Email</label>
+              <input type="email" [(ngModel)]="selectedUser.email" name="email" required class="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Teléfono</label>
+              <input type="text" [(ngModel)]="selectedUser.phone_num" name="phone_num" required class="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Rol</label>
+              <select [(ngModel)]="selectedUser.role_id" name="role_id" class="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
+                <option [value]="1">Administrador</option>
+                <option [value]="2">Cuidador</option>
+                <option [value]="3">Usuario</option>
+              </select>
+            </div>
+            <div class="space-y-1" *ngIf="selectedUser.role_id === 3">
+              <label class="text-[10px] font-black text-slate-400 uppercase ml-1">ID Cuidador Asignado</label>
+              <input type="number" [(ngModel)]="selectedUser.carer_id" name="carer_id" class="w-full px-5 py-3 bg-slate-50 border-none rounded-2xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button type="button" (click)="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase hover:bg-slate-200 transition-all">Cancelar</button>
+            <button type="submit" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

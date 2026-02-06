@@ -1,0 +1,31 @@
+<div class="p-8 bg-slate-50 min-h-screen">
+  <h1 class="text-3xl font-black text-slate-800 mb-6 italic">Inventario de Hardware</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    @for (device of devices(); track device.id) {
+      <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+        <div class="absolute top-6 right-6 flex items-center gap-2">
+          <span class="text-[10px] font-bold" [ngClass]="device.battery < 30 ? 'text-red-500' : 'text-slate-400'">
+            {{ device.battery }}%
+          </span>
+          <div class="w-8 h-4 border-2 border-slate-200 rounded-sm p-0.5">
+            <div class="h-full bg-green-500 rounded-xs" [style.width.%]="device.battery" 
+                 [ngClass]="{'bg-red-500': device.battery < 30}"></div>
+          </div>
+        </div>
+
+        <div class="bg-purple-100 text-purple-600 w-12 h-12 rounded-2xl flex items-center justify-center mb-4 text-xl">💾</div>
+        <h3 class="font-black text-slate-800">Sensor #{{ device.id }}</h3>
+        <p class="text-xs text-slate-400 font-medium">Asignado a: <span class="text-slate-600">{{ device.user_name || 'Sin asignar' }}</span></p>
+        
+        <div class="mt-6 pt-6 border-t border-slate-50 flex justify-between items-center">
+          <span class="flex items-center gap-2">
+            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+            <span class="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Activo</span>
+          </span>
+          <button class="text-blue-600 text-[10px] font-black uppercase tracking-widest hover:underline">Configurar</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
