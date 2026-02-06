@@ -1,13 +1,13 @@
-// Esto sera mientras usamos ng serve, para desarrollo local
+// Esto será mientras usamos ng serve, para desarrollo local
 export const environment = {
   production: false,
-  apiUrl: '/api' 
+  apiUrl: 'http://localhost:3000/api' // Apuntamos directo al Backend con CORS
 };
 
-// Esto sera cuando hagamos el build final
+// Esto será cuando hagamos el build final
 /*
 export const environment = {
   production: true,
-  apiUrl: '/api' 
+  apiUrl: 'http://tu-dominio-produccion.com/api' 
 };
 */
