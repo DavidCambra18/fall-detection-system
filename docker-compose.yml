@@ -13,11 +13,10 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      
+
       # En Fedora añadir ":Z" al final de cada ruta, para que (SELinux) no bloquee el acceso
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:Z
-      - ./database/pg_data:/var/lib/postgresql/data:Z
-      
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/pg_data:/var/lib/postgresql/data
 
   # Base de Datos en Tiempo Real (NoSQL)
   redis_cache:
