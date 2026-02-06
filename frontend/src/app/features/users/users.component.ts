@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
@@ -13,28 +13,33 @@ import { User } from '../../core/models/user.models';
 export class UsersComponent implements OnInit {
   private userService = inject(UserService);
 
-  // Datos originales y filtrados
   users: User[] = [];
   filteredUsers: User[] = [];
   
-  // Estado de la tabla
   searchTerm: string = '';
   sortAsc: boolean = true;
   currentPage: number = 1;
   pageSize: number = 10;
 
-  // Estado del modal
+  // Estado del Modal/Formulario
   isModalOpen = false;
+  isEditing = false; 
   selectedUser: Partial<User> = {};
 
   ngOnInit() {
     this.loadUsers();
   }
 
+  // Getter para generar las filas vacías que faltan hasta llegar a 10
+  get skeletonRows() {
+    const currentCount = this.paginatedUsers.length;
+    const remaining = this.pageSize - currentCount;
+    return remaining > 0 ? Array(remaining).fill(0) : [];
+  }
+
   loadUsers() {
     this.userService.getUsers().subscribe({
       next: (data: any) => {
-        // Validación para manejar arrays directos o envueltos
         if (Array.isArray(data)) {
           this.users = data;
         } else if (data && data.users && Array.isArray(data.users)) {
@@ -51,7 +56,6 @@ export class UsersComponent implements OnInit {
   applyFilters() {
     const search = this.searchTerm.toLowerCase().trim();
     
-    // Filtrado multicanal: nombre, apellidos, email y ahora teléfono
     let result = this.users.filter(u => 
       u.name?.toLowerCase().includes(search) ||
       u.surnames?.toLowerCase().includes(search) ||
@@ -59,7 +63,6 @@ export class UsersComponent implements OnInit {
       u.phone_num?.includes(search)
     );
 
-    // Ordenación alfabética
     result.sort((a, b) => {
       const nameA = (a.name || '').toLowerCase();
       const nameB = (b.name || '').toLowerCase();
@@ -70,19 +73,22 @@ export class UsersComponent implements OnInit {
     this.currentPage = 1; 
   }
 
-  // Getters para paginación
-  get paginatedUsers() {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.filteredUsers.slice(start, start + this.pageSize);
+  openCreateModal() {
+    this.isEditing = false;
+    // Forzamos el tipo a User para evitar error con 'password'
+    this.selectedUser = {
+      role_id: 3,
+      name: '',
+      surnames: '',
+      email: '',
+      password: '',
+      phone_num: ''
+    } as User; 
+    this.isModalOpen = true;
   }
 
-  get totalPages() {
-    return Math.ceil(this.filteredUsers.length / this.pageSize) || 1;
-  }
-
-  // Lógica de Modal con campos del init.sql
   openEditModal(user: User) {
-    // Creamos copia para no modificar la referencia de la tabla antes de guardar
+    this.isEditing = true;
     this.selectedUser = { ...user };
     this.isModalOpen = true;
   }
@@ -93,13 +99,21 @@ export class UsersComponent implements OnInit {
   }
 
   saveUser() {
-    if (this.selectedUser.id) {
+    if (this.isEditing && this.selectedUser.id) {
       this.userService.updateUser(this.selectedUser.id, this.selectedUser).subscribe({
         next: () => {
           this.loadUsers();
           this.closeModal();
         },
         error: (err) => console.error('Error al actualizar:', err)
+      });
+    } else {
+      this.userService.createUser(this.selectedUser as User).subscribe({
+        next: () => {
+          this.loadUsers();
+          this.closeModal();
+        },
+        error: (err) => console.error('Error al crear usuario:', err)
       });
     }
   }
@@ -113,23 +127,22 @@ export class UsersComponent implements OnInit {
     }
   }
 
+  get paginatedUsers() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredUsers.slice(start, start + this.pageSize);
+  }
+
+  get totalPages() {
+    return Math.ceil(this.filteredUsers.length / this.pageSize) || 1;
+  }
+
   toggleSort() {
     this.sortAsc = !this.sortAsc;
     this.applyFilters();
   }
 
-  /**
-   * Mapeo de roles basado exactamente en tu init.sql:
-   * 1: Admin
-   * 2: Cuidador
-   * 3: Usuario (Paciente)
-   */
   getRoleName(role_id?: number): string {
-    const roles: { [key: number]: string } = { 
-      1: 'Admin', 
-      2: 'Cuidador', 
-      3: 'Usuario' 
-    };
+    const roles: { [key: number]: string } = { 1: 'Admin', 2: 'Cuidador', 3: 'Usuario' };
     return roles[role_id || 0] || 'Sin Rol';
   }
 }
