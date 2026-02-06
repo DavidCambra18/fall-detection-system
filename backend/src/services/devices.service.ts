@@ -88,19 +88,30 @@ export const deleteDevice = async (id: number) => {
 
 
 
+// --- FUNCIÓN CORREGIDA PARA TU NUEVA TABLA REPORTS ---
 export const registerTelemetry = async (data: TelemetryInput) => {
   const { deviceId, accX, accY, accZ, fallDetected } = data;
 
-  // verificacion de existencia del dispositivo
-  const device = await pool.query('SELECT id FROM devices WHERE device_id_logic=$1', [deviceId]);
-  if (device.rows.length === 0) throw new Error('Dispositivo no reconocido');
+  // 1. Limpieza: Quitamos ':' por si el ESP32 los manda, para que coincida con la BD
+  const cleanId = deviceId.replace(/:/g, '');
 
-  // 2. Insertar la lectura en la base de datos
+  // 2. Búsqueda: Obtenemos el ID numérico del dispositivo Y el ID del usuario dueño
+  const deviceCheck = await pool.query(
+    'SELECT id, user_id FROM devices WHERE device_id_logic=$1', 
+    [cleanId]
+  );
+
+  if (deviceCheck.rows.length === 0) throw new Error(`Dispositivo no reconocido: ${cleanId}`);
+
+  // Extraemos los IDs que necesitamos para la tabla 'reports'
+  const { id: dbDeviceId, user_id: dbUserId } = deviceCheck.rows[0];
+
+  // 3. Inserción: Usamos la tabla 'reports' y los IDs numéricos
   const result = await pool.query(
-    `INSERT INTO telemetry_logs (device_id_logic, acc_x, acc_y, acc_z, fall_detected)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO reports (user_id, device_id, acc_x, acc_y, acc_z, fall_detected)
+     VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING *`,
-    [deviceId, accX, accY, accZ, fallDetected]
+    [dbUserId, dbDeviceId, accX, accY, accZ, fallDetected]
   );
 
   return result.rows[0];

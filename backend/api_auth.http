@@ -81,3 +81,29 @@ Content-Type: application/json
   "email": "manolo@gmail.com",
   "password": "Manolo1234!"
 }
+
+### registro dispositivo
+### Crear Dispositivo (Con Token)
+POST http://localhost:3000/api/devices
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDM2NjExNiwiZXhwIjoxNzcwMzk0OTE2fQ.BDeAowp2xZ_h_zgwq4qP0v74pc_qEhwFfLNrhfzXLoc
+
+{
+  "device_id_logic": "246F28A0B1C2",
+  "mac": "24:6F:28:A0:B1:C2",
+  "alias": "ESP32 Prototipo",
+  "status": "active",
+  "user_id": 1
+}
+
+### Enviar Telemetría (Ruta y Puerto corregidos)
+POST http://localhost:3000/api/auth/telemetry
+Content-Type: application/json
+
+{
+  "deviceId": "246F28A0B1C2",
+  "accX": 0.45,
+  "accY": -0.12,
+  "accZ": 9.81,
+  "fallDetected": false
+}
