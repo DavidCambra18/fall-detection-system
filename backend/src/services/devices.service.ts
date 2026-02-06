@@ -1,0 +1,118 @@
+import { pool } from '../db';
+import { isValidDeviceId, isValidMAC } from '../utils/validators';
+
+export interface DeviceInput {
+  device_id_logic: string;
+  mac: string;
+  alias?: string;
+  status?: 'active' | 'inactive' | 'low battery';
+  user_id?: number;
+}
+
+// Define la interfaz según lo que envía tu ESP32
+export interface TelemetryInput {
+  deviceId: string; // Es el "device_id_logic" o MAC que manda el ESP
+  accX: number;
+  accY: number;
+  accZ: number;
+  fallDetected: boolean;
+}
+
+export const createDevice = async (input: DeviceInput) => {
+  const { device_id_logic, mac, alias, status = 'inactive', user_id } = input;
+
+  if (!isValidDeviceId(device_id_logic)) throw new Error('Identificador inválido');
+  if (!isValidMAC(mac)) throw new Error('MAC inválida');
+
+  const exists = await pool.query(
+    'SELECT id FROM devices WHERE device_id_logic=$1 OR mac=$2', 
+    [device_id_logic, mac]
+  );
+  if (exists.rows.length > 0) throw new Error('Dispositivo ya registrado');
+
+  const result = await pool.query(
+    `INSERT INTO devices (device_id_logic, mac, alias, status, user_id)
+     VALUES ($1,$2,$3,$4,$5)
+     RETURNING *`,
+    [device_id_logic, mac, alias || null, status, user_id || null]
+  );
+
+  return result.rows[0];
+};
+
+export const getDevices = async () => {
+  const result = await pool.query('SELECT * FROM devices ORDER BY id ASC');
+  return result.rows;
+};
+
+export const getDeviceById = async (id: number) => {
+  const result = await pool.query('SELECT * FROM devices WHERE id=$1', [id]);
+  return result.rows[0];
+};
+
+export const updateDevice = async (id: number, input: Partial<DeviceInput>) => {
+  const fields = [];
+  const values: any[] = [];
+  let idx = 1;
+
+  for (const [key, value] of Object.entries(input)) {
+    if (['device_id_logic','mac','alias','status','user_id'].includes(key)) {
+      fields.push(`${key}=$${idx}`);
+      values.push(value);
+      idx++;
+    }
+  }
+
+  if (fields.length === 0) throw new Error('Nada que actualizar');
+
+  values.push(id);
+  const result = await pool.query(
+    `UPDATE devices SET ${fields.join(', ')} WHERE id=$${idx} RETURNING *`,
+    values
+  );
+
+  return result.rows[0];
+};
+
+export const updateDeviceStatus = async (id: number, status: 'active' | 'inactive' | 'low battery') => {
+  const result = await pool.query(
+    'UPDATE devices SET status=$1 WHERE id=$2 RETURNING *',
+    [status, id]
+  );
+  return result.rows[0];
+};
+
+export const deleteDevice = async (id: number) => {
+  await pool.query('DELETE FROM devices WHERE id=$1', [id]);
+};
+
+
+
+// --- FUNCIÓN CORREGIDA PARA TU NUEVA TABLA REPORTS ---
+export const registerTelemetry = async (data: TelemetryInput) => {
+  const { deviceId, accX, accY, accZ, fallDetected } = data;
+
+  // 1. Limpieza: Quitamos ':' por si el ESP32 los manda, para que coincida con la BD
+  const cleanId = deviceId.replace(/:/g, '');
+
+  // 2. Búsqueda: Obtenemos el ID numérico del dispositivo Y el ID del usuario dueño
+  const deviceCheck = await pool.query(
+    'SELECT id, user_id FROM devices WHERE device_id_logic=$1', 
+    [cleanId]
+  );
+
+  if (deviceCheck.rows.length === 0) throw new Error(`Dispositivo no reconocido: ${cleanId}`);
+
+  // Extraemos los IDs que necesitamos para la tabla 'reports'
+  const { id: dbDeviceId, user_id: dbUserId } = deviceCheck.rows[0];
+
+  // 3. Inserción: Usamos la tabla 'reports' y los IDs numéricos
+  const result = await pool.query(
+    `INSERT INTO reports (user_id, device_id, acc_x, acc_y, acc_z, fall_detected)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     RETURNING *`,
+    [dbUserId, dbDeviceId, accX, accY, accZ, fallDetected]
+  );
+
+  return result.rows[0];
+};
