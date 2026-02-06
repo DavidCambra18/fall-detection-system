@@ -83,14 +83,14 @@ Content-Type: application/json
 }
 
 ### registro dispositivo
-### Crear Dispositivo (Con Token)
+### Crear Dispositivo (Con Token) el token se manda sin las comillas ""
 POST http://localhost:3000/api/devices
 Content-Type: application/json
-// Authorization: Bearer "tokenExample"
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDM3ODQ3NywiZXhwIjoxNzcwNDA3Mjc3fQ.TYu9mgRyNKXtppoqDwt6aRUnqZroqeKN1-OBlru0axA
 
 {
-  "device_id_logic": "246F28A0B1C2",
-  "mac": "24:6F:28:A0:B1:C2",
+  "device_id_logic": "048308573480",
+  "mac": "04:83:08:57:34:80",
   "alias": "ESP32 Prototipo",
   "status": "active",
   "user_id": 1
@@ -101,7 +101,7 @@ POST http://localhost:3000/api/auth/telemetry
 Content-Type: application/json
 
 {
-  "deviceId": "246F28A0B1C2",
+  "deviceId": "048308573480",
   "accX": 0.45,
   "accY": -0.12,
   "accZ": 9.81,
