@@ -4,6 +4,7 @@ import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { UsersComponent } from './features/users/users.component';
 import { AlertsComponent } from './features/alerts/alerts.component'; // Importamos el nuevo componente
 import { authGuard } from './core/guards/auth-guard';
+import { DevicesComponent } from './features/devices/devices.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -19,12 +20,12 @@ export const routes: Routes = [
   },
   { 
     path: 'devices', 
-    component: DashboardComponent, // Temporal hasta que crees DevicesComponent
+    component: DevicesComponent, 
     canActivate: [authGuard] 
   },
   { 
     path: 'history', 
-    component: AlertsComponent, // <--- ¡CAMBIADO! Ahora apunta a tus alertas reales
+    component: AlertsComponent, 
     canActivate: [authGuard] 
   },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
