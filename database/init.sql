@@ -74,7 +74,8 @@ VALUES
 ('ana@gmail.com', '+34600111228', '$2b$10$yzE8dfVOmFzNG47U39pvSunSskcTF90TT9g2pcWLLEh1GPZX0QzYK', 'Ana', 'Sánchez Moreno', '1950-12-05', 3, 3);
 
 -- 3.3 DISPOSITIVOS
-INSERT INTO devices (device_id_logic, mac, alias, status, user_id) 
+INSERT INTO devices (device_id_logic, mac, alias, status, user_id)
+VALUES
 ('ESP32-001', 'AA:BB:CC:11:22:33', 'Dispositivo de Marta', 'active', 3),
 ('ESP32-002', 'AA:BB:CC:11:22:34', 'Dispositivo de Roberto', 'active', 4),
 ('ESP32-003', 'AA:BB:CC:11:22:35', 'Dispositivo de Ana', 'low battery', 5);
