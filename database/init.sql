@@ -46,7 +46,8 @@ CREATE TABLE reports (
     acc_y FLOAT NOT NULL,
     acc_z FLOAT NOT NULL,
     fall_detected BOOLEAN DEFAULT FALSE,
-    date_rep TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    date_rep TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    confirmed BOOLEAN DEFAULT NULL
 );
 
 -- 2. OPTIMIZACIÓN E ÍNDICES
@@ -71,8 +72,7 @@ VALUES
 ('manolo@gmail.com', '+34600111222', '$2b$10$USC3AQnQSwky6snTRORElu76RSJXqqisaCs7j.924wtfC/INN1fRS', 'Manolo', 'García Pérez', '1985-05-20', 2, NULL),
 ('marta@gmail.com', '+34600111124', '$2b$10$7E8i6czm3zT2qXURJxgyMOFvfDCEOHoDk9hfhtx17QULNfDESyLEO', 'Marta', 'Rövanpera', '1945-03-15', 3, 2),
 ('roberto@gmail.com', '+34600111226', '$2b$10$B0Uga5i7uR6H.ubcsJYsg.7jEi9AAsmDxlrh7QAjOCJjL5AS7.o2u', 'Roberto', 'Gómez Ruiz', '1945-03-15', 3, 2),
-('ana@gmail.com', '+34600111228', '$2b$10$yzE8dfVOmFzNG47U39pvSunSskcTF90TT9g2pcWLLEh1GPZX0QzYK', 'Ana', 'Sánchez Moreno', '1950-12-05', 3, 3);
-
+('ana@gmail.com', '+34600111228', '$2b$10$yzE8dfVOmFzNG47U39pvSunSskcTF90TT9g2pcWLLEh1GPZX0QzYK', 'Ana', 'Sánchez Moreno', '1950-12-05', 3, 2);
 -- 3.3 DISPOSITIVOS
 INSERT INTO devices (device_id_logic, mac, alias, status, user_id)
 VALUES
@@ -81,18 +81,42 @@ VALUES
 ('ESP32-003', 'AA:BB:CC:11:22:35', 'Dispositivo de Ana', 'low battery', 5);
 
 -- 3.4 REPORTES DE EJEMPLO
-INSERT INTO reports (user_id, device_id, acc_x, acc_y, acc_z, fall_detected, date_rep) 
+-- 3.4 REPORTES DE EJEMPLO Y DATOS PARA PAGINACIÓN
+
+INSERT INTO reports (user_id, device_id, acc_x, acc_y, acc_z, fall_detected, date_rep, confirmed) 
 VALUES 
--- Marta
-(3, 1, 0.02, 0.05, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '2 hours'),
-(3, 1, 0.01, 0.02, 9.78, FALSE, CURRENT_TIMESTAMP - INTERVAL '90 minutes'),
-(3, 1, -1.20, 0.40, 9.81, TRUE, CURRENT_TIMESTAMP - INTERVAL '30 minutes'),
+-- Histórico de Marta (Dispositivo 1)
+(3, 1, 0.02, 0.05, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '3 hours', NULL),
+(3, 1, -5.20, 3.40, 15.8, TRUE,  CURRENT_TIMESTAMP - INTERVAL '170 minutes', TRUE),
+(3, 1, 0.01, 0.02, 9.78, FALSE, CURRENT_TIMESTAMP - INTERVAL '160 minutes', NULL),
+(3, 1, -4.10, 2.40, 12.8, TRUE,  CURRENT_TIMESTAMP - INTERVAL '150 minutes', FALSE),
+(3, 1, 0.03, 0.01, 9.81, FALSE, CURRENT_TIMESTAMP - INTERVAL '140 minutes', NULL),
+(3, 1, 0.02, 0.02, 9.79, FALSE, CURRENT_TIMESTAMP - INTERVAL '130 minutes', NULL),
+(3, 1, -6.20, 4.40, 18.8, TRUE,  CURRENT_TIMESTAMP - INTERVAL '120 minutes', TRUE),
+(3, 1, 0.01, 0.01, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '110 minutes', NULL),
+(3, 1, 0.02, 0.03, 9.82, FALSE, CURRENT_TIMESTAMP - INTERVAL '100 minutes', NULL),
+(3, 1, 0.01, 0.02, 9.77, FALSE, CURRENT_TIMESTAMP - INTERVAL '90 minutes', NULL),
 
--- Roberto
-(4, 2, 0.00, 0.03, 9.79, FALSE, CURRENT_TIMESTAMP - INTERVAL '1 hour'),
-(4, 2, 0.05, 0.01, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '45 minutes'),
-(4, 2, -0.80, 0.60, 9.82, TRUE, CURRENT_TIMESTAMP - INTERVAL '15 minutes'),
+-- Histórico de Roberto (Dispositivo 2)
+(4, 2, 0.00, 0.03, 9.79, FALSE, CURRENT_TIMESTAMP - INTERVAL '80 minutes', NULL),
+(4, 2, -3.80, 2.60, 14.2, TRUE,  CURRENT_TIMESTAMP - INTERVAL '75 minutes', TRUE),
+(4, 2, 0.05, 0.01, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '70 minutes', NULL),
+(4, 2, 0.02, 0.02, 9.81, FALSE, CURRENT_TIMESTAMP - INTERVAL '65 minutes', NULL),
+(4, 2, -1.20, 0.80, 10.5, TRUE,  CURRENT_TIMESTAMP - INTERVAL '60 minutes', FALSE),
+(4, 2, 0.03, 0.01, 9.78, FALSE, CURRENT_TIMESTAMP - INTERVAL '55 minutes', NULL),
+(4, 2, 0.01, 0.04, 9.82, FALSE, CURRENT_TIMESTAMP - INTERVAL '50 minutes', NULL),
+(4, 2, 0.04, 0.02, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '45 minutes', NULL),
+(4, 2, -5.50, 3.10, 16.3, TRUE,  CURRENT_TIMESTAMP - INTERVAL '40 minutes', NULL),
+(4, 2, 0.02, 0.01, 9.79, FALSE, CURRENT_TIMESTAMP - INTERVAL '35 minutes', NULL),
 
--- Ana
-(5, 3, 0.03, 0.02, 9.78, FALSE, CURRENT_TIMESTAMP - INTERVAL '1 hour'),
-(5, 3, 0.02, 0.01, 9.77, FALSE, CURRENT_TIMESTAMP - INTERVAL '50 minutes');
+-- Histórico de Ana (Dispositivo 3)
+(5, 3, 0.03, 0.02, 9.78, FALSE, CURRENT_TIMESTAMP - INTERVAL '30 minutes', NULL),
+(5, 3, 0.02, 0.01, 9.77, FALSE, CURRENT_TIMESTAMP - INTERVAL '28 minutes', NULL),
+(5, 3, 0.01, 0.03, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '26 minutes', NULL),
+(5, 3, -4.90, 2.90, 15.1, TRUE,  CURRENT_TIMESTAMP - INTERVAL '24 minutes', TRUE),
+(5, 3, 0.02, 0.02, 9.81, FALSE, CURRENT_TIMESTAMP - INTERVAL '22 minutes', NULL),
+(5, 3, 0.03, 0.04, 9.79, FALSE, CURRENT_TIMESTAMP - INTERVAL '20 minutes', NULL),
+(5, 3, -0.90, 0.50, 9.90, TRUE,  CURRENT_TIMESTAMP - INTERVAL '15 minutes', FALSE),
+(5, 3, 0.01, 0.01, 9.82, FALSE, CURRENT_TIMESTAMP - INTERVAL '10 minutes', NULL),
+(5, 3, 0.02, 0.03, 9.80, FALSE, CURRENT_TIMESTAMP - INTERVAL '5 minutes', NULL),
+(5, 3, 0.01, 0.01, 9.81, FALSE, CURRENT_TIMESTAMP, NULL);
