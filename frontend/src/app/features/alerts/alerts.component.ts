@@ -25,19 +25,20 @@ export class AlertsComponent implements OnInit {
   currentPage: number = 1;
   pageSize: number = 10;
 
-  // Mapeo basado en tu init.sql
-  private userMap: { [key: number]: { name: string, device: string } } = {
-    3: { name: 'Marta Rövanpera', device: 'ESP32-001 (Marta)' },
-    4: { name: 'Roberto Gómez Ruiz', device: 'ESP32-002 (Roberto)' },
-    5: { name: 'Ana Sánchez Moreno', device: 'ESP32-003 (Ana)' }
+  // MAPEO REAL BASADO EN TU INIT.SQL
+  // Relacionamos el ID del dispositivo con su Alias, MAC y Dueño
+  private deviceMap: { [key: number]: { alias: string, mac: string, owner: string, status: string } } = {
+    1: { alias: 'Dispositivo de Marta', mac: 'AA:BB:CC:11:22:33', owner: 'Marta Rövanpera', status: 'active' },
+    2: { alias: 'Dispositivo de Roberto', mac: 'AA:BB:CC:11:22:34', owner: 'Roberto Gómez Ruiz', status: 'active' },
+    3: { alias: 'Dispositivo de Ana', mac: 'AA:BB:CC:11:22:35', owner: 'Ana Sánchez Moreno', status: 'low battery' }
   };
 
   ngOnInit(): void {
     this.loadAlerts();
   }
 
-  getUserInfo(user_id: number) {
-    return this.userMap[user_id] || { name: `Usuario ${user_id}`, device: 'Desconocido' };
+  getDeviceInfo(device_id: number) {
+    return this.deviceMap[device_id] || { alias: 'Desconocido', mac: '--:--', owner: 'Desconocido', status: 'inactive' };
   }
 
   get paginatedAlerts() {
@@ -64,7 +65,7 @@ export class AlertsComponent implements OnInit {
       this.eventService.getEvents().subscribe(data => {
         let result = [...data];
 
-        // Seguridad por rol (Admin ve todo, cuidador ve a sus pacientes 3, 4, 5)
+        // Filtros de seguridad (Admin ve todo)
         if (role === 2) result = result.filter(a => a.carer_id === userId);
         if (role === 3) result = result.filter(a => a.user_id === userId);
 
@@ -88,10 +89,10 @@ export class AlertsComponent implements OnInit {
 
     if (search) {
       filtered = this.allAlerts.filter(a => {
-        const info = this.getUserInfo(a.user_id);
-        return info.name.toLowerCase().includes(search) || 
-               info.device.toLowerCase().includes(search) ||
-               (a.fall_detected ? 'caída' : 'normal').includes(search);
+        const info = this.getDeviceInfo(a.device_id);
+        return info.owner.toLowerCase().includes(search) || 
+               info.alias.toLowerCase().includes(search) ||
+               info.mac.toLowerCase().includes(search);
       });
     }
 
