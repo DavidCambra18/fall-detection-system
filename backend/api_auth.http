@@ -86,7 +86,7 @@ Content-Type: application/json
 ### Crear Dispositivo (Con Token)
 POST http://localhost:3000/api/devices
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDM2NjExNiwiZXhwIjoxNzcwMzk0OTE2fQ.BDeAowp2xZ_h_zgwq4qP0v74pc_qEhwFfLNrhfzXLoc
+// Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDM2NjExNiwiZXhwIjoxNzcwMzk0OTE2fQ.BDeAowp2xZ_h_zgwq4qP0v74pc_qEhwFfLNrhfzXLoc
 
 {
   "device_id_logic": "246F28A0B1C2",
