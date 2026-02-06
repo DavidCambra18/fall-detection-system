@@ -1,0 +1,66 @@
+###
+GET http://localhost:3000/api/events
+Content-Type: application/json
+
+# Filtros posibles como query params:
+# ?user_id=3&device_id=1&start=2026-02-05T00:00:00Z&end=2026-02-05T23:59:59Z
+
+###
+
+### OBTENER DETALLE DE UN EVENTO
+GET http://localhost:3000/api/events/1
+Content-Type: application/json
+
+###
+
+### CREAR NUEVO EVENTO (simulando datos del ESP32)
+POST http://localhost:3000/api/events
+Content-Type: application/json
+
+{
+  "user_id": 3,
+  "device_id": 1,
+  "acc_x": 0.12,
+  "acc_y": 1.02,
+  "acc_z": 9.80,
+  "fall_detected": true
+}
+
+###
+
+### CONFIRMAR O DESCARTAR FALSA ALARMA
+PATCH http://localhost:3000/api/events/1/confirm
+Content-Type: application/json
+
+{
+  "confirmed": true
+}
+
+###
+
+### CREAR VARIOS EVENTOS SIMULADOS (para pruebas rápidas)
+POST http://localhost:3000/api/events
+Content-Type: application/json
+
+{
+  "user_id": 3,
+  "device_id": 1,
+  "acc_x": -0.25,
+  "acc_y": 0.98,
+  "acc_z": 9.78,
+  "fall_detected": false
+}
+
+###
+
+POST http://localhost:3000/api/events
+Content-Type: application/json
+
+{
+  "user_id": 3,
+  "device_id": 1,
+  "acc_x": 1.12,
+  "acc_y": -0.33,
+  "acc_z": 9.82,
+  "fall_detected": true
+}

@@ -1,9 +1,10 @@
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.routes';
 import deviceRoutes from './routes/devices.routes';
+import eventsRoutes from './routes/events.routes';
 
 dotenv.config();
 
@@ -15,8 +16,8 @@ const FRONTEND_ORIGIN = process.env.NODE_ENV === 'production'
 
 app.use(cors({
   origin: FRONTEND_ORIGIN,
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 
@@ -27,6 +28,7 @@ app.use(cookieParser());
 // Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
+app.use('/api/events', eventsRoutes);
 
 // Ruta base
 app.get('/', (req, res) => {
