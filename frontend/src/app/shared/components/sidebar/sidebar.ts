@@ -51,7 +51,7 @@ export class SidebarComponent {
     const role = this.currentUser().roleId;
     if (role === 1) return '/history-admin';
     if (role === 2) return '/history-cuidador';
-    if (role === 3) return '/mi-historial'; 
+    if (role === 3) return '/usuario-alerts'; // Añadido para Rol 3
     return '/login';
   }
 

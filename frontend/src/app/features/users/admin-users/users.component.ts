@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../core/services/user.service';
-import { User } from '../../../core/models/user.models';
+import { User } from '../../../core/models/auth.models'; // <-- Importar desde auth.models
 
 @Component({
   selector: 'app-users',
@@ -20,18 +20,17 @@ export class UsersComponent implements OnInit {
   currentPage = signal<number>(1);
   pageSize = 10;
 
-  // Estado del Modal
   isModalOpen = signal(false);
   isEditing = signal(false); 
+  // Usamos User completo para que TypeScript detecte roleId
   selectedUser = signal<Partial<User>>({});
 
   ngOnInit() {
     this.loadUsers();
   }
 
-  // --- LÓGICA REACTIVA (COMPUTED) ---
+  // --- LÓGICA REACTIVA ---
   
-  // Filtrado y Ordenación automática cuando cambia el search o la lista
   filteredUsers = computed(() => {
     const search = this.searchTerm().toLowerCase().trim();
     let result = this.users().filter(u => 
@@ -50,7 +49,6 @@ export class UsersComponent implements OnInit {
     return result;
   });
 
-  // Paginación reactiva
   paginatedUsers = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize;
     return this.filteredUsers().slice(start, start + this.pageSize);
@@ -58,7 +56,6 @@ export class UsersComponent implements OnInit {
 
   totalPages = computed(() => Math.ceil(this.filteredUsers().length / this.pageSize) || 1);
 
-  // Filas vacías automáticas
   skeletonRows = computed(() => {
     const remaining = this.pageSize - this.paginatedUsers().length;
     return remaining > 0 ? Array(remaining).fill(0) : [];
@@ -68,9 +65,9 @@ export class UsersComponent implements OnInit {
 
   loadUsers() {
     this.userService.getUsers().subscribe({
-      next: (data: any) => {
-        const list = Array.isArray(data) ? data : (data?.users || []);
-        this.users.set(list);
+      next: (data: User[]) => {
+        // El servicio ya devuelve User[], manejamos la asignación directa
+        this.users.set(data);
       },
       error: (err) => console.error('Error Backend:', err)
     });
@@ -78,11 +75,14 @@ export class UsersComponent implements OnInit {
 
   saveUser() {
     const userData = this.selectedUser();
+    
+    // Validamos que roleId exista antes de enviar para cumplir con la interfaz
     if (this.isEditing() && userData.id) {
       this.userService.updateUser(userData.id, userData).subscribe({
         next: () => { this.loadUsers(); this.closeModal(); }
       });
     } else {
+      // Forzamos el tipado a User asegurando que los campos mínimos están
       this.userService.createUser(userData as User).subscribe({
         next: () => { this.loadUsers(); this.closeModal(); }
       });
@@ -96,9 +96,17 @@ export class UsersComponent implements OnInit {
   }
 
   // --- HELPERS ---
+  
   openCreateModal() {
     this.isEditing.set(false);
-    this.selectedUser.set({ role_id: 3, name: '', email: '' } as User); 
+    // Cambiamos role_id por roleId para que coincida con la interfaz
+    this.selectedUser.set({ 
+      roleId: 3, 
+      name: '', 
+      email: '', 
+      surnames: '', 
+      phone_num: '' 
+    }); 
     this.isModalOpen.set(true);
   }
 
@@ -116,8 +124,8 @@ export class UsersComponent implements OnInit {
     this.sortAsc.update(val => !val);
   }
 
-  getRoleName(role_id?: number): string {
+  getRoleName(roleId?: number): string {
     const roles: Record<number, string> = { 1: 'Admin', 2: 'Cuidador', 3: 'Usuario' };
-    return roles[role_id || 0] || 'Sin Rol';
+    return roles[roleId || 0] || 'Sin Rol';
   }
 }

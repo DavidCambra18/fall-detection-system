@@ -1,36 +1,21 @@
-/**
- * Representa los datos del usuario que viajan dentro del Token 
- * y que guardamos en el LocalStorage para la sesión activa.
- */
-export interface UserSession {
+// src/app/core/models/auth.models.ts
+
+export interface User {
   id: number;
   email: string;
-  roleId: number; // Mapeado desde role_id en la BD
   name: string;
-}
-
-/**
- * Modelo completo del usuario para la tabla de gestión y perfiles.
- * Incluye los campos adicionales de tu script init.sql.
- */
-export interface User extends UserSession {
-  phone_num: string;
+  roleId: number;     // Obligatorio para el sistema de roles
   surnames?: string;
+  phone_num?: string;
   date_born?: string;
-  carer_id?: number | null; // El ID del Cuidador (Manolo) si el rol es 3
+  carer_id?: number | null;
 }
 
-/**
- * Respuesta del servidor tras un login exitoso.
- */
 export interface AuthResponse {
   token: string;
-  user: UserSession;
+  user: User; // Ahora usa el modelo unificado
 }
 
-/**
- * Datos necesarios para el formulario de login.
- */
 export interface LoginInput {
   email: string;
   password: string;
