@@ -1,9 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router'; 
-import { EventService } from '../../core/services/event.service';
-import { AuthService } from '../../core/services/auth.service';
-import { Report } from '../../core/models/report.models';
+import { EventService } from '../../../core/services/event.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { Report } from '../../../core/models/report.models';
 import { FormsModule } from '@angular/forms';
 
 @Component({
