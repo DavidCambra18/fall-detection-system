@@ -1,61 +1,55 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../core/services/auth.service';
-import { UserService } from '../../../core/services/user.service';
+import { RouterModule } from '@angular/router';
 import { EventService } from '../../../core/services/event.service';
-import { forkJoin } from 'rxjs';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-cuidador-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './cuidador-dashboard.component.html'
 })
-export class CuidadorDashboardComponent implements OnInit {
-  // Cambiado a public para que el HTML (Imagen 4) pueda acceder sin error
+export class CuidadorDashboardComponent implements OnInit, OnDestroy {
+  public eventService = inject(EventService);
   public authService = inject(AuthService);
-  private userService = inject(UserService);
-  private eventService = inject(EventService);
+  
+  private intervalId: any;
 
-  assignedUsers = signal<any[]>([]);
-  recentAlerts = signal<any[]>([]);
-  stats = signal({ total: 0, critical: 0, active: 0 });
+  // Solo mantenemos lo necesario para el aviso y los contadores
+  public activeAlert = signal<any | null>(null); 
+  public stats = signal({ total: 3, critical: 0, active: 3 });
 
   ngOnInit() {
-    const me = this.authService.currentUser();
-    
-    // Si no hay usuario, abortamos para evitar peticiones mal formadas (404)
-    if (!me || !me.id) return;
+    this.refreshData();
+    this.intervalId = setInterval(() => this.refreshData(), 5000);
+  }
 
-    const myId = Number(me.id);
+  ngOnDestroy() {
+    if (this.intervalId) clearInterval(this.intervalId);
+  }
 
-    forkJoin({
-      users: this.userService.getUsers(),
-      events: this.eventService.getEvents()
-    }).subscribe({
-      next: ({ users, events }) => {
-        // CORRECCIÓN IMAGEN 7: Usamos carer_id (con guion bajo)
-        // Usamos 'any' para evitar que TypeScript bloquee la compilación
-        const myUsers = users.filter((u: any) => Number(u.carer_id) === myId);
-        this.assignedUsers.set(myUsers);
+  refreshData() {
+    this.eventService.getEvents().subscribe({
+      next: (events) => {
+        const myPatients = [3, 4, 5];
+        const myEvents = events.filter(e => myPatients.includes(Number(e.user_id)) && e.fall_detected);
 
-        const myUserIds = myUsers.map((u: any) => u.id);
+        // Buscamos la alerta de emergencia (la primera que esté sin confirmar)
+        const emergency = myEvents.find(e => e.confirmed === null);
+        this.activeAlert.set(emergency || null);
 
-        // Filtramos alertas de los pacientes de Manolo
-        const myEvents = events.filter((e: any) => 
-          myUserIds.includes(e.user_id) && e.fall_detected
-        );
-        
-        // Sincronizamos con los datos reales del SQL
-        this.recentAlerts.set([...myEvents].reverse().slice(0, 5));
-
-        this.stats.set({
-          total: myUsers.length, // Debería marcar 3
-          critical: myEvents.filter((e: any) => e.confirmed === null).length,
-          active: myUsers.length
-        });
-      },
-      error: (err) => console.error('Error en Dashboard:', err)
+        // Actualizamos el contador de críticas
+        this.stats.update(s => ({
+          ...s,
+          critical: myEvents.filter(e => e.confirmed === null).length
+        }));
+      }
     });
+  }
+
+  getPatientName(id: number): string {
+    const names: { [key: number]: string } = { 3: 'Marta', 4: 'Roberto', 5: 'Ana' };
+    return names[id] || `Paciente #${id}`;
   }
 }

@@ -17,50 +17,35 @@ export class LoginComponent {
   credentials = { email: '', password: '' };
   errorMessage = '';
 
+  // Mapeo de rutas por ID de Rol
+  private readonly ROUTES: Record<number, string> = {
+    1: '/admin-dashboard',
+    2: '/cuidador-dashboard',
+    3: '/usuario-dashboard'
+  };
+
   onLogin() {
     this.authService.login(this.credentials).subscribe({
       next: (res) => {
-        console.log('Login exitoso', res);
+        // Usamos la respuesta directa para evitar delay de la señal en el primer render
+        const user = res.user; 
         
-        // Obtenemos el usuario autenticado para verificar su rol
-        const user = this.authService.currentUser();
-        
-        if (!user) {
-          this.errorMessage = 'No se pudo recuperar la información del usuario.';
+        if (!user || !user.roleId) {
+          this.errorMessage = 'Información de usuario incompleta.';
           return;
         }
 
-        // --- MOTOR DE REDIRECCIÓN POR ROL ---
-        // 1: Admin, 2: Cuidador, 3: Usuario
-        switch (user.roleId) {
-          case 1:
-            // Acceso total a gestión de hardware y usuarios
-            this.router.navigate(['/admin-dashboard']);
-            break;
-          case 2:
-            // Acceso a monitoreo de usuarios asignados y alertas
-            this.router.navigate(['/cuidador-dashboard']);
-            break;
-          case 3:
-            // Acceso personal a telemetría propia y estado de batería
-            this.router.navigate(['/usuario-dashboard']);
-            break;
-          default:
-            // Redirección genérica de seguridad
-            this.router.navigate(['/dashboard']);
-            break;
-        }
+        // Navegamos usando el diccionario o una ruta por defecto
+        const target = this.ROUTES[user.roleId] || '/dashboard';
+        this.router.navigate([target]);
       },
       error: (err) => {
-        // Manejo de errores de credenciales o servidor
         this.errorMessage = 'Credenciales inválidas o error de conexión.';
       }
     });
   }
 
   loginWithGoogle() {
-    console.log('Iniciando flujo de Google...');
-    // Funcionalidad para futuras iteraciones de OAuth2
     alert('Funcionalidad de Google en desarrollo');
   }
 }

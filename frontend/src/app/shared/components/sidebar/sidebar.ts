@@ -14,30 +14,44 @@ export class SidebarComponent {
   private router = inject(Router);
 
   /**
-   * Usamos computed con un valor por defecto.
-   * Esto evita que el HTML intente leer propiedades de 'null' 
-   * y active redirecciones accidentales al login.
+   * SEÑAL REACTIVA: Extraemos el usuario y mapeamos el nombre.
    */
   public currentUser = computed(() => {
     const user = this.authService.currentUser();
-    return user || { roleId: 0, name: 'Invitado', email: '' };
+    
+    // Si no hay usuario, devolvemos un estado por defecto
+    if (!user) return { roleId: 0, name: 'Usuario', email: '' };
+
+    // MAPEÓ FLEXIBLE: 
+    // Como vimos en consola que 'name' no llega, usamos el email como fallback
+    const fallback = user.email ? user.email.split('@')[0] : 'Usuario';
+    const displayName = (user as any).name || (user as any).nombre || fallback;
+
+    return {
+      roleId: user.roleId || 0,
+      name: displayName,
+      email: user.email || ''
+    };
   });
 
   /**
-   * Centralizamos la lógica de navegación por rol para el HTML.
-   * Evita ternarios complejos en el template que suelen fallar.
+   * Rutas centralizadas optimizadas.
    */
   get dashboardRoute(): string {
     const role = this.currentUser().roleId;
-    if (role === 1) return '/admin-dashboard';
-    if (role === 2) return '/cuidador-dashboard';
-    return '/login';
+    const routes: Record<number, string> = {
+      1: '/admin-dashboard',
+      2: '/cuidador-dashboard',
+      3: '/usuario-dashboard'
+    };
+    return routes[role] || '/login';
   }
 
   get historyRoute(): string {
     const role = this.currentUser().roleId;
     if (role === 1) return '/history-admin';
     if (role === 2) return '/history-cuidador';
+    if (role === 3) return '/mi-historial'; 
     return '/login';
   }
 
