@@ -43,10 +43,10 @@
       <div class="pt-6">
         <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Asistencia Médica</p>
         
-        <a routerLink="/mis-pacientes" routerLinkActive="bg-blue-600 text-white shadow-lg" 
+        <a routerLink="/mis-usuarios" routerLinkActive="bg-blue-600 text-white shadow-lg" 
            class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
           <span class="text-xl">🏥</span>
-          <span class="font-bold text-sm tracking-tight">Mis Pacientes</span>
+          <span class="font-bold text-sm tracking-tight">Mis Usuarios</span>
         </a>
       </div>
     }
@@ -71,7 +71,7 @@
       <div class="flex items-center gap-3 mb-4">
         <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
           <span class="text-blue-400 text-xs font-black uppercase">
-            {{ currentUser().name?.substring(0,2) || 'US' }}
+            {{ currentUser().name ? currentUser().name.substring(0,2) : 'US' }}
           </span>
         </div>
         <div class="overflow-hidden">
@@ -83,7 +83,7 @@
       </div>
       
       <button (click)="onLogout()" 
-              class="w-full py-2.5 bg-red-500/10 hover:bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+              class="w-full py-2.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
         Cerrar Sesión
       </button>
     </div>
