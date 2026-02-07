@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 })
 export class DevicesComponent implements OnInit {
   
-  // Datos reales extraídos de tu init.sql
+  // Sincronizado con init.sql: Marta (ID 3), Roberto (ID 4), Ana (ID 5)
   devices = signal([
     {
       logic_id: 'ESP32-001',
@@ -17,8 +17,7 @@ export class DevicesComponent implements OnInit {
       alias: 'Dispositivo de Marta',
       status: 'active',
       battery: 95,
-      owner: 'Marta Rövanpera',
-      userId: 3
+      owner: 'Marta Rövanpera'
     },
     {
       logic_id: 'ESP32-002',
@@ -26,23 +25,20 @@ export class DevicesComponent implements OnInit {
       alias: 'Dispositivo de Roberto',
       status: 'active',
       battery: 72,
-      owner: 'Roberto Gómez Ruiz',
-      userId: 4
+      owner: 'Roberto Gómez Ruiz'
     },
     {
       logic_id: 'ESP32-003',
       mac: 'AA:BB:CC:11:22:35',
       alias: 'Dispositivo de Ana',
-      status: 'low battery',
-      battery: 15, // Reflejamos el estado 'low battery' del SQL
-      owner: 'Ana Sánchez Moreno',
-      userId: 5
+      status: 'low battery', // Estado crítico según SQL
+      battery: 12,
+      owner: 'Ana Sánchez Moreno'
     }
   ]);
 
   ngOnInit(): void {}
 
-  // Función para determinar el color de la batería visualmente
   getBatteryClass(level: number): string {
     if (level > 50) return 'bg-emerald-500';
     if (level > 20) return 'bg-amber-500';
