@@ -1,19 +1,15 @@
 <div class="p-8 bg-slate-50 min-h-screen">
   <header class="flex justify-between items-end mb-10">
     <div>
-      <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Mis Usuarios</h1>
-      <p class="text-blue-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">Pacientes bajo tu supervisión</p>
+      <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Mis Pacientes</h1>
+      <p class="text-blue-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">Monitoreo en tiempo real</p>
     </div>
 
     <div class="relative w-72">
-      <input 
-        type="text" 
-        [ngModel]="searchTerm()" 
-        (ngModelChange)="searchTerm.set($event); currentPage.set(1)"
-        placeholder="Buscar por nombre o email..."
-        class="w-full bg-white border border-slate-200 rounded-2xl px-5 py-3 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm"
-      >
-      <span class="absolute right-4 top-3 text-slate-400">🔍</span>
+      <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); currentPage.set(1)"
+        placeholder="Buscar paciente..."
+        class="w-full bg-white border border-slate-200 rounded-2xl px-5 py-3 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm transition-all">
+      <span class="absolute right-4 top-3.5 text-slate-300 text-xs">🔍</span>
     </div>
   </header>
 
@@ -21,43 +17,60 @@
     <table class="w-full text-left border-collapse">
       <thead>
         <tr class="bg-slate-900 text-slate-400 uppercase text-[9px] font-black tracking-widest">
-          <th class="px-8 py-5">Usuario</th>
-          <th class="px-8 py-5">Email</th>
-          <th class="px-8 py-5 text-center">Dispositivo</th>
-          <th class="px-8 py-5 text-right">Estado</th>
+          <th class="px-8 py-5">Paciente</th>
+          <th class="px-8 py-6">Email / Dispositivo</th>
+          <th class="px-8 py-5 text-center">Estado</th>
+          <th class="px-8 py-5 text-right">Acciones</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-100">
         @for (user of filteredUsers(); track user.id) {
-          <tr class="hover:bg-blue-50/40 transition-all">
+          <tr class="hover:bg-blue-50/30 transition-all group">
             <td class="px-8 py-6">
               <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-blue-600">
+                <div [ngClass]="{
+                  'bg-emerald-100 text-emerald-600': user.status === 'Activo',
+                  'bg-red-100 text-red-600': user.status === 'Alerta',
+                  'bg-slate-100 text-slate-400': user.status === 'Inactivo'
+                }" class="w-10 h-10 rounded-xl flex items-center justify-center font-black">
                   {{ user.name.charAt(0) }}
                 </div>
                 <div>
                   <p class="text-sm font-black text-slate-800 leading-none">{{ user.name }}</p>
-                  <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">ID: {{ user.id }}</p>
+                  <p class="text-[9px] font-bold text-slate-400 uppercase mt-1 italic">{{ user.lastConnect }}</p>
                 </div>
               </div>
             </td>
-            <td class="px-8 py-6 text-xs text-slate-500 font-bold italic">{{ user.email }}</td>
-            <td class="px-8 py-6 text-center">
-              <span class="px-3 py-1 bg-slate-100 rounded-lg text-[10px] font-mono text-slate-600 border border-slate-200">
-                {{ user.device }}
-              </span>
+            
+            <td class="px-8 py-6">
+              <p class="text-xs text-slate-500 font-bold italic leading-none">{{ user.email }}</p>
+              <p class="text-[9px] font-mono text-blue-500 mt-1 uppercase font-bold tracking-tighter">{{ user.device }}</p>
             </td>
-            <td class="px-8 py-6 text-right">
-              <span [ngClass]="user.status === 'Activo' ? 'text-emerald-600 bg-emerald-50' : 'text-slate-400 bg-slate-50'" 
-                    class="text-[9px] font-black uppercase px-4 py-2 rounded-xl border border-transparent italic">
+
+            <td class="px-8 py-6 text-center">
+              <span [ngClass]="{
+                'text-emerald-600 bg-emerald-50 border-emerald-100': user.status === 'Activo',
+                'text-red-600 bg-red-50 border-red-200 animate-pulse': user.status === 'Alerta',
+                'text-slate-400 bg-slate-50 border-slate-100': user.status === 'Inactivo'
+              }" class="text-[9px] font-black uppercase px-4 py-2 rounded-xl border italic">
                 {{ user.status }}
               </span>
+            </td>
+
+            <td class="px-8 py-6 text-right">
+              <button (click)="verHistorial(user.id)" 
+                class="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 hover:scale-105 active:scale-95 transition-all shadow-md shadow-slate-200 flex items-center gap-2 ml-auto">
+                Ver Actividad <span class="text-xs">📈</span>
+              </button>
             </td>
           </tr>
         } @empty {
           <tr>
             <td colspan="4" class="p-24 text-center">
-              <p class="text-slate-300 font-black uppercase italic tracking-[0.3em] text-xs">No se encontraron resultados</p>
+              <div class="flex flex-col items-center gap-3">
+                <span class="text-4xl opacity-20">🏥</span>
+                <p class="text-slate-300 font-black uppercase italic tracking-[0.3em] text-xs">Sin pacientes asignados</p>
+              </div>
             </td>
           </tr>
         }
@@ -65,16 +78,14 @@
     </table>
 
     <div class="bg-slate-50/50 px-8 py-4 flex justify-between items-center border-t border-slate-100">
-      <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-        Página {{ currentPage() }} de {{ totalPages() }}
-      </p>
+      <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Página {{ currentPage() }} de {{ totalPages() }}</p>
       <div class="flex gap-2">
         <button (click)="prevPage()" [disabled]="currentPage() === 1" 
-                class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-[10px] font-black uppercase hover:bg-slate-100 disabled:opacity-50 transition-all">
+                class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-[10px] font-black uppercase disabled:opacity-50 hover:bg-slate-100 transition-all">
           Anterior
         </button>
         <button (click)="nextPage()" [disabled]="currentPage() === totalPages()" 
-                class="px-4 py-2 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase hover:bg-slate-800 disabled:opacity-50 transition-all shadow-md">
+                class="px-4 py-2 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase disabled:opacity-50 shadow-md hover:bg-slate-800 transition-all">
           Siguiente
         </button>
       </div>

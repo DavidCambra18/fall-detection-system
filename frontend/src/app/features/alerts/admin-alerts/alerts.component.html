@@ -24,7 +24,7 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-50">
-        <tr *ngFor="let alert of paginatedAlerts" class="hover:bg-slate-50/50 transition-colors group h-[85px]">
+        <tr *ngFor="let alert of paginatedAlerts" class="hover:bg-slate-50/50 transition-colors group h-21.25">
           <td class="px-8 py-5">
             <p class="font-black text-slate-800 text-xs">{{ alert.date_rep | date:'dd/MM/yyyy' }}</p>
             <p class="text-[9px] text-slate-400 font-bold uppercase">{{ alert.date_rep | date:'HH:mm:ss' }}</p>
@@ -70,7 +70,7 @@
           </td>
         </tr>
 
-        <tr *ngFor="let empty of skeletonRows" class="h-[85px] opacity-20">
+        <tr *ngFor="let empty of skeletonRows" class="h-21.25 opacity-20">
           <td colspan="5" class="px-8 py-5 border-b border-slate-50"><div class="h-1 w-full bg-slate-100 rounded-full animate-pulse"></div></td>
         </tr>
       </tbody>

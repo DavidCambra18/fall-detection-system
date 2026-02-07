@@ -2,7 +2,22 @@
   <header class="flex justify-between items-end mb-10">
     <div>
       <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Historial de Caídas</h1>
-      <p class="text-blue-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">Registro operativo para cuidador</p>
+      
+      @if (userIdParam()) {
+        <div class="mt-4 flex items-center gap-3 animate-in slide-in-from-left duration-300">
+          <div class="flex items-center gap-2 bg-blue-600 text-white px-4 py-1.5 rounded-full shadow-lg shadow-blue-200">
+            <span class="text-[9px] font-black uppercase tracking-widest">
+              Paciente: {{ formatPatientName(userIdParam()!) }}
+            </span>
+          </div>
+          <button (click)="clearFilter()" 
+                  class="text-[9px] font-black uppercase text-slate-400 hover:text-red-500 transition-all underline underline-offset-4 decoration-2">
+            Ver todo el historial ✕
+          </button>
+        </div>
+      } @else {
+        <p class="text-blue-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">Registro operativo para cuidador</p>
+      }
     </div>
 
     <div class="relative w-72">
@@ -80,6 +95,12 @@
               }
             </td>
           </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="p-24 text-center">
+              <p class="text-slate-300 font-black uppercase italic tracking-[0.3em] text-xs">No hay alertas registradas</p>
+            </td>
+          </tr>
         }
       </tbody>
     </table>
@@ -87,8 +108,8 @@
     <div class="bg-slate-50/50 px-8 py-4 flex justify-between items-center border-t border-slate-100 text-[10px] font-black text-slate-400 uppercase">
       <span>Página {{ currentPage() }} de {{ totalPages() }}</span>
       <div class="flex gap-2">
-        <button (click)="prevPage()" [disabled]="currentPage() === 1" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-50">Anterior</button>
-        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50">Siguiente</button>
+        <button (click)="prevPage()" [disabled]="currentPage() === 1" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-50 transition-all">Anterior</button>
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages() || totalPages() === 0" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 transition-all shadow-md">Siguiente</button>
       </div>
     </div>
   </div>

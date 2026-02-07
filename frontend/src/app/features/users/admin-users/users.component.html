@@ -36,7 +36,7 @@
       </thead>
       <tbody class="divide-y divide-slate-50">
         
-        <tr *ngFor="let user of paginatedUsers()" class="hover:bg-slate-50/50 transition-colors group h-[72px]">
+        <tr *ngFor="let user of paginatedUsers()" class="hover:bg-slate-50/50 transition-colors group h-18">
           <td class="px-8 py-5">
             <p class="font-black text-slate-800 tracking-tight">{{user.name}} {{user.surnames}}</p>
           </td>
@@ -44,11 +44,11 @@
           <td class="px-8 py-5 text-sm font-bold text-slate-400">{{user.phone_num || '---'}}</td>
           <td class="px-8 py-5 text-center">
             <span [ngClass]="{
-              'bg-blue-100 text-blue-600': user.role_id === 1,
-              'bg-purple-100 text-purple-600': user.role_id === 2,
-              'bg-emerald-100 text-emerald-600': user.role_id === 3
+              'bg-blue-100 text-blue-600': user.roleId === 1,
+              'bg-purple-100 text-purple-600': user.roleId === 2,
+              'bg-emerald-100 text-emerald-600': user.roleId === 3
             }" class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
-              {{getRoleName(user.role_id)}}
+              {{getRoleName(user.roleId)}}
             </span>
           </td>
           <td class="px-8 py-5 text-right space-x-2">
@@ -57,7 +57,7 @@
           </td>
         </tr>
 
-        <tr *ngFor="let empty of skeletonRows()" class="h-[72px] opacity-40">
+        <tr *ngFor="let empty of skeletonRows()" class="h-18 opacity-40">
           <td class="px-8 py-5"><div class="h-4 w-32 bg-slate-100 rounded-full animate-pulse"></div></td>
           <td class="px-8 py-5"><div class="h-4 w-40 bg-slate-50 rounded-full"></div></td>
           <td class="px-8 py-5"><div class="h-4 w-24 bg-slate-50 rounded-full"></div></td>
@@ -113,12 +113,12 @@
 
         <div *ngIf="!isEditing()">
           <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password Provisional</label>
-          <input type="password" name="password" [(ngModel)]="selectedUser().password" required class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+          <input type="password" name="password" [(ngModel)]="$any(selectedUser()).password" required class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
         </div>
 
         <div>
           <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Rol en el Sistema</label>
-          <select name="role_id" [(ngModel)]="selectedUser().role_id" required class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none transition-all">
+          <select name="roleId" [(ngModel)]="selectedUser().roleId" required class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none transition-all">
             <option [value]="1">Administrador</option>
             <option [value]="2">Cuidador</option>
             <option [value]="3">Usuario</option>

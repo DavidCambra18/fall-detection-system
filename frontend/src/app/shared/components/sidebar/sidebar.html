@@ -51,7 +51,19 @@
       </div>
     }
 
-    @if (currentUser().roleId === 1 || currentUser().roleId === 2) {
+    @if (currentUser().roleId === 3) {
+      <div class="pt-6">
+        <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Mi Cuenta</p>
+        
+        <a routerLink="/usuario-perfil" routerLinkActive="bg-blue-600 text-white shadow-lg" 
+           class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
+          <span class="text-xl">👤</span>
+          <span class="font-bold text-sm tracking-tight">Mi Perfil</span>
+        </a>
+      </div>
+    }
+
+    @if (currentUser().roleId === 1 || currentUser().roleId === 2 || currentUser().roleId === 3) {
       <div class="pt-6">
         <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Seguimiento</p>
         
@@ -59,7 +71,9 @@
            routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
            class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
           <span class="text-xl">📈</span>
-          <span class="font-bold text-sm tracking-tight">Historial Alertas</span>
+          <span class="font-bold text-sm tracking-tight">
+            {{ currentUser().roleId === 3 ? 'Mi Actividad' : 'Historial Alertas' }}
+          </span>
         </a>
       </div>
     }
@@ -67,7 +81,7 @@
   </nav>
 
   <div class="p-4 mt-auto">
-    <div class="bg-slate-800/50 rounded-[2rem] p-4 border border-slate-700/50">
+    <div class="bg-slate-800/50 rounded-4xl p-4 border border-slate-700/50">
       <div class="flex items-center gap-3 mb-4">
         <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
           <span class="text-blue-400 text-xs font-black uppercase">

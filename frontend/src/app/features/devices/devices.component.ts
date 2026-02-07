@@ -1,5 +1,6 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DeviceService, Device } from '../../core/services/device.service';
 
 @Component({
   selector: 'app-devices',
@@ -8,38 +9,31 @@ import { CommonModule } from '@angular/common';
   templateUrl: './devices.component.html'
 })
 export class DevicesComponent implements OnInit {
+  private deviceService = inject(DeviceService);
   
-  // Sincronizado con init.sql: Marta (ID 3), Roberto (ID 4), Ana (ID 5)
-  devices = signal([
-    {
-      logic_id: 'ESP32-001',
-      mac: 'AA:BB:CC:11:22:33',
-      alias: 'Dispositivo de Marta',
-      status: 'active',
-      battery: 95,
-      owner: 'Marta Rövanpera'
-    },
-    {
-      logic_id: 'ESP32-002',
-      mac: 'AA:BB:CC:11:22:34',
-      alias: 'Dispositivo de Roberto',
-      status: 'active',
-      battery: 72,
-      owner: 'Roberto Gómez Ruiz'
-    },
-    {
-      logic_id: 'ESP32-003',
-      mac: 'AA:BB:CC:11:22:35',
-      alias: 'Dispositivo de Ana',
-      status: 'low battery', // Estado crítico según SQL
-      battery: 12,
-      owner: 'Ana Sánchez Moreno'
-    }
-  ]);
+  // Signal para la lista de dispositivos reales
+  devices = signal<Device[]>([]);
+  isLoading = signal<boolean>(true);
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadDevices();
+  }
 
-  getBatteryClass(level: number): string {
+  loadDevices() {
+    this.deviceService.getDevices().subscribe({
+      next: (data) => {
+        this.devices.set(data);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error al conectar con el inventario:', err);
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  // Lógica visual para la batería (puedes simularla o traerla si el back la incluye)
+  getBatteryClass(level: number = 0): string {
     if (level > 50) return 'bg-emerald-500';
     if (level > 20) return 'bg-amber-500';
     return 'bg-red-500';

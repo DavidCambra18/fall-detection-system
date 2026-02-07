@@ -2,7 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable, tap } from 'rxjs';
-import { AuthResponse, LoginInput, UserSession } from '../models/auth.models';
+// CAMBIO: Importamos User en lugar de UserSession
+import { AuthResponse, LoginInput, User } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root'
@@ -11,10 +12,9 @@ export class AuthService {
   private http = inject(HttpClient);
   private readonly API_URL = `${environment.apiUrl}/auth`;
 
-  // Signal que contiene los datos del usuario o null si no está logueado
-  currentUser = signal<UserSession | null>(this.getUserFromStorage());
+  // CAMBIO: El Signal ahora maneja el tipo User
+  currentUser = signal<User | null>(this.getUserFromStorage());
 
-  // Signals derivados para usar en el HTML de forma reactiva
   isLoggedIn = computed(() => !!this.currentUser());
   userRole = computed(() => this.currentUser()?.roleId ?? null);
 
@@ -32,7 +32,6 @@ export class AuthService {
     this.currentUser.set(null);
   }
 
-  // Métodos de utilidad para validaciones rápidas
   isAdmin(): boolean { return this.userRole() === 1; }
   isCuidador(): boolean { return this.userRole() === 2; }
   isPaciente(): boolean { return this.userRole() === 3; }
@@ -41,18 +40,29 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
-  private saveSession(token: string, user: UserSession): void {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    this.currentUser.set(user); // Actualizamos el signal
+  // CAMBIO: Tipo User aquí también
+  updateCurrentUserSignal(updatedData: Partial<User>): void {
+    const current = this.currentUser();
+    if (current) {
+      const newUser = { ...current, ...updatedData };
+      localStorage.setItem('user', JSON.stringify(newUser));
+      this.currentUser.set(newUser);
+    }
   }
 
-  private getUserFromStorage(): UserSession | null {
+  private saveSession(token: string, user: User): void {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    this.currentUser.set(user);
+  }
+
+  private getUserFromStorage(): User | null {
     const userJson = localStorage.getItem('user');
     if (!userJson) return null;
     try {
       return JSON.parse(userJson);
     } catch {
+      localStorage.removeItem('user');
       return null;
     }
   }
