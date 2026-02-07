@@ -1,9 +1,9 @@
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router'; 
-import { AuthService } from '../../core/services/auth.service';
-import { EventService } from '../../core/services/event.service';
-import { UserService } from '../../core/services/user.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { EventService } from '../../../core/services/event.service';
+import { UserService } from '../../../core/services/user.service';
 import { timer, Subscription, switchMap } from 'rxjs'; 
 
 @Component({
