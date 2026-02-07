@@ -13,13 +13,16 @@
 
   <nav class="flex-1 px-4 space-y-2">
     
-    <a routerLink="/dashboard" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
+    <a [routerLink]="authService.currentUser()?.roleId === 1 ? '/admin-dashboard' : 
+                     (authService.currentUser()?.roleId === 2 ? '/cuidador-dashboard' : '/usuario-dashboard')" 
+       routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
+       [routerLinkActiveOptions]="{ exact: true }"
        class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
       <span class="text-xl group-hover:scale-110 transition-transform">🏠</span>
       <span class="font-bold text-sm tracking-tight">Panel Principal</span>
     </a>
 
-    <div *ngIf="authService.userRole() === 1" class="pt-6">
+    <div *ngIf="authService.currentUser()?.roleId === 1" class="pt-6">
       <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Administración</p>
       
       <a routerLink="/users" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
@@ -29,29 +32,29 @@
       </a>
 
       <a routerLink="/devices" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
-         class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
+         class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group mt-1">
         <span class="text-xl">💾</span>
         <span class="font-bold text-sm tracking-tight">Gestión Dispositivos</span>
       </a>
     </div>
 
-    <div *ngIf="authService.userRole() === 1 || authService.userRole() === 2" class="pt-6">
+    <div *ngIf="authService.currentUser()?.roleId === 2" class="pt-6">
+      <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Asistencia Médica</p>
+      
+      <a routerLink="/mis-pacientes" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
+         class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
+        <span class="text-xl">🏥</span>
+        <span class="font-bold text-sm tracking-tight">Mis Pacientes</span>
+      </a>
+    </div>
+
+    <div *ngIf="authService.currentUser()?.roleId === 1 || authService.currentUser()?.roleId === 2" class="pt-6">
       <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Seguimiento</p>
       
       <a routerLink="/history" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
          class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
         <span class="text-xl">📈</span>
         <span class="font-bold text-sm tracking-tight">Historial Alertas</span>
-      </a>
-    </div>
-
-    <div *ngIf="authService.userRole() === 3" class="pt-6">
-      <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Mi Actividad</p>
-      
-      <a routerLink="/history" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
-         class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
-        <span class="text-xl">📡</span>
-        <span class="font-bold text-sm tracking-tight">Ver mis registros</span>
       </a>
     </div>
 
@@ -62,12 +65,14 @@
       <div class="flex items-center gap-3 mb-4">
         <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
           <span class="text-blue-400 text-xs font-black uppercase">
-            {{ authService.currentUser()?.name?.substring(0,2) || 'AD' }}
+            {{ authService.currentUser()?.name?.substring(0,2) || 'US' }}
           </span>
         </div>
         <div class="overflow-hidden">
-          <p class="text-xs font-black text-white truncate">{{ authService.currentUser()?.name || 'Administrador' }}</p>
-          <p class="text-[10px] font-medium text-slate-500 uppercase tracking-widest">Rol: {{ authService.userRole() }}</p>
+          <p class="text-xs font-black text-white truncate">{{ authService.currentUser()?.name }}</p>
+          <p class="text-[8px] font-bold text-blue-500 uppercase tracking-widest mt-0.5 italic">
+            {{ authService.currentUser()?.roleId === 1 ? 'Administrador' : (authService.currentUser()?.roleId === 2 ? 'Cuidador' : 'Usuario') }}
+          </p>
         </div>
       </div>
       

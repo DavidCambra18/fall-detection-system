@@ -1,7 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { CommonModule } from '@angular/common'; // Importante para el *ngIf
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-sidebar',
@@ -10,9 +10,11 @@ import { CommonModule } from '@angular/common'; // Importante para el *ngIf
   templateUrl: './sidebar.html'
 })
 export class SidebarComponent {
-  // Inyectamos el servicio como público para usarlo en el HTML
   public authService = inject(AuthService);
   private router = inject(Router);
+
+  // Usamos un alias para facilitar la lectura en el HTML
+  public currentUser = computed(() => this.authService.currentUser());
 
   onLogout() {
     this.authService.logout();
