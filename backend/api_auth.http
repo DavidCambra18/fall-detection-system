@@ -16,12 +16,38 @@ POST http://localhost:3000/api/auth/register
 Content-Type: application/json
 
 {
+  "email": "isabel@gmail.com",
+  "password": "Isabel1234!",
+  "name": "Isabel",
+  "surnames": "Pérez López",
+  "date_born": "1950-05-20",
+  "phone_num": "+34600111444"
+}
+
+###
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
   "email": "marta@gmail.com",
   "password": "Marta1234!",
   "name": "Marta",
   "surnames": "Rövanpera",
   "date_born": "1950-05-20",
   "phone_num": "+34600111124"
+}
+
+###
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "carlos@gmail.com",
+  "password": "Carlos1234!",
+  "name": "Carlos",
+  "surnames": "Med Vades",
+  "date_born": "1956-02-20",
+  "phone_num": "+34600114591"
 }
 
 ###
@@ -52,6 +78,24 @@ Content-Type: application/json
 {
   "email": "marta@gmail.com",
   "password": "Marta1234!"
+}
+
+###
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "isabel@gmail.com",
+  "password": "Isabel1234!"
+}
+
+###
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "carlos@gmail.com",
+  "password": "Carlos1234!"
 }
 
 ### registro incorrecto
