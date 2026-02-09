@@ -5,6 +5,7 @@ import express from 'express';
 import authRoutes from './routes/auth.routes';
 import deviceRoutes from './routes/devices.routes';
 import eventsRoutes from './routes/events.routes';
+import usersRoutes from './routes/users.routes';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/users', usersRoutes);
 
 // Ruta base
 app.get('/', (req, res) => {
