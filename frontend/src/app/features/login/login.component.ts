@@ -30,13 +30,13 @@ export class LoginComponent {
         // Usamos la respuesta directa para evitar delay de la señal en el primer render
         const user = res.user; 
         
-        if (!user || !user.roleId) {
+        if (!user || !user.role_id) {
           this.errorMessage = 'Información de usuario incompleta.';
           return;
         }
 
         // Navegamos usando el diccionario o una ruta por defecto
-        const target = this.ROUTES[user.roleId] || '/dashboard';
+        const target = this.ROUTES[user.role_id] || '/dashboard';
         this.router.navigate([target]);
       },
       error: (err) => {

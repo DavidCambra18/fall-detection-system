@@ -4,7 +4,7 @@ export interface User {
   id: number;
   email: string;
   name: string;
-  roleId: number;     // Obligatorio para el sistema de roles
+  role_id: number;     // Obligatorio para el sistema de roles
   surnames?: string;
   phone_num?: string;
   date_born?: string;

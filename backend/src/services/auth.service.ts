@@ -42,7 +42,7 @@ export const registerUser = async (input: RegisterInput) => {
   const bcrypt: any = (bcryptPkg && (bcryptPkg.default ?? bcryptPkg));
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-  const roleId = 3;
+  const role_id = 3;
 
   const result = await pool.query(
     `INSERT INTO users (email, password_hash, name, surnames, date_born, phone_num, role_id)
@@ -55,7 +55,7 @@ export const registerUser = async (input: RegisterInput) => {
       surnames || null,
       date_born || null,
       phone_num,
-      roleId
+      role_id
     ]
   );
 
@@ -67,7 +67,7 @@ export const registerUser = async (input: RegisterInput) => {
     surnames: row.surnames,
     date_born: row.date_born,
     phone_num: row.phone_num,
-    roleId: row.role_id,
+    role_id: row.role_id,
   };
 };
 
@@ -87,12 +87,12 @@ export const loginUser = async (input: LoginInput) => {
   if (!match) throw new Error('Contraseña incorrecta');
 
   const token = jwt.sign(
-    { id: user.id, email: user.email, roleId: user.role_id },
+    { id: user.id, email: user.email, role_id: user.role_id },
     process.env.JWT_SECRET!,
     { expiresIn: '8h' }
   );
 
-  return { token, user: { id: user.id, email: user.email, roleId: user.role_id } };
+  return { token, user: { id: user.id, email: user.email, role_id: user.role_id } };
 };
 
 

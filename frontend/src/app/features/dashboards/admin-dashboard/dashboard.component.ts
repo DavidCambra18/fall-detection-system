@@ -18,9 +18,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private userService = inject(UserService);
   private router = inject(Router);
 
-  // Necesario para cálculos de gráficas en el HTML
   public Math = Math; 
-
   userName: string = 'Usuario';
   private poller?: Subscription;
   private usersCache = signal<any[]>([]);
@@ -32,8 +30,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   lowBatteryCount = signal<number>(0);
   activeEmergency = signal<any | null>(null);
   activityData = signal<{hour: string, count: number, isFall: boolean}[]>([]);
-  
-  // --- NUEVO: Telemetría agrupada ---
   deviceTelemetry = signal<any[]>([]);
 
   ngOnInit() {
@@ -86,9 +82,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         this.updateRealTimeChart(events);
         
-        // --- PROCESAR TELEMETRÍA DINÁMICA ---
-        // Tomamos los IDs de dispositivos únicos y generamos sus gráficas
-        // Limitamos a los últimos 3 activos para no sobrecargar la vista
         const telemetry = uniqueDevices.slice(-3).map(id => {
           const deviceEvents = events.filter(e => e.device_id === id).slice(-15);
           return {
@@ -128,7 +121,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   goToTodayFalls() {
-    this.router.navigate(['/history'], { queryParams: { filter: 'today' } });
+    this.router.navigate(['/history-admin'], { queryParams: { filter: 'today' } });
   }
 
   logout() {

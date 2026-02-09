@@ -7,6 +7,8 @@ export const getUsers = async () => {
       u.email,
       u.name,
       u.surnames,
+      u.phone_num,
+      u.role_id,
       r.name AS role
     FROM users u
     JOIN roles r ON u.role_id = r.id

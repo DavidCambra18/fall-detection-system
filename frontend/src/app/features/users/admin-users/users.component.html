@@ -15,10 +15,10 @@
   <div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm mb-8 flex gap-4 items-center">
     <span class="text-slate-400 ml-2">🔍</span>
     <input type="text" 
-           [ngModel]="searchTerm()" 
-           (ngModelChange)="searchTerm.set($event); currentPage.set(1)" 
-           placeholder="Buscar por nombre, email o teléfono..." 
-           class="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium text-slate-600 outline-none">
+            [ngModel]="searchTerm()" 
+            (ngModelChange)="searchTerm.set($event); currentPage.set(1)" 
+            placeholder="Buscar por nombre, email o teléfono..." 
+            class="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium text-slate-600 outline-none">
   </div>
 
   <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
@@ -44,11 +44,11 @@
           <td class="px-8 py-5 text-sm font-bold text-slate-400">{{user.phone_num || '---'}}</td>
           <td class="px-8 py-5 text-center">
             <span [ngClass]="{
-              'bg-blue-100 text-blue-600': user.roleId === 1,
-              'bg-purple-100 text-purple-600': user.roleId === 2,
-              'bg-emerald-100 text-emerald-600': user.roleId === 3
+              'bg-blue-100 text-blue-600': user.role_id === 1,
+              'bg-purple-100 text-purple-600': user.role_id === 2,
+              'bg-emerald-100 text-emerald-600': user.role_id === 3
             }" class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
-              {{getRoleName(user.roleId)}}
+              {{getRoleName(user.role_id)}}
             </span>
           </td>
           <td class="px-8 py-5 text-right space-x-2">
@@ -118,7 +118,7 @@
 
         <div>
           <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Rol en el Sistema</label>
-          <select name="roleId" [(ngModel)]="selectedUser().roleId" required class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none transition-all">
+          <select name="role_id" [(ngModel)]="$any(selectedUser()).role_id" required class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none transition-all">
             <option [value]="1">Administrador</option>
             <option [value]="2">Cuidador</option>
             <option [value]="3">Usuario</option>

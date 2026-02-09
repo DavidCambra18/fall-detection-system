@@ -20,7 +20,7 @@ export class SidebarComponent {
     const user = this.authService.currentUser();
     
     // Si no hay usuario, devolvemos un estado por defecto
-    if (!user) return { roleId: 0, name: 'Usuario', email: '' };
+    if (!user) return { role_id: 0, name: 'Usuario', email: '' };
 
     // MAPEÓ FLEXIBLE: 
     // Como vimos en consola que 'name' no llega, usamos el email como fallback
@@ -28,7 +28,7 @@ export class SidebarComponent {
     const displayName = (user as any).name || (user as any).nombre || fallback;
 
     return {
-      roleId: user.roleId || 0,
+      role_id: user.role_id || 0,
       name: displayName,
       email: user.email || ''
     };
@@ -38,7 +38,7 @@ export class SidebarComponent {
    * Rutas centralizadas optimizadas.
    */
   get dashboardRoute(): string {
-    const role = this.currentUser().roleId;
+    const role = this.currentUser().role_id;
     const routes: Record<number, string> = {
       1: '/admin-dashboard',
       2: '/cuidador-dashboard',
@@ -48,7 +48,7 @@ export class SidebarComponent {
   }
 
   get historyRoute(): string {
-    const role = this.currentUser().roleId;
+    const role = this.currentUser().role_id;
     if (role === 1) return '/history-admin';
     if (role === 2) return '/history-cuidador';
     if (role === 3) return '/usuario-alerts'; // Añadido para Rol 3
