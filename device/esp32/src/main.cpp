@@ -47,40 +47,104 @@ float calculateInclination(float x, float y, float z) {
     return acos(z / totalAccel) * RAD_TO_DEG;
 }
 
+// Test de conectividad básica al servidor
+bool testConnection() {
+    HTTPClient http;
+    http.setTimeout(5000);
+    
+    // Extraer URL base desde serverUrl (eliminar el path /api/auth/telemetry)
+    String baseUrl = String(serverUrl);
+    int pathIndex = baseUrl.indexOf("/api/");
+    if (pathIndex > 0) {
+        baseUrl = baseUrl.substring(0, pathIndex);
+    }
+    
+    Serial.print("Probando URL: ");
+    Serial.println(baseUrl);
+    
+    http.begin(baseUrl);
+    int httpCode = http.GET();
+    
+    Serial.print("Código HTTP recibido: ");
+    Serial.println(httpCode);
+    
+    if (httpCode < 0) {
+        Serial.print("Error HTTPClient: ");
+        Serial.println(http.errorToString(httpCode));
+    }
+    
+    http.end();
+    
+    return (httpCode > 0);
+}
+
 // Envía los datos al servidor
 void sendData(float x, float y, float z, bool fall) {
-    if (WiFi.status() == WL_CONNECTED) {
-        HTTPClient http;
-        
-        Serial.print("Enviando datos a: ");
-        Serial.println(serverUrl);
-
-        http.begin(serverUrl);
-        http.addHeader("Content-Type", "application/json");
-        http.setTimeout(3000); // 3 segundos de timeout
-
-        StaticJsonDocument<256> doc;
-        doc["deviceId"] = deviceId;
-        doc["accX"] = x;
-        doc["accY"] = y;
-        doc["accZ"] = z;
-        doc["fallDetected"] = fall;
-
-        String requestBody;
-        serializeJson(doc, requestBody);
-
-        int httpResponseCode = http.POST(requestBody);
-        
-        if (httpResponseCode > 0) {
-            Serial.printf("EXITO -> Código HTTP: %d\n", httpResponseCode);
-        } else {
-            Serial.printf("ERROR -> Fallo en conexión: %s (Código: %d)\n", http.errorToString(httpResponseCode).c_str(), httpResponseCode);
-        }
-        
-        http.end();
-    } else {
-        Serial.println("Error: WiFi desconectado. No se puede enviar.");
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("ERROR: WiFi desconectado. No se puede enviar.");
+        return;
     }
+
+    HTTPClient http;
+    
+    Serial.println("\n========== ENVIANDO DATOS ==========");
+    Serial.print("URL: ");
+    Serial.println(serverUrl);
+    Serial.print("IP Local ESP32: ");
+    Serial.println(WiFi.localIP());
+    Serial.printf("Caída detectada: %s\n", fall ? "SI" : "NO");
+    
+    // Test de conectividad primero
+    Serial.print("Probando conectividad al servidor... ");
+    if (testConnection()) {
+        Serial.println("OK");
+    } else {
+        Serial.println("FALLO - No se puede alcanzar el servidor");
+        Serial.println("====================================\n");
+        return;
+    }
+
+    // Aumentar timeout para redes lentas
+    http.setTimeout(10000); // 10 segundos
+    http.begin(serverUrl);
+    http.addHeader("Content-Type", "application/json");
+
+    StaticJsonDocument<256> doc;
+    doc["deviceId"] = deviceId;
+    doc["accX"] = x;
+    doc["accY"] = y;
+    doc["accZ"] = z;
+    doc["fallDetected"] = fall;
+
+    String requestBody;
+    serializeJson(doc, requestBody);
+    
+    Serial.print("Body JSON: ");
+    Serial.println(requestBody);
+
+    int httpResponseCode = http.POST(requestBody);
+    
+    if (httpResponseCode > 0) {
+        String response = http.getString();
+        Serial.printf("✓ EXITO -> Código HTTP: %d\n", httpResponseCode);
+        Serial.print("Respuesta: ");
+        Serial.println(response);
+    } else {
+        Serial.printf("✗ ERROR -> Código: %d\n", httpResponseCode);
+        Serial.printf("Descripción: %s\n", http.errorToString(httpResponseCode).c_str());
+        
+        // Diagnóstico adicional
+        if (httpResponseCode == -1) {
+            Serial.println("Diagnóstico ERROR -1:");
+            Serial.println("  - Verifica que el backend esté corriendo");
+            Serial.println("  - Verifica la URL en platformio.ini");
+            Serial.println("  - Verifica que ambos estén en la misma red");
+            Serial.println("  - Intenta hacer ping al servidor desde tu PC");
+        }
+    }
+    
+    http.end();
+    Serial.println("====================================\n");
 }
 
 void setup() {

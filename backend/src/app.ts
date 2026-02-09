@@ -17,8 +17,16 @@ const FRONTEND_ORIGIN = process.env.NODE_ENV === 'production'
   ? 'https://falldetectionsystem.com'
   : 'http://localhost:4200';
 
+// CORS mejorado: Permite frontend Y dispositivos ESP32
 app.use(cors({
-  origin: FRONTEND_ORIGIN,
+  origin: (origin, callback) => {
+    // Permitir sin origin (Postman, ESP32, etc.) o desde el frontend
+    if (!origin || origin === FRONTEND_ORIGIN) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Permitir cualquier origen (desarrollo)
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
