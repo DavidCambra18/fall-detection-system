@@ -72,7 +72,10 @@ VALUES
 ('manolo@gmail.com', '+34600111222', '$2b$10$USC3AQnQSwky6snTRORElu76RSJXqqisaCs7j.924wtfC/INN1fRS', 'Manolo', 'García Pérez', '1985-05-20', 2, NULL),
 ('marta@gmail.com', '+34600111124', '$2b$10$7E8i6czm3zT2qXURJxgyMOFvfDCEOHoDk9hfhtx17QULNfDESyLEO', 'Marta', 'Rövanpera', '1945-03-15', 3, 2),
 ('roberto@gmail.com', '+34600111226', '$2b$10$B0Uga5i7uR6H.ubcsJYsg.7jEi9AAsmDxlrh7QAjOCJjL5AS7.o2u', 'Roberto', 'Gómez Ruiz', '1945-03-15', 3, 2),
-('ana@gmail.com', '+34600111228', '$2b$10$yzE8dfVOmFzNG47U39pvSunSskcTF90TT9g2pcWLLEh1GPZX0QzYK', 'Ana', 'Sánchez Moreno', '1950-12-05', 3, 2);
+('ana@gmail.com', '+34600111228', '$2b$10$yzE8dfVOmFzNG47U39pvSunSskcTF90TT9g2pcWLLEh1GPZX0QzYK', 'Ana', 'Sánchez Moreno', '1950-12-05', 3, 2),
+('isabel@gmail.com', '+34600111339', '$2b$10$APySWBSLJwxnpIBRcygM4esNWHDSaEUqkI.MWlaVag7PS12oRRG5q', 'Isabel', 'Fon Histon', '1984-10-08', 2, NULL),
+('carlos@gmail.com', '+34600114591', '$2b$10$drdFJnBIXrWmOTx8yQ1VgO6Q4VVRLS6yF7FhR5DAqDtobM17.6zoi', 'Carlos', 'Med Vades', '1956-02-19', 3, NULL);
+
 -- 3.3 DISPOSITIVOS
 INSERT INTO devices (device_id_logic, mac, alias, status, user_id)
 VALUES
