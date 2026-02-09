@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 
 const FRONTEND_ORIGIN = process.env.NODE_ENV === 'production'
   ? 'https://falldetectionsystem.com'
-  : `http://localhost:${PORT}`; // Ajuste dinámico para evitar líos de CORS
+  : 'http://localhost:4200';
 
 app.use(cors({
   origin: FRONTEND_ORIGIN,
