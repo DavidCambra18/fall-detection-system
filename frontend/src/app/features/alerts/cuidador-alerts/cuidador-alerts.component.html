@@ -1,0 +1,116 @@
+<div class="p-8 bg-slate-50 min-h-screen">
+  <header class="flex justify-between items-end mb-10">
+    <div>
+      <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Historial de Caídas</h1>
+      
+      @if (userIdParam()) {
+        <div class="mt-4 flex items-center gap-3 animate-in slide-in-from-left duration-300">
+          <div class="flex items-center gap-2 bg-blue-600 text-white px-4 py-1.5 rounded-full shadow-lg shadow-blue-200">
+            <span class="text-[9px] font-black uppercase tracking-widest">
+              Paciente: {{ formatPatientName(userIdParam()!) }}
+            </span>
+          </div>
+          <button (click)="clearFilter()" 
+                  class="text-[9px] font-black uppercase text-slate-400 hover:text-red-500 transition-all underline underline-offset-4 decoration-2">
+            Ver todo el historial ✕
+          </button>
+        </div>
+      } @else {
+        <p class="text-blue-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">Registro operativo para cuidador</p>
+      }
+    </div>
+
+    <div class="relative w-72">
+      <input 
+        type="text" 
+        [ngModel]="searchTerm()" 
+        (ngModelChange)="searchTerm.set($event); currentPage.set(1)"
+        placeholder="Buscar por nombre o ID..."
+        class="w-full bg-white border border-slate-200 rounded-2xl px-5 py-3 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+      >
+      <span class="absolute right-4 top-3 text-slate-400">🔍</span>
+    </div>
+  </header>
+
+  <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-slate-900 text-slate-400 uppercase text-[9px] font-black tracking-widest">
+          <th class="px-8 py-5">Usuario</th>
+          <th class="px-8 py-5 text-center">Fecha y Hora</th>
+          <th class="px-8 py-5 text-center">Impacto (X, Y, Z)</th>
+          <th class="px-8 py-5 text-right">Estado / Acción</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        @for (alert of filteredAlerts(); track alert.id) {
+          <tr class="hover:bg-blue-50/40 transition-all group">
+            <td class="px-8 py-6">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-blue-600">
+                  {{ formatPatientName(alert.user_id).charAt(0) }}
+                </div>
+                <div>
+                  <p class="text-sm font-black text-slate-800 leading-none">{{ formatPatientName(alert.user_id) }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-8 py-6 text-center text-xs text-slate-500 font-bold italic">
+              {{ alert.date_rep | date:'dd/MM/yyyy - HH:mm:ss' }}
+            </td>
+            <td class="px-8 py-6 text-center font-mono text-[10px] text-slate-400 italic">
+              {{ alert.acc_x }}, {{ alert.acc_y }}, {{ alert.acc_z }}
+            </td>
+            
+            <td class="px-8 py-6 text-right">
+              @if (alert.confirmed === null) {
+                @if (editingId() !== alert.id) {
+                  <button (click)="toggleEdit(alert.id)"
+                          class="text-[9px] font-black uppercase px-4 py-2 rounded-xl border border-red-100 text-red-500 bg-red-50 animate-pulse hover:scale-105 transition-all">
+                    ⚠️ Pendiente
+                  </button>
+                } @else {
+                  <div class="flex justify-end gap-2 items-center animate-fadeIn">
+                    <button (click)="confirmAlert(alert, true)"
+                            class="px-3 py-1.5 bg-emerald-500 text-white text-[9px] font-black uppercase rounded-lg hover:bg-emerald-600 shadow-lg shadow-emerald-500/20">
+                      Atendido
+                    </button>
+                    <button (click)="confirmAlert(alert, false)"
+                            class="px-3 py-1.5 bg-slate-500 text-white text-[9px] font-black uppercase rounded-lg hover:bg-slate-600">
+                      Falsa Alarma
+                    </button>
+                    <button (click)="toggleEdit(alert.id)" class="text-slate-300 hover:text-slate-600 px-1 text-xs">✕</button>
+                  </div>
+                }
+              } @else {
+                <div class="flex justify-end items-center gap-2">
+                  <span [ngClass]="alert.confirmed ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 'text-slate-400 bg-slate-50 border-slate-100'" 
+                        class="text-[9px] font-black uppercase px-4 py-2 rounded-xl border italic">
+                    {{ alert.confirmed ? '✅ Auxiliado' : '⚪ Falsa Alarma' }}
+                  </span>
+                  <button (click)="confirmAlert(alert, null)" class="text-slate-200 hover:text-red-400 transition-colors" title="Resetear">
+                    ↺
+                  </button>
+                </div>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="p-24 text-center">
+              <p class="text-slate-300 font-black uppercase italic tracking-[0.3em] text-xs">No hay alertas registradas</p>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="bg-slate-50/50 px-8 py-4 flex justify-between items-center border-t border-slate-100 text-[10px] font-black text-slate-400 uppercase">
+      <span>Página {{ currentPage() }} de {{ totalPages() }}</span>
+      <div class="flex gap-2">
+        <button (click)="prevPage()" [disabled]="currentPage() === 1" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-50 transition-all">Anterior</button>
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages() || totalPages() === 0" class="px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 transition-all shadow-md">Siguiente</button>
+      </div>
+    </div>
+  </div>
+</div>

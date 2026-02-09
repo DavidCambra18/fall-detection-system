@@ -1,0 +1,58 @@
+<div class="p-8 bg-slate-50 min-h-screen">
+  
+  @if (activeAlert()) {
+    <div class="mb-10 animate-bounce">
+      <div class="bg-red-600 border-4 border-red-400 rounded-[3rem] p-8 shadow-[0_0_60px_rgba(220,38,38,0.5)] flex items-center justify-between">
+        <div class="flex items-center gap-8">
+          <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center animate-pulse shadow-inner">
+            <span class="text-5xl">🚨</span>
+          </div>
+          <div>
+            <h2 class="text-white font-black text-3xl uppercase italic tracking-tighter leading-none">
+              ¡Caída detectada ahora mismo!
+            </h2>
+            <p class="text-red-100 font-bold text-lg mt-2 italic">
+              El paciente <span class="text-white underline">{{ getPatientName(activeAlert().user_id) }}</span> necesita ayuda.
+            </p>
+          </div>
+        </div>
+
+        <a routerLink="/history-cuidador" 
+           class="bg-white text-red-600 px-10 py-5 rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-2xl text-sm">
+          Atender de inmediato
+        </a>
+      </div>
+    </div>
+  }
+
+  <header class="mb-10">
+    <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Panel de Control</h1>
+    <p class="text-blue-500 font-black text-[10px] uppercase tracking-[0.3em] mt-1 italic">
+      Cuidador: {{ authService.currentUser()?.name }}
+    </p>
+  </header>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+      <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Usuarios Asignados</p>
+      <h4 class="text-4xl font-black text-slate-800 tracking-tighter">{{ stats().total }}</h4>
+      <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase italic">Marta, Roberto y Ana</p>
+    </div>
+
+    <div [ngClass]="stats().critical > 0 ? 'bg-red-600 shadow-red-900/20' : 'bg-slate-900 shadow-blue-900/20'" 
+         class="p-8 rounded-[2.5rem] shadow-xl transition-colors duration-500">
+      <p class="text-[9px] font-black text-white/50 uppercase tracking-widest mb-2">Alertas sin Confirmar</p>
+      <h4 class="text-4xl font-black text-white tracking-tighter">{{ stats().critical }}</h4>
+      <p class="text-[10px] font-bold text-white/40 mt-1 uppercase italic">
+        {{ stats().critical > 0 ? '¡Atención necesaria!' : 'Todo bajo control' }}
+      </p>
+    </div>
+
+    <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+      <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Dispositivos ESP32</p>
+      <h4 class="text-4xl font-black text-emerald-500 tracking-tighter">{{ stats().active }}</h4>
+      <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase italic">Sincronizados</p>
+    </div>
+  </div>
+
+</div>

@@ -8,7 +8,46 @@ Content-Type: application/json
   "name": "Manolo",
   "surnames": "Pérez López",
   "date_born": "1950-05-20",
-  "phone_num": "3248832"
+  "phone_num": "+34600111222"
+}
+
+###
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "isabel@gmail.com",
+  "password": "Isabel1234!",
+  "name": "Isabel",
+  "surnames": "Pérez López",
+  "date_born": "1950-05-20",
+  "phone_num": "+34600111444"
+}
+
+###
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "marta@gmail.com",
+  "password": "Marta1234!",
+  "name": "Marta",
+  "surnames": "Rövanpera",
+  "date_born": "1950-05-20",
+  "phone_num": "+34600111124"
+}
+
+###
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "carlos@gmail.com",
+  "password": "Carlos1234!",
+  "name": "Carlos",
+  "surnames": "Med Vades",
+  "date_born": "1956-02-20",
+  "phone_num": "+34600114591"
 }
 
 ###
@@ -19,7 +58,7 @@ Content-Type: application/json
   "email": "admin@gmail.com",
   "password": "Admin1234!",
   "name": "Admin",
-  "phone_num": "3245348832"
+  "phone_num": "+34600111223"
 
 }
 
@@ -30,6 +69,33 @@ Content-Type: application/json
 {
   "email": "admin@gmail.com",
   "password": "Admin1234!"
+}
+
+###
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "marta@gmail.com",
+  "password": "Marta1234!"
+}
+
+###
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "isabel@gmail.com",
+  "password": "Isabel1234!"
+}
+
+###
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "carlos@gmail.com",
+  "password": "Carlos1234!"
 }
 
 ### registro incorrecto
@@ -58,4 +124,30 @@ Content-Type: application/json
 {
   "email": "manolo@gmail.com",
   "password": "Manolo1234!"
+}
+
+### registro dispositivo
+### Crear Dispositivo (Con Token)
+POST http://localhost:3000/api/devices
+Content-Type: application/json
+// Authorization: Bearer "tokenExample"
+
+{
+  "device_id_logic": "246F28A0B1C2",
+  "mac": "24:6F:28:A0:B1:C2",
+  "alias": "ESP32 Prototipo",
+  "status": "active",
+  "user_id": 1
+}
+
+### Enviar Telemetría (Ruta y Puerto corregidos)
+POST http://localhost:3000/api/auth/telemetry
+Content-Type: application/json
+
+{
+  "deviceId": "246F28A0B1C2",
+  "accX": 0.45,
+  "accY": -0.12,
+  "accZ": 9.81,
+  "fallDetected": false
 }

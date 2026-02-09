@@ -17,6 +17,7 @@ String deviceId;
 
 const int BUTTON_PIN = 4;
 const float FALL_THRESHOLD = 25.0;
+const float INCLINATION_THRESHOLD = 60.0; // Ángulo para considerar "tumbado"
 
 unsigned long lastDebounceTime = 0;
 const unsigned long debounceDelay = 300;
@@ -35,8 +36,14 @@ const unsigned long WIFI_RETRY_INTERVAL = 5000; // Reintento cada 5 seg
 
 String getDeviceId() {
     String id = WiFi.macAddress();
-    id.replace(":", "");
+    // id.replace(":", "");
     return id;
+}
+
+float calculateInclination(float x, float y, float z) {
+    float totalAccel = sqrt(sq(x) + sq(y) + sq(z));
+    // Calculamos el ángulo respecto al eje Z (vertical)
+    return acos(z / totalAccel) * RAD_TO_DEG;
 }
 
 void checkWiFi() {
@@ -81,6 +88,15 @@ void sendData(float x, float y, float z, bool fall) {
 
 void setup() {
     Serial.begin(115200);
+   
+    // 2. ESPERAR A QUE EL MONITOR SERIAL ESTÉ LISTO
+    // Este delay es vital para que te dé tiempo a ver los mensajes
+    delay(2000); 
+
+    Serial.println("\n--- [DEBUG] ESP32 DESPIERTO ---");
+    Serial.println("Configurando WiFi...");
+
+    
 
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(true); // El ESP32 intentará reconectar automáticamente
@@ -108,47 +124,54 @@ void setup() {
 
 void loop() {
     unsigned long currentMillis = millis();
+    if (WiFi.status() != WL_CONNECTED) { /* Aquí podrías llamar a checkWiFi() */ }
 
-    // Gestión de WiFi (No bloqueante)
-    checkWiFi();
-
-    // 1. LECTURA DEL SENSOR (50Hz)
     if (currentMillis - lastSensorRead >= SENSOR_INTERVAL) {
         lastSensorRead = currentMillis;
         mpu.getEvent(&a, &g, &temp);
 
-        float accelMag = sqrt(sq(a.acceleration.x) + sq(a.acceleration.y) + sq(a.acceleration.z));
+        float x = a.acceleration.x;
+        float y = a.acceleration.y;
+        float z = a.acceleration.z;
+        
+        float accelMag = sqrt(sq(x) + sq(y) + sq(z));
+        float currentAngle = calculateInclination(x, y, z);
 
-        // Detección de impacto
+        // 1. Detección de impacto inicial
         if (accelMag > FALL_THRESHOLD && !potentialFall) {
-            Serial.println("¡Impacto detectado!");
+            Serial.println("¡Impacto detectado! Esperando confirmación de posición...");
             potentialFall = true;
             timeOfImpact = currentMillis;
         }
 
-        // Confirmación de caída tras ventana de 10s
+        // 2. Ventana de confirmación de 10 segundos
         if (potentialFall && (currentMillis - timeOfImpact > CONFIRMATION_WINDOW)) {
-            sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, true);
+            // Solo se envía fallDetected: true si el ángulo indica que sigue tumbado
+            if (currentAngle > INCLINATION_THRESHOLD) {
+                Serial.printf("Caída confirmada. Ángulo actual: %.2f\n", currentAngle);
+                sendData(x, y, z, true);
+            } else {
+                Serial.println("Falsa alarma: El usuario se mantuvo erguido.");
+            }
             potentialFall = false;
         }
 
-        // Telemetría normal cada 5s
+        // 3. Telemetría normal cada 5 segundos
         static unsigned long lastSend = 0;
         if (currentMillis - lastSend > 5000 && !potentialFall) {
-             sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, false);
-             lastSend = currentMillis;
+            sendData(x, y, z, false);
+            lastSend = currentMillis;
         }
     }
 
-    // 2. LECTURA DEL BOTÓN
+    // Botón de emergencia o cancelación
     if (digitalRead(BUTTON_PIN) == LOW) {
         if (currentMillis - lastDebounceTime > debounceDelay) {
             if (potentialFall) {
-                Serial.println("Alarma cancelada.");
+                Serial.println("Alarma cancelada por el usuario.");
                 potentialFall = false;
             } else {
                 Serial.println("Alerta manual enviada.");
-                // Ahora 'a' tiene los últimos valores leídos en el timer de arriba
                 sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, true); 
             }
             lastDebounceTime = currentMillis; 

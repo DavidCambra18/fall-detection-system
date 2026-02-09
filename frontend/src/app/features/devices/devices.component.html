@@ -1,0 +1,58 @@
+<div class="p-8 bg-slate-50 min-h-screen font-sans">
+  <header class="mb-10">
+    <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Inventario de Hardware</h1>
+    <p class="text-slate-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">Gestión de activos en tiempo real</p>
+  </header>
+
+  <div *ngIf="isLoading()" class="flex flex-col items-center justify-center py-20 opacity-40">
+    <div class="w-12 h-12 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+    <p class="text-[10px] font-black uppercase tracking-widest">Sincronizando con base de datos...</p>
+  </div>
+
+  <div *ngIf="!isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div *ngFor="let dev of devices()" 
+         [ngClass]="{'border-red-200 shadow-lg ring-2 ring-red-500/10': dev.status === 'low battery'}"
+         class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all group relative overflow-hidden">
+      
+      <div class="flex justify-between items-start mb-6">
+        <div [ngClass]="dev.status === 'low battery' ? 'bg-red-50 text-red-600' : 'bg-purple-50 text-purple-600'" 
+             class="p-3 rounded-2xl text-xl">
+          {{ dev.status === 'low battery' ? '🪫' : '⌚' }}
+        </div>
+        
+        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+          <div [ngClass]="dev.status === 'active' ? 'bg-emerald-500' : 'bg-red-500'" class="w-2 h-2 rounded-full animate-pulse"></div>
+          <span class="text-[9px] font-black uppercase tracking-widest" [ngClass]="dev.status === 'active' ? 'text-emerald-600' : 'text-red-600'">
+            {{ dev.status }}
+          </span>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <h3 class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+          {{ dev.device_id_logic }}
+        </h3>
+        <p class="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-4 italic">{{ dev.alias || 'Sin alias asignado' }}</p>
+        
+        <div class="space-y-3 bg-slate-50/50 p-5 rounded-3xl border border-slate-50">
+          <div class="flex flex-col">
+            <span class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 italic">Vínculo de Usuario</span>
+            <span class="text-sm font-black text-slate-700 tracking-tight">
+              {{ dev.user_id ? 'Usuario ID: #' + dev.user_id : 'Sin propietario' }}
+            </span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 italic">Dirección MAC</span>
+            <span class="text-[10px] font-mono font-bold text-slate-400 bg-white px-2 py-1 rounded-lg border border-slate-100 w-fit">
+              {{ dev.mac }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-100 text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center italic">
+        Hardware verificado por sistema central
+      </div>
+    </div>
+  </div>
+</div>
