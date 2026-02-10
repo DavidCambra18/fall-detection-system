@@ -1,0 +1,23 @@
+@baseUrl = http://localhost:3000
+@token = token_usuario
+# NO DESPLEGAR CON EL TOKEN DEL USUARIO
+
+### OBTENER TODOS LOS USUARIOS (solo ADMIN)
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
+
+### OBTENER USUARIO POR ID
+GET {{baseUrl}}/api/users/3
+Authorization: Bearer {{token}}
+
+### USUARIOS ASIGNADOS AL CUIDADOR
+GET {{baseUrl}}/api/users/cared
+Authorization: Bearer {{token}}
+
+### PERFIL DEL USUARIO LOGUEADO
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{token}}
+
+### Eventos de un usuario
+GET {{baseUrl}}/api/users/3/events
+Authorization: Bearer {{token}}

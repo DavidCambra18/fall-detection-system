@@ -13,6 +13,7 @@ Thumbs.db
 .settings/
 
 # --- NODE.JS / DEPENDENCIES (Global, Backend & Frontend) ---
+.angular
 node_modules/
 **/node_modules/
 .pnp
