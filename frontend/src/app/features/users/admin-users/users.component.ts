@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../core/services/user.service';
-import { User } from '../../../core/models/auth.models'; // <-- Importar desde auth.models
+import { User } from '../../../core/models/auth.models';
 
 @Component({
   selector: 'app-users',
@@ -22,7 +22,6 @@ export class UsersComponent implements OnInit {
 
   isModalOpen = signal(false);
   isEditing = signal(false); 
-  // Usamos User completo para que TypeScript detecte roleId
   selectedUser = signal<Partial<User>>({});
 
   ngOnInit() {
@@ -66,7 +65,6 @@ export class UsersComponent implements OnInit {
   loadUsers() {
     this.userService.getUsers().subscribe({
       next: (data: User[]) => {
-        // El servicio ya devuelve User[], manejamos la asignación directa
         this.users.set(data);
       },
       error: (err) => console.error('Error Backend:', err)
@@ -76,13 +74,11 @@ export class UsersComponent implements OnInit {
   saveUser() {
     const userData = this.selectedUser();
     
-    // Validamos que roleId exista antes de enviar para cumplir con la interfaz
     if (this.isEditing() && userData.id) {
       this.userService.updateUser(userData.id, userData).subscribe({
         next: () => { this.loadUsers(); this.closeModal(); }
       });
     } else {
-      // Forzamos el tipado a User asegurando que los campos mínimos están
       this.userService.createUser(userData as User).subscribe({
         next: () => { this.loadUsers(); this.closeModal(); }
       });
@@ -99,14 +95,14 @@ export class UsersComponent implements OnInit {
   
   openCreateModal() {
     this.isEditing.set(false);
-    // Cambiamos role_id por roleId para que coincida con la interfaz
+    // Cambiado a role_id para coincidir con el backend
     this.selectedUser.set({ 
-      roleId: 3, 
+      role_id: 3, 
       name: '', 
       email: '', 
       surnames: '', 
       phone_num: '' 
-    }); 
+    } as any); 
     this.isModalOpen.set(true);
   }
 
@@ -124,8 +120,9 @@ export class UsersComponent implements OnInit {
     this.sortAsc.update(val => !val);
   }
 
-  getRoleName(roleId?: number): string {
+  // Recibe role_id directamente de la base de datos
+  getRoleName(role_id?: number): string {
     const roles: Record<number, string> = { 1: 'Admin', 2: 'Cuidador', 3: 'Usuario' };
-    return roles[roleId || 0] || 'Sin Rol';
+    return roles[role_id || 0] || 'Sin Rol';
   }
 }

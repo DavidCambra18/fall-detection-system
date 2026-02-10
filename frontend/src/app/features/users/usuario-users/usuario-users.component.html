@@ -1,7 +1,15 @@
 <div class="p-8 bg-slate-50 min-h-screen font-sans">
-  <header class="mb-10">
-    <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Mi Perfil</h1>
-    <p class="text-blue-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">Resumen de cuenta y seguridad</p>
+  <header class="mb-10 flex justify-between items-end">
+    <div>
+      <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Mi Perfil</h1>
+      <p class="text-blue-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">Resumen de cuenta y seguridad</p>
+    </div>
+    
+    <button (click)="toggleEdit()" 
+            class="px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+            [ngClass]="isEditing() ? 'bg-slate-200 text-slate-600' : 'bg-blue-600 text-white shadow-lg shadow-blue-200'">
+      {{ isEditing() ? 'Cancelar' : 'Modificar Datos' }}
+    </button>
   </header>
 
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl">
@@ -9,15 +17,15 @@
     <div class="lg:col-span-4 space-y-6">
       <div class="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl flex flex-col items-center">
         <div class="w-32 h-32 rounded-[2.5rem] bg-linear-to-br from-blue-600 to-blue-400 flex items-center justify-center text-4xl font-black shadow-xl mb-6 border-4 border-white/10 uppercase">
-          {{ authService.currentUser()?.name?.substring(0,2) }}
+          {{ fullUserData()?.name?.substring(0,2) }}
         </div>
-        <h2 class="text-2xl font-black tracking-tighter uppercase mb-1">{{ authService.currentUser()?.name }}</h2>
+        <h2 class="text-2xl font-black tracking-tighter uppercase mb-1">{{ fullUserData()?.name }}</h2>
         <p class="text-blue-400 text-[10px] font-black uppercase tracking-widest mb-8 italic">Usuario Protegido</p>
         
         <div class="w-full space-y-4 pt-6 border-t border-white/5">
           <div class="flex justify-between items-center text-[10px] font-bold uppercase text-slate-500 italic">
             <span>ID de Paciente</span>
-            <span class="text-white font-mono">#00{{ authService.currentUser()?.id }}</span>
+            <span class="text-white font-mono">#00{{ fullUserData()?.id }}</span>
           </div>
           <div class="flex justify-between items-center text-[10px] font-bold uppercase text-slate-500 italic">
             <span>Protección</span>
@@ -43,26 +51,41 @@
         <h3 class="text-xl font-black text-slate-800 uppercase italic tracking-tighter leading-none mb-12">Detalles de Registro</h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12 mb-12">
+          
           <div class="border-b border-slate-50 pb-6">
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">Nombre Completo</p>
-            <p class="text-base font-bold text-slate-800">{{ $any(authService.currentUser())?.name }} {{ $any(authService.currentUser())?.surnames }}</p>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">Nombre</p>
+            <input *ngIf="isEditing()" type="text" [(ngModel)]="editForm().name" class="w-full bg-slate-50 border-none rounded-lg px-2 py-1 font-bold text-slate-800 focus:ring-2 focus:ring-blue-500/20 outline-none">
+            <p *ngIf="!isEditing()" class="text-base font-bold text-slate-800">{{ fullUserData()?.name }}</p>
+          </div>
+
+          <div class="border-b border-slate-50 pb-6">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">Apellidos</p>
+            <input *ngIf="isEditing()" type="text" [(ngModel)]="editForm().surnames" class="w-full bg-slate-50 border-none rounded-lg px-2 py-1 font-bold text-slate-800 focus:ring-2 focus:ring-blue-500/20 outline-none">
+            <p *ngIf="!isEditing()" class="text-base font-bold text-slate-800">{{ fullUserData()?.surnames }}</p>
           </div>
 
           <div class="border-b border-slate-50 pb-6">
             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">Correo Electrónico</p>
-            <p class="text-base font-bold text-slate-800">{{ authService.currentUser()?.email }}</p>
+            <p class="text-base font-bold text-slate-400">{{ fullUserData()?.email }}</p>
           </div>
 
           <div class="border-b border-slate-50 pb-6">
             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">Contacto de Emergencia</p>
-            <p class="text-base font-bold text-slate-800">{{ $any(authService.currentUser())?.phone_num }}</p>
+            <input *ngIf="isEditing()" type="text" [(ngModel)]="editForm().phone_num" class="w-full bg-slate-50 border-none rounded-lg px-2 py-1 font-bold text-slate-800 focus:ring-2 focus:ring-blue-500/20 outline-none">
+            <p *ngIf="!isEditing()" class="text-base font-bold text-slate-800">{{ fullUserData()?.phone_num || 'Sin teléfono' }}</p>
           </div>
 
           <div class="border-b border-slate-50 pb-6">
             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">Fecha de Nacimiento</p>
-            <p class="text-base font-bold text-slate-800">{{ $any(authService.currentUser())?.date_born | date:'dd MMMM, yyyy' }}</p>
+            <input *ngIf="isEditing()" type="date" [(ngModel)]="editForm().date_born" class="w-full bg-slate-50 border-none rounded-lg px-2 py-1 font-bold text-slate-800 focus:ring-2 focus:ring-blue-500/20 outline-none">
+            <p *ngIf="!isEditing()" class="text-base font-bold text-slate-800">{{ (fullUserData()?.date_born | date:'dd MMMM, yyyy') || '---' }}</p>
           </div>
         </div>
+
+        <button *ngIf="isEditing()" (click)="saveProfile()"
+                class="w-full mb-8 bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-200">
+          Guardar Cambios en Servidor
+        </button>
 
         <div class="mt-auto bg-slate-900 rounded-[2.5rem] p-8 text-white flex justify-between items-center">
           <div>

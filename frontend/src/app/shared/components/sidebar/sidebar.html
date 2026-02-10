@@ -21,7 +21,7 @@
       <span class="font-bold text-sm tracking-tight">Panel Principal</span>
     </a>
 
-    @if (currentUser().roleId === 1) {
+    @if (currentUser().role_id === 1) {
       <div class="pt-6">
         <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Administración</p>
         
@@ -39,7 +39,7 @@
       </div>
     }
 
-    @if (currentUser().roleId === 2) {
+    @if (currentUser().role_id === 2) {
       <div class="pt-6">
         <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Asistencia Médica</p>
         
@@ -51,7 +51,7 @@
       </div>
     }
 
-    @if (currentUser().roleId === 3) {
+    @if (currentUser().role_id === 3) {
       <div class="pt-6">
         <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Mi Cuenta</p>
         
@@ -63,7 +63,7 @@
       </div>
     }
 
-    @if (currentUser().roleId === 1 || currentUser().roleId === 2 || currentUser().roleId === 3) {
+    @if (currentUser().role_id === 1 || currentUser().role_id === 2 || currentUser().role_id === 3) {
       <div class="pt-6">
         <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Seguimiento</p>
         
@@ -72,7 +72,7 @@
            class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
           <span class="text-xl">📈</span>
           <span class="font-bold text-sm tracking-tight">
-            {{ currentUser().roleId === 3 ? 'Mi Actividad' : 'Historial Alertas' }}
+            {{ currentUser().role_id === 3 ? 'Mi Actividad' : 'Historial Alertas' }}
           </span>
         </a>
       </div>
@@ -91,7 +91,7 @@
         <div class="overflow-hidden">
           <p class="text-xs font-black text-white truncate">{{ currentUser().name }}</p>
           <p class="text-[8px] font-bold text-blue-500 uppercase tracking-widest mt-0.5 italic">
-            {{ currentUser().roleId === 1 ? 'Administrador' : (currentUser().roleId === 2 ? 'Cuidador' : 'Usuario') }}
+            {{ currentUser().role_id === 1 ? 'Administrador' : (currentUser().role_id === 2 ? 'Cuidador' : 'Usuario') }}
           </p>
         </div>
       </div>

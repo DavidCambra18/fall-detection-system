@@ -1,8 +1,11 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router'; 
+import { forkJoin } from 'rxjs';
 import { EventService } from '../../../core/services/event.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { UserService } from '../../../core/services/user.service';
+import { DeviceService } from '../../../core/services/device.service';
 import { Report } from '../../../core/models/report.models';
 import { FormsModule } from '@angular/forms';
 
@@ -14,6 +17,8 @@ import { FormsModule } from '@angular/forms';
 })
 export class AlertsComponent implements OnInit {
   private eventService = inject(EventService);
+  private userService = inject(UserService);
+  private deviceService = inject(DeviceService);
   private route = inject(ActivatedRoute); 
   public authService = inject(AuthService);
 
@@ -25,34 +30,33 @@ export class AlertsComponent implements OnInit {
   currentPage: number = 1;
   pageSize: number = 10;
 
-  // MAPEO REAL BASADO EN TU INIT.SQL
-  // Relacionamos el ID del dispositivo con su Alias, MAC y Dueño
-  private deviceMap: { [key: number]: { alias: string, mac: string, owner: string, status: string } } = {
-    1: { alias: 'Dispositivo de Marta', mac: 'AA:BB:CC:11:22:33', owner: 'Marta Rövanpera', status: 'active' },
-    2: { alias: 'Dispositivo de Roberto', mac: 'AA:BB:CC:11:22:34', owner: 'Roberto Gómez Ruiz', status: 'active' },
-    3: { alias: 'Dispositivo de Ana', mac: 'AA:BB:CC:11:22:35', owner: 'Ana Sánchez Moreno', status: 'low battery' }
-  };
+  private dynamicDeviceMap: { [key: number]: { alias: string, mac: string, owner: string } } = {};
 
   ngOnInit(): void {
-    this.loadAlerts();
+    this.loadCatalogs();
+  }
+
+  loadCatalogs() {
+    forkJoin({
+      users: this.userService.getUsers(),
+      devices: this.deviceService.getDevices()
+    }).subscribe({
+      next: (res) => {
+        res.devices.forEach(dev => {
+          const owner = res.users.find(u => u.id === dev.user_id);
+          this.dynamicDeviceMap[dev.id] = {
+            alias: dev.alias || `Disp. ${dev.device_id_logic}`,
+            mac: dev.mac,
+            owner: owner ? `${owner.name} ${owner.surnames || ''}` : 'Sin asignar'
+          };
+        });
+        this.loadAlerts();
+      }
+    });
   }
 
   getDeviceInfo(device_id: number) {
-    return this.deviceMap[device_id] || { alias: 'Desconocido', mac: '--:--', owner: 'Desconocido', status: 'inactive' };
-  }
-
-  get paginatedAlerts() {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.filteredAlerts().slice(start, start + this.pageSize);
-  }
-
-  get totalPages() {
-    return Math.ceil(this.filteredAlerts().length / this.pageSize) || 1;
-  }
-
-  get skeletonRows() {
-    const remaining = this.pageSize - this.paginatedAlerts.length;
-    return remaining > 0 ? Array(remaining).fill(0) : [];
+    return this.dynamicDeviceMap[device_id] || { alias: '...', mac: '--', owner: '...' };
   }
 
   loadAlerts() {
@@ -65,7 +69,6 @@ export class AlertsComponent implements OnInit {
       this.eventService.getEvents().subscribe(data => {
         let result = [...data];
 
-        // Filtros de seguridad (Admin ve todo)
         if (role === 2) result = result.filter(a => a.carer_id === userId);
         if (role === 3) result = result.filter(a => a.user_id === userId);
 
@@ -73,8 +76,6 @@ export class AlertsComponent implements OnInit {
           const hoy = new Date().toISOString().split('T')[0];
           result = result.filter(a => a.fall_detected && String(a.date_rep).includes(hoy));
           this.viewTitle.set('Alertas Críticas de Hoy');
-        } else {
-          this.viewTitle.set(role === 1 ? 'Historial Global' : 'Mis Alertas');
         }
 
         this.allAlerts = result;
@@ -85,20 +86,28 @@ export class AlertsComponent implements OnInit {
 
   applySearchFilter() {
     const search = this.searchTerm.toLowerCase().trim();
-    let filtered = this.allAlerts;
-
-    if (search) {
-      filtered = this.allAlerts.filter(a => {
-        const info = this.getDeviceInfo(a.device_id);
-        return info.owner.toLowerCase().includes(search) || 
-               info.alias.toLowerCase().includes(search) ||
-               info.mac.toLowerCase().includes(search);
-      });
+    if (!search) {
+      this.filteredAlerts.set(this.allAlerts);
+      return;
     }
+
+    const filtered = this.allAlerts.filter(a => {
+      const info = this.getDeviceInfo(a.device_id);
+      return info.owner.toLowerCase().includes(search) || 
+             info.alias.toLowerCase().includes(search) ||
+             info.mac.toLowerCase().includes(search);
+    });
 
     this.filteredAlerts.set(filtered);
     this.currentPage = 1;
   }
+
+  get paginatedAlerts() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredAlerts().slice(start, start + this.pageSize);
+  }
+
+  get totalPages() { return Math.ceil(this.filteredAlerts().length / this.pageSize) || 1; }
 
   onConfirm(id: number, status: boolean) {
     this.eventService.confirmEvent(id, status).subscribe(() => this.loadAlerts());

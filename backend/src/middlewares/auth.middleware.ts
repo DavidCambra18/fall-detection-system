@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 export interface JwtPayload {
   id: number;
   email: string;
-  roleId: number;
+  role_id: number;
 }
 
 export function authenticateToken(req: Request, res: Response, next: NextFunction) {

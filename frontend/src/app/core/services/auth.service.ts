@@ -16,7 +16,7 @@ export class AuthService {
   currentUser = signal<User | null>(this.getUserFromStorage());
 
   isLoggedIn = computed(() => !!this.currentUser());
-  userRole = computed(() => this.currentUser()?.roleId ?? null);
+  userRole = computed(() => this.currentUser()?.role_id ?? null);
 
   login(credentials: LoginInput): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials).pipe(

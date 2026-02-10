@@ -1,9 +1,9 @@
 <div *ngIf="activeEmergency()" 
-     class="fixed inset-0 pointer-events-none z-[100] border-[16px] border-red-500/20 shadow-[inset_0_0_100px_rgba(239,68,68,0.3)] animate-pulse">
+     class="fixed inset-0 pointer-events-none z-100 border-16 border-red-500/20 shadow-[inset_0_0_100px_rgba(239,68,68,0.3)] animate-pulse">
 </div>
 
 <div *ngIf="activeEmergency()" 
-     class="fixed top-8 left-1/2 -translate-x-1/2 z-[110] w-full max-w-xl px-6 animate-in slide-in-from-top duration-500">
+     class="fixed top-8 left-1/2 -translate-x-1/2 z-110 w-full max-w-xl px-6 animate-in slide-in-from-top duration-500">
   <div class="bg-slate-900 border-2 border-red-600 rounded-[2.5rem] p-6 shadow-2xl">
     <div class="flex items-center gap-4 mb-6">
       <div class="relative">
@@ -35,13 +35,15 @@
 </div>
 
 <div class="p-8 bg-slate-50 min-h-screen font-sans relative">
-  <header class="mb-10">
-    <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic tracking-widest">Panel de Control</h1>
-    <p class="text-slate-500 font-medium italic uppercase text-[10px] tracking-widest">Bienvenido, {{ userName }}</p>
+  <header class="flex justify-between items-start mb-10">
+    <div>
+      <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Panel de Control</h1>
+      <p class="text-slate-500 font-medium italic uppercase text-[10px] tracking-widest">Bienvenido, {{ userName }}</p>
+    </div>
   </header>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-    <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+    <div [routerLink]="['/users']" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group cursor-pointer">
       <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl mb-6 group-hover:scale-110 transition-transform">👥</div>
       <h3 class="text-4xl font-black text-slate-800 mb-1 tracking-tighter">{{ totalUsers() }}</h3>
       <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Usuarios</p>
@@ -50,7 +52,7 @@
     <div [routerLink]="['/devices']" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group cursor-pointer">
       <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl mb-6 group-hover:scale-110 transition-transform">📟</div>
       <h3 class="text-4xl font-black text-slate-800 mb-1 tracking-tighter">{{ totalDevices() }}</h3>
-      <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Hardware</p>
+      <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Hardware Activo</p>
     </div>
 
     <div (click)="goToTodayFalls()" 
@@ -66,7 +68,7 @@
 
     <div [ngClass]="lowBatteryCount() > 0 ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100'"
          class="p-8 rounded-[2.5rem] border shadow-sm transition-all group">
-      <div [class.text-amber-600]="lowBatteryCount() > 0" class="w-12 h-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center text-xl mb-6 group-hover:scale-110 transition-transform">🪫</div>
+      <div [class.text-amber-600]="lowBatteryCount() > 0" class="w-12 h-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center text-xl mb-6">🪫</div>
       <h3 [class.text-amber-700]="lowBatteryCount() > 0" class="text-4xl font-black text-slate-800 mb-1 tracking-tighter">{{ lowBatteryCount() }}</h3>
       <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Batería Baja</p>
     </div>
@@ -76,24 +78,16 @@
     <div class="flex justify-between items-end mb-10">
       <div>
         <h2 class="text-xl font-black text-slate-800 uppercase italic tracking-tighter">Actividad Global (24h)</h2>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 italic text-blue-500">Monitoreo activo</p>
-      </div>
-      <div class="flex gap-4">
-        <div class="flex items-center gap-2 text-[9px] font-black uppercase text-slate-400">
-          <div class="w-2 h-2 rounded-full bg-blue-500"></div> NORMAL
-        </div>
-        <div class="flex items-center gap-2 text-[9px] font-black uppercase text-slate-400">
-          <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div> CAÍDA
-        </div>
+        <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-1 italic">Monitoreo dinámico</p>
       </div>
     </div>
 
     <div class="flex items-end justify-between h-48 gap-2 px-2">
       <div *ngFor="let data of activityData()" class="flex-1 flex flex-col items-center group relative h-full justify-end">
-        <div [style.height.%]="data.count > 0 ? (data.count * 10 + 10) : 5" 
+        <div [style.height.%]="data.count > 0 ? (data.count * 15 + 10) : 5" 
              [ngClass]="data.isFall ? 'bg-red-500 shadow-lg shadow-red-100' : 'bg-blue-500'"
-             class="w-full max-w-[35px] rounded-t-xl transition-all duration-700 group-hover:scale-y-110 origin-bottom relative">
-          <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 shadow-xl">
+             class="w-full max-w-8.75 rounded-t-xl transition-all duration-700 group-hover:scale-y-110 origin-bottom relative">
+          <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
             {{ data.count }} reportes
           </div>
         </div>
@@ -104,23 +98,20 @@
 
   <div class="mb-12">
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-xl font-black text-slate-800 uppercase italic tracking-tighter">Sensores en Tiempo Real</h2>
-      <span class="text-[9px] font-black text-slate-400 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-widest">
-        Mostrando {{ deviceTelemetry().length }} dispositivos activos
-      </span>
+      <h2 class="text-xl font-black text-slate-800 uppercase italic tracking-tighter">Sensores en Vivo</h2>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div *ngFor="let dev of deviceTelemetry()" 
-           class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:border-blue-200 transition-all">
+           class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm group hover:border-blue-200 transition-all">
         
         <div class="flex justify-between items-start mb-6">
           <div>
-            <p class="text-[9px] font-black text-blue-500 uppercase tracking-[0.2em] mb-1">Dispositivo {{ dev.deviceId }}</p>
+            <p class="text-[9px] font-black text-blue-500 uppercase tracking-[0.2em] mb-1">Device {{ dev.deviceId }}</p>
             <h4 class="text-sm font-black text-slate-800 tracking-tight">{{ dev.patientName }}</h4>
           </div>
           <div class="flex items-center gap-1.5 animate-pulse">
-            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
             <span class="text-[8px] font-black text-emerald-600 uppercase">Live</span>
           </div>
         </div>
@@ -129,21 +120,20 @@
           <div *ngFor="let axis of ['acc_x', 'acc_y', 'acc_z']; let i = index">
             <div class="flex justify-between items-end mb-1 px-1">
               <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Eje {{ axis.split('_')[1] }}</span>
-              <span class="text-[10px] font-mono font-bold" [ngClass]="dev.lastData?.[axis] > 12 ? 'text-red-500' : 'text-slate-600'">
+              <span class="text-[10px] font-mono font-bold text-slate-600">
                 {{ dev.lastData?.[axis] | number:'1.1-1' }}G
               </span>
             </div>
-            
-            <div class="h-10 bg-slate-50 rounded-xl p-1.5 flex items-end gap-0.5 border border-slate-100/50">
+            <div class="h-10 bg-slate-50 rounded-xl p-1.5 flex items-end gap-0.5">
               <div *ngFor="let point of dev.history" 
                    [style.height.%]="Math.abs(point[axis]) * 4 + 10"
                    [ngClass]="{
                      'bg-blue-400': i === 0 && !point.fall_detected,
                      'bg-purple-400': i === 1 && !point.fall_detected,
                      'bg-emerald-400': i === 2 && !point.fall_detected,
-                     'bg-red-500 animate-bounce shadow-lg shadow-red-200': point.fall_detected
+                     'bg-red-500 animate-bounce': point.fall_detected
                    }"
-                   class="flex-1 rounded-sm transition-all duration-500 min-h-[2px]">
+                   class="flex-1 rounded-sm transition-all duration-500">
               </div>
             </div>
           </div>
@@ -155,18 +145,18 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
     <div [routerLink]="['/users']" class="bg-slate-900 p-10 rounded-[3rem] text-white group cursor-pointer relative overflow-hidden">
       <div class="relative z-10">
-        <h2 class="text-2xl font-black italic uppercase tracking-tighter mb-2">Usuarios</h2>
-        <p class="text-slate-400 text-xs font-medium mb-6">Gestión de perfiles y asignación de cuidadores.</p>
-        <span class="inline-block bg-white text-slate-900 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest group-hover:bg-blue-500 group-hover:text-white transition-all shadow-md">Acceder</span>
+        <h2 class="text-2xl font-black italic uppercase tracking-tighter mb-2">Gestión de Usuarios</h2>
+        <p class="text-slate-400 text-xs font-medium mb-6">Administrar perfiles, roles y cuidadores.</p>
+        <span class="inline-block bg-white text-slate-900 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest group-hover:bg-blue-500 group-hover:text-white transition-all shadow-md">Ir a Usuarios</span>
       </div>
       <div class="absolute -right-4 -bottom-4 text-9xl opacity-5 group-hover:scale-110 transition-transform">👥</div>
     </div>
 
-    <div [routerLink]="['/history']" class="bg-white p-10 rounded-[3rem] border border-slate-200 group cursor-pointer relative overflow-hidden">
+    <div [routerLink]="['/history-admin']" class="bg-white p-10 rounded-[3rem] border border-slate-200 group cursor-pointer relative overflow-hidden">
       <div class="relative z-10">
-        <h2 class="text-2xl font-black italic uppercase tracking-tighter text-slate-800 mb-2">Logs</h2>
-        <p class="text-slate-400 text-xs font-medium mb-6">Historial de telemetría completa.</p>
-        <span class="inline-block bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">Ver Logs</span>
+        <h2 class="text-2xl font-black italic uppercase tracking-tighter text-slate-800 mb-2">Logs del Sistema</h2>
+        <p class="text-slate-400 text-xs font-medium mb-6">Historial completo de alertas y telemetría.</p>
+        <span class="inline-block bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">Ver Historial</span>
       </div>
       <div class="absolute -right-4 -bottom-4 text-9xl opacity-5 group-hover:scale-110 transition-transform">📊</div>
     </div>
