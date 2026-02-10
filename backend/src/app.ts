@@ -11,15 +11,13 @@ dotenv.config();
 
 const app = express();
 
-const FRONTEND_ORIGIN = process.env.NODE_ENV === 'production'
-  ? 'https://falldetectionsystem.com'
-  : 'http://localhost:4200';
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
 
 app.use(cors({
   origin: FRONTEND_ORIGIN,
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
 }));
 
 // Middleware
