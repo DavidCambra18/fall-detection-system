@@ -89,24 +89,31 @@ export const deleteDevice = async (id: number) => {
 
 
 // --- FUNCIÓN CORREGIDA PARA TU NUEVA TABLA REPORTS ---
-export const registerTelemetry = async (data: TelemetryInput) => {
+export const registerTelemetry = async (data: any) => {
+  // 1. Validar que data y deviceId existan
+  if (!data || !data.deviceId) {
+    throw new Error("Petición inválida: Falta el campo 'deviceId'");
+  }
+
   const { deviceId, accX, accY, accZ, fallDetected } = data;
 
-  // 1. Limpieza: Quitamos ':' por si el ESP32 los manda, para que coincida con la BD
-  const cleanId = deviceId.replace(/:/g, '');
+  // 2. Limpieza segura (convertimos a String por si acaso)
+  const cleanId = String(deviceId).replace(/:/g, '');
 
-  // 2. Búsqueda: Obtenemos el ID numérico del dispositivo Y el ID del usuario dueño
+  // 3. Búsqueda en DB
   const deviceCheck = await pool.query(
     'SELECT id, user_id FROM devices WHERE device_id_logic=$1', 
     [cleanId]
   );
 
-  if (deviceCheck.rows.length === 0) throw new Error(`Dispositivo no reconocido: ${cleanId}`);
+  if (deviceCheck.rows.length === 0) {
+    // Esto lanzará un 400 en lugar de un 500 gracias al try/catch del router
+    throw new Error(`Dispositivo no registrado en BD: ${cleanId}`);
+  }
 
-  // Extraemos los IDs que necesitamos para la tabla 'reports'
   const { id: dbDeviceId, user_id: dbUserId } = deviceCheck.rows[0];
 
-  // 3. Inserción: Usamos la tabla 'reports' y los IDs numéricos
+  // 4. Inserción
   const result = await pool.query(
     `INSERT INTO reports (user_id, device_id, acc_x, acc_y, acc_z, fall_detected)
      VALUES ($1, $2, $3, $4, $5, $6)
