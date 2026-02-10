@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000
-@token = token_usuario
+@token = toke_usuario
 # NO DESPLEGAR CON EL TOKEN DEL USUARIO
 
 ### OBTENER TODOS LOS USUARIOS (solo ADMIN)
@@ -20,4 +20,22 @@ Authorization: Bearer {{token}}
 
 ### Eventos de un usuario
 GET {{baseUrl}}/api/users/3/events
+Authorization: Bearer {{token}}
+
+### Editar un usuario (admin/cuidador/propio usuario)
+PUT {{baseUrl}}/api/users/7
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Karlos",
+  "surnames": "Mes Vades",
+  "email": "carlos@outlook.com",
+  "phone_num": "+34666888999",
+  "date_born": "1955-02-19"
+}
+
+
+### Borrar un usuario (solo admin)
+DELETE {{baseUrl}}/api/users/7
 Authorization: Bearer {{token}}
