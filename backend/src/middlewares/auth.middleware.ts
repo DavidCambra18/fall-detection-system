@@ -20,3 +20,10 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
     return res.sendStatus(403);
   }
 }
+
+export const authorizeAdmin = (req: any, res: any, next: any) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'No tienes permisos para realizar esta acción' });
+  }
+  next();
+};
