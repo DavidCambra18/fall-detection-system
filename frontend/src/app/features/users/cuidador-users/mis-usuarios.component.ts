@@ -5,7 +5,8 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { DeviceService } from '../../../core/services/device.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-cuidador-users',
@@ -34,47 +35,37 @@ export class MisUsuariosComponent implements OnInit {
     if (!carerId) return;
 
     this.isLoading.set(true);
-    // Traemos los pacientes y luego buscamos sus dispositivos
-    this.userService.getUsersCaredByCarer(carerId).subscribe({
-      next: (users) => {
-        // Para cada usuario, intentamos asociar su dispositivo (si existe)
-        const userWithDeviceObs = users.map(user => 
-          this.deviceService.getDeviceByUserId(user.id)
-        );
-
-        // Si no hay usuarios, paramos carga
-        if (users.length === 0) {
-          this.allUsers.set([]);
-          this.isLoading.set(false);
-          return;
-        }
-
-        // ForkJoin para traer la info de hardware de todos a la vez
-        forkJoin(userWithDeviceObs).subscribe({
-          next: (devices) => {
-            const enrichedUsers = users.map((user, index) => ({
-              ...user,
-              device: devices[index]?.device_id_logic || 'Sin Hardware',
-              status: devices[index]?.status || 'Inactivo',
-              // Simulamos última conexión basándonos en el status
-              lastConnect: devices[index]?.status === 'active' ? 'Online' : 'Desconectado'
-            }));
-            this.allUsers.set(enrichedUsers);
-            this.isLoading.set(false);
-          },
-          error: () => {
-            // Si falla la carga de dispositivos, mostramos al menos los usuarios
-            this.allUsers.set(users.map(u => ({...u, device: '?', status: 'Inactivo'})));
-            this.isLoading.set(false);
-          }
+    
+    // 1. Cargamos pacientes y dispositivos al mismo tiempo
+    forkJoin({
+      patients: this.userService.getUsersCaredByCarer(carerId),
+      devices: this.deviceService.getDevices() // Usamos la lista general que ya funciona
+    }).pipe(
+      catchError(err => {
+        console.error('Error cargando datos del cuidador:', err);
+        return of({ patients: [], devices: [] });
+      })
+    ).subscribe({
+      next: ({ patients, devices }) => {
+        // 2. Cruzamos los datos en el frontend
+        const enrichedUsers = patients.map(patient => {
+          // Buscamos el dispositivo cuyo user_id coincida con el id del paciente
+          const deviceMatch = devices.find(d => Number(d.user_id) === Number(patient.id));
+          
+          return {
+            ...patient,
+            // Si hay coincidencia, usamos el ID lógico, si no, mostramos "NO VINCULADO"
+            device: deviceMatch ? deviceMatch.device_id_logic : 'NO VINCULADO',
+            status: deviceMatch ? deviceMatch.status : 'inactive',
+            lastConnect: deviceMatch?.status === 'active' ? 'En línea' : 'Desconectado'
+          };
         });
+        
+        this.allUsers.set(enrichedUsers);
+        this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false)
     });
-  }
-
-  verHistorial(userId: number) {
-    this.router.navigate(['/history-cuidador', userId]);
   }
 
   filteredUsers = computed(() => {
@@ -87,10 +78,22 @@ export class MisUsuariosComponent implements OnInit {
   });
 
   totalPages = computed(() => {
-    const data = this.allUsers().filter(u => u.name.toLowerCase().includes(this.searchTerm().toLowerCase()));
+    const term = this.searchTerm().toLowerCase();
+    const data = this.allUsers().filter(u => 
+      u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)
+    );
     return Math.ceil(data.length / this.pageSize) || 1;
   });
 
-  nextPage() { if (this.currentPage() < this.totalPages()) this.currentPage.update(p => p + 1); }
-  prevPage() { if (this.currentPage() > 1) this.currentPage.update(p => p - 1); }
+  verHistorial(userId: number) { 
+    this.router.navigate(['/history-cuidador', userId]); 
+  }
+
+  nextPage() { 
+    if (this.currentPage() < this.totalPages()) this.currentPage.update(p => p + 1); 
+  }
+
+  prevPage() { 
+    if (this.currentPage() > 1) this.currentPage.update(p => p - 1); 
+  }
 }

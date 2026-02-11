@@ -21,32 +21,34 @@ export class UsuarioUsersComponent implements OnInit {
   fullUserData = signal<User | null>(null); 
   isEditing = signal<boolean>(false);
   editForm = signal<any>({}); 
+  isLoading = signal<boolean>(true);
 
   ngOnInit() {
-    const userId = this.authService.currentUser()?.id;
-    
-    if (userId) {
-      // 1. CARGAR DATOS REALES USANDO getUserById
-      this.userService.getUserById(userId).subscribe({
-        next: (user) => {
-          if (user) {
-            // TRUCO: Formatear fecha para que el input HTML tipo 'date' la muestre
-            if (user.date_born) {
-              user.date_born = new Date(user.date_born).toISOString().split('T')[0];
-            }
-            this.fullUserData.set(user);
-            this.resetForm();
-          }
-        },
-        error: (err) => console.error('Error cargando perfil:', err)
-      });
+    this.loadProfile();
+  }
 
-      // 2. CARGAR DISPOSITIVO
-      this.deviceService.getDevices().subscribe(devices => {
-        const found = devices.find(d => d.user_id === userId);
-        this.myDevice.set(found || null);
-      });
-    }
+  loadProfile() {
+    this.isLoading.set(true);
+    // Pedimos "mis datos" al servidor
+    this.userService.getUserMe().subscribe({
+      next: (user) => {
+        if (user) {
+          if (user.date_born) {
+            user.date_born = new Date(user.date_born).toISOString().split('T')[0];
+          }
+          this.fullUserData.set(user);
+          this.resetForm();
+
+          // Buscamos el dispositivo vinculado a este ID
+          this.deviceService.getDevices().subscribe(devices => {
+            const found = devices.find(d => d.user_id === user.id);
+            this.myDevice.set(found || null);
+          });
+        }
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false)
+    });
   }
 
   resetForm() {
@@ -60,15 +62,15 @@ export class UsuarioUsersComponent implements OnInit {
 
   saveProfile() {
     const userId = this.fullUserData()?.id;
-    if (userId) {
-      this.userService.updateUser(userId, this.editForm()).subscribe({
-        next: () => {
-          this.fullUserData.set({ ...this.editForm() });
-          this.authService.updateCurrentUserSignal(this.editForm());
-          this.isEditing.set(false);
-        },
-        error: (err) => console.error('Error al actualizar:', err)
-      });
-    }
+    if (!userId) return;
+
+    this.userService.updateUser(userId, this.editForm()).subscribe({
+      next: () => {
+        this.fullUserData.set({ ...this.editForm() });
+        this.authService.updateCurrentUserSignal(this.editForm());
+        this.isEditing.set(false);
+      },
+      error: (err) => alert('Error al actualizar: ' + err.error.message)
+    });
   }
 }

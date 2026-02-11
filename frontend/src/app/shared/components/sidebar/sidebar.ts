@@ -13,7 +13,6 @@ export class SidebarComponent {
   public authService = inject(AuthService);
   private router = inject(Router);
 
-  // Señal para controlar el menú en móviles
   public isMobileMenuOpen = signal(false);
 
   public currentUser = computed(() => {
@@ -42,6 +41,13 @@ export class SidebarComponent {
     if (role === 2) return '/history-cuidador';
     if (role === 3) return '/usuario-alerts';
     return '/login';
+  }
+
+  // Nueva ruta para el perfil del usuario
+  get profileRoute(): string {
+    const role = this.currentUser().role_id;
+    if (role === 3) return '/usuario-users';
+    return ''; 
   }
 
   toggleMobileMenu() {
