@@ -21,7 +21,6 @@ export class UsersComponent implements OnInit {
   pageSize = 10;
 
   isModalOpen = signal(false);
-  isEditing = signal(false); 
   selectedUser = signal<Partial<User>>({});
 
   ngOnInit() {
@@ -30,6 +29,11 @@ export class UsersComponent implements OnInit {
 
   // --- LÓGICA REACTIVA ---
   
+  // Filtra los cuidadores disponibles para el selector del modal
+  cuidadores = computed(() => 
+    this.users().filter(u => u.role_id === 2)
+  );
+
   filteredUsers = computed(() => {
     const search = this.searchTerm().toLowerCase().trim();
     let result = this.users().filter(u => 
@@ -60,7 +64,7 @@ export class UsersComponent implements OnInit {
     return remaining > 0 ? Array(remaining).fill(0) : [];
   });
 
-  // --- ACCIONES ---
+  // --- ACCIONES OPERATIVAS ---
 
   loadUsers() {
     this.userService.getUsers().subscribe({
@@ -74,53 +78,46 @@ export class UsersComponent implements OnInit {
   saveUser() {
     const userData = this.selectedUser();
     
-    if (this.isEditing() && userData.id) {
+    if (userData.id) {
       this.userService.updateUser(userData.id, userData).subscribe({
-        next: () => { this.loadUsers(); this.closeModal(); }
-      });
-    } else {
-      this.userService.createUser(userData as User).subscribe({
-        next: () => { this.loadUsers(); this.closeModal(); }
+        next: () => { 
+          this.loadUsers(); 
+          this.closeModal(); 
+          console.log('Usuario actualizado correctamente');
+        },
+        error: (err) => alert('Error al actualizar: ' + err.error.message)
       });
     }
   }
 
   deleteUser(id: number) {
-    if (confirm('¿Seguro?')) {
-      this.userService.deleteUser(id).subscribe(() => this.loadUsers());
+    if (confirm('¿Estás seguro de eliminar este usuario permanentemente?')) {
+      this.userService.deleteUser(id).subscribe({
+        next: () => {
+          this.loadUsers();
+          console.log('Usuario borrado');
+        },
+        error: (err) => alert('Error al borrar: ' + err.error.message)
+      });
     }
   }
 
   // --- HELPERS ---
-  
-  openCreateModal() {
-    this.isEditing.set(false);
-    // Cambiado a role_id para coincidir con el backend
-    this.selectedUser.set({ 
-      role_id: 3, 
-      name: '', 
-      email: '', 
-      surnames: '', 
-      phone_num: '' 
-    } as any); 
-    this.isModalOpen.set(true);
-  }
 
   openEditModal(user: User) {
-    this.isEditing.set(true);
     this.selectedUser.set({ ...user });
     this.isModalOpen.set(true);
   }
 
   closeModal() {
     this.isModalOpen.set(false);
+    this.selectedUser.set({});
   }
 
   toggleSort() {
     this.sortAsc.update(val => !val);
   }
 
-  // Recibe role_id directamente de la base de datos
   getRoleName(role_id?: number): string {
     const roles: Record<number, string> = { 1: 'Admin', 2: 'Cuidador', 3: 'Usuario' };
     return roles[role_id || 0] || 'Sin Rol';

@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -13,17 +13,13 @@ export class SidebarComponent {
   public authService = inject(AuthService);
   private router = inject(Router);
 
-  /**
-   * SEÑAL REACTIVA: Extraemos el usuario y mapeamos el nombre.
-   */
+  // Señal para controlar el menú en móviles
+  public isMobileMenuOpen = signal(false);
+
   public currentUser = computed(() => {
     const user = this.authService.currentUser();
-    
-    // Si no hay usuario, devolvemos un estado por defecto
     if (!user) return { role_id: 0, name: 'Usuario', email: '' };
 
-    // MAPEÓ FLEXIBLE: 
-    // Como vimos en consola que 'name' no llega, usamos el email como fallback
     const fallback = user.email ? user.email.split('@')[0] : 'Usuario';
     const displayName = (user as any).name || (user as any).nombre || fallback;
 
@@ -34,16 +30,9 @@ export class SidebarComponent {
     };
   });
 
-  /**
-   * Rutas centralizadas optimizadas.
-   */
   get dashboardRoute(): string {
     const role = this.currentUser().role_id;
-    const routes: Record<number, string> = {
-      1: '/admin-dashboard',
-      2: '/cuidador-dashboard',
-      3: '/usuario-dashboard'
-    };
+    const routes: Record<number, string> = { 1: '/admin-dashboard', 2: '/cuidador-dashboard', 3: '/usuario-dashboard' };
     return routes[role] || '/login';
   }
 
@@ -51,8 +40,12 @@ export class SidebarComponent {
     const role = this.currentUser().role_id;
     if (role === 1) return '/history-admin';
     if (role === 2) return '/history-cuidador';
-    if (role === 3) return '/usuario-alerts'; // Añadido para Rol 3
+    if (role === 3) return '/usuario-alerts';
     return '/login';
+  }
+
+  toggleMobileMenu() {
+    this.isMobileMenuOpen.update(v => !v);
   }
 
   onLogout() {

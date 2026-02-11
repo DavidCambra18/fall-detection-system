@@ -1,4 +1,17 @@
-<div class="w-72 bg-slate-900 min-h-screen flex flex-col border-r border-slate-800 shadow-2xl">
+<button (click)="toggleMobileMenu()" 
+        class="lg:hidden fixed top-4 left-4 z-100 p-3 bg-slate-900 text-white rounded-2xl shadow-xl border border-slate-700">
+  <span *ngIf="!isMobileMenuOpen()">☰</span>
+  <span *ngIf="isMobileMenuOpen()">✕</span>
+</button>
+
+<div *ngIf="isMobileMenuOpen()" 
+     (click)="toggleMobileMenu()"
+     class="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-80">
+</div>
+
+<div [class.translate-x-0]="isMobileMenuOpen()"
+     [class.-translate-x-full]="!isMobileMenuOpen()"
+     class="fixed lg:static inset-y-0 left-0 w-72 bg-slate-900 min-h-screen flex flex-col border-r border-slate-800 shadow-2xl z-90 transition-transform duration-300 lg:translate-x-0">
   
   <div class="p-8">
     <div class="flex items-center gap-3">
@@ -11,9 +24,9 @@
     </div>
   </div>
 
-  <nav class="flex-1 px-4 space-y-2">
-    
+  <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
     <a [routerLink]="[dashboardRoute]" 
+       (click)="isMobileMenuOpen.set(false)"
        routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
        [routerLinkActiveOptions]="{ exact: true }"
        class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
@@ -24,14 +37,12 @@
     @if (currentUser().role_id === 1) {
       <div class="pt-6">
         <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Administración</p>
-        
-        <a routerLink="/users" routerLinkActive="bg-blue-600 text-white shadow-lg" 
+        <a routerLink="/users" (click)="isMobileMenuOpen.set(false)" routerLinkActive="bg-blue-600 text-white shadow-lg" 
            class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
           <span class="text-xl">👥</span>
           <span class="font-bold text-sm tracking-tight">Gestión Usuarios</span>
         </a>
-
-        <a routerLink="/devices" routerLinkActive="bg-blue-600 text-white shadow-lg" 
+        <a routerLink="/devices" (click)="isMobileMenuOpen.set(false)" routerLinkActive="bg-blue-600 text-white shadow-lg" 
            class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group mt-1">
           <span class="text-xl">💾</span>
           <span class="font-bold text-sm tracking-tight">Gestión Dispositivos</span>
@@ -42,8 +53,7 @@
     @if (currentUser().role_id === 2) {
       <div class="pt-6">
         <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Asistencia Médica</p>
-        
-        <a routerLink="/mis-usuarios" routerLinkActive="bg-blue-600 text-white shadow-lg" 
+        <a routerLink="/mis-usuarios" (click)="isMobileMenuOpen.set(false)" routerLinkActive="bg-blue-600 text-white shadow-lg" 
            class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
           <span class="text-xl">🏥</span>
           <span class="font-bold text-sm tracking-tight">Mis Usuarios</span>
@@ -51,39 +61,24 @@
       </div>
     }
 
-    @if (currentUser().role_id === 3) {
-      <div class="pt-6">
-        <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Mi Cuenta</p>
-        
-        <a routerLink="/usuario-perfil" routerLinkActive="bg-blue-600 text-white shadow-lg" 
-           class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
-          <span class="text-xl">👤</span>
-          <span class="font-bold text-sm tracking-tight">Mi Perfil</span>
-        </a>
-      </div>
-    }
-
-    @if (currentUser().role_id === 1 || currentUser().role_id === 2 || currentUser().role_id === 3) {
-      <div class="pt-6">
-        <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Seguimiento</p>
-        
-        <a [routerLink]="[historyRoute]" 
-           routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
-           class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
-          <span class="text-xl">📈</span>
-          <span class="font-bold text-sm tracking-tight">
-            {{ currentUser().role_id === 3 ? 'Mi Actividad' : 'Historial Alertas' }}
-          </span>
-        </a>
-      </div>
-    }
-
+    <div class="pt-6">
+      <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Seguimiento</p>
+      <a [routerLink]="[historyRoute]" 
+         (click)="isMobileMenuOpen.set(false)"
+         routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
+         class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
+        <span class="text-xl">📈</span>
+        <span class="font-bold text-sm tracking-tight">
+          {{ currentUser().role_id === 3 ? 'Mi Actividad' : 'Historial Alertas' }}
+        </span>
+      </a>
+    </div>
   </nav>
 
   <div class="p-4 mt-auto">
-    <div class="bg-slate-800/50 rounded-4xl p-4 border border-slate-700/50">
+    <div class="bg-slate-800/50 rounded-3xl p-4 border border-slate-700/50">
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600">
+        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center border border-slate-600 shrink-0">
           <span class="text-blue-400 text-xs font-black uppercase">
             {{ currentUser().name ? currentUser().name.substring(0,2) : 'US' }}
           </span>
@@ -95,7 +90,6 @@
           </p>
         </div>
       </div>
-      
       <button (click)="onLogout()" 
               class="w-full py-2.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
         Cerrar Sesión

@@ -108,11 +108,11 @@ export async function updateUserController(req: Request, res: Response) {
     if (!targetUser) return res.status(404).json({ message: 'Usuario no encontrado' });
 
     // Permisos
-    if (requester.roleId === 1) {
+    if (requester.role_id === 1) {
       // Admin puede editar a cualquiera
-    } else if (requester.roleId === 2 && targetUser.carer_id === requester.id) {
+    } else if (requester.role_id === 2 && targetUser.carer_id === requester.id) {
       // Cuidador puede editar solo a sus usuarios
-    } else if (requester.roleId === 3 && requester.id === targetUserId) {
+    } else if (requester.role_id === 3 && requester.id === targetUserId) {
       // Usuario puede editar solo su propia cuenta
     } else {
       return res.status(403).json({ message: 'Acceso no autorizado' });
@@ -131,7 +131,7 @@ export async function deleteUserController(req: Request, res: Response) {
   const requester = (req as any).user;
   const targetUserId = Number(req.params.id);
 
-  if (requester.roleId !== 1) return res.status(403).json({ message: 'Solo admin puede borrar usuarios' });
+  if (requester.role_id !== 1) return res.status(403).json({ message: 'Solo admin puede borrar usuarios' });
 
   try {
     const deleted = await deleteUserById(targetUserId);

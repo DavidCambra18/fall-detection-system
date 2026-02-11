@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router'; 
 import { forkJoin } from 'rxjs';
@@ -22,15 +22,13 @@ export class AlertsComponent implements OnInit {
   private route = inject(ActivatedRoute); 
   public authService = inject(AuthService);
 
-  allAlerts: Report[] = [];
-  filteredAlerts = signal<Report[]>([]);
-  
-  searchTerm: string = '';
+  allAlerts = signal<Report[]>([]);
+  searchTerm = signal<string>('');
   viewTitle = signal<string>('Historial de Eventos');
-  currentPage: number = 1;
-  pageSize: number = 10;
+  currentPage = signal<number>(1);
+  pageSize = 10;
 
-  private dynamicDeviceMap: { [key: number]: { alias: string, mac: string, owner: string } } = {};
+  private dynamicDeviceMap = signal<{ [key: number]: { alias: string, mac: string, owner: string } }>({});
 
   ngOnInit(): void {
     this.loadCatalogs();
@@ -42,21 +40,23 @@ export class AlertsComponent implements OnInit {
       devices: this.deviceService.getDevices()
     }).subscribe({
       next: (res) => {
+        const map: any = {};
         res.devices.forEach(dev => {
           const owner = res.users.find(u => u.id === dev.user_id);
-          this.dynamicDeviceMap[dev.id] = {
+          map[dev.id] = {
             alias: dev.alias || `Disp. ${dev.device_id_logic}`,
             mac: dev.mac,
             owner: owner ? `${owner.name} ${owner.surnames || ''}` : 'Sin asignar'
           };
         });
+        this.dynamicDeviceMap.set(map);
         this.loadAlerts();
       }
     });
   }
 
   getDeviceInfo(device_id: number) {
-    return this.dynamicDeviceMap[device_id] || { alias: '...', mac: '--', owner: '...' };
+    return this.dynamicDeviceMap()[device_id] || { alias: '...', mac: '--', owner: '...' };
   }
 
   loadAlerts() {
@@ -69,45 +69,40 @@ export class AlertsComponent implements OnInit {
       this.eventService.getEvents().subscribe(data => {
         let result = [...data];
 
+        // Filtros de Seguridad por Rol
         if (role === 2) result = result.filter(a => a.carer_id === userId);
         if (role === 3) result = result.filter(a => a.user_id === userId);
 
         if (isTodayFilter) {
-          const hoy = new Date().toISOString().split('T')[0];
+          const hoy = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
           result = result.filter(a => a.fall_detected && String(a.date_rep).includes(hoy));
           this.viewTitle.set('Alertas Críticas de Hoy');
         }
 
-        this.allAlerts = result;
-        this.applySearchFilter();
+        this.allAlerts.set(result);
       });
     });
   }
 
-  applySearchFilter() {
-    const search = this.searchTerm.toLowerCase().trim();
-    if (!search) {
-      this.filteredAlerts.set(this.allAlerts);
-      return;
-    }
+  // Lógica Reactiva con Computed
+  filteredAlerts = computed(() => {
+    const search = this.searchTerm().toLowerCase().trim();
+    if (!search) return this.allAlerts();
 
-    const filtered = this.allAlerts.filter(a => {
+    return this.allAlerts().filter(a => {
       const info = this.getDeviceInfo(a.device_id);
       return info.owner.toLowerCase().includes(search) || 
              info.alias.toLowerCase().includes(search) ||
              info.mac.toLowerCase().includes(search);
     });
+  });
 
-    this.filteredAlerts.set(filtered);
-    this.currentPage = 1;
-  }
-
-  get paginatedAlerts() {
-    const start = (this.currentPage - 1) * this.pageSize;
+  paginatedAlerts = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
     return this.filteredAlerts().slice(start, start + this.pageSize);
-  }
+  });
 
-  get totalPages() { return Math.ceil(this.filteredAlerts().length / this.pageSize) || 1; }
+  totalPages = computed(() => Math.ceil(this.filteredAlerts().length / this.pageSize) || 1);
 
   onConfirm(id: number, status: boolean) {
     this.eventService.confirmEvent(id, status).subscribe(() => this.loadAlerts());
