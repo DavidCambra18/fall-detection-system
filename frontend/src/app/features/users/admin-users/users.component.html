@@ -1,18 +1,13 @@
-<div class="p-8 bg-slate-50 min-h-screen font-sans">
+<div class="p-4 md:p-8 bg-slate-50 min-h-screen font-sans">
   
-  <div class="flex justify-between items-center mb-10">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
     <div>
-      <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Gestión de Usuarios</h1>
-      <p class="text-slate-500 font-medium">Administra los accesos y roles del sistema</p>
+      <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Gestión de Usuarios</h1>
+      <p class="text-slate-500 font-medium text-[10px] md:text-xs mt-2 italic uppercase tracking-widest leading-none">Administración Real · Base de Datos PostgreSQL</p>
     </div>
-    
-    <button (click)="openCreateModal()" 
-            class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-200 flex items-center gap-2">
-      <span>➕</span> Nuevo Usuario
-    </button>
   </div>
 
-  <div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm mb-8 flex gap-4 items-center">
+  <div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm mb-6 flex gap-4 items-center">
     <span class="text-slate-400 ml-2">🔍</span>
     <input type="text" 
             [ngModel]="searchTerm()" 
@@ -21,113 +16,136 @@
             class="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium text-slate-600 outline-none">
   </div>
 
-  <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+  <div class="grid grid-cols-1 gap-4 md:hidden mb-8">
+    <div *ngFor="let user of paginatedUsers()" class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">ID #{{user.id}}</p>
+          <h3 class="font-black text-slate-800 text-lg leading-tight">{{user.name}} {{user.surnames}}</h3>
+        </div>
+        <span [ngClass]="{
+          'bg-blue-50 text-blue-600 border-blue-100': user.role_id === 1,
+          'bg-purple-50 text-purple-600 border-purple-100': user.role_id === 2,
+          'bg-emerald-50 text-emerald-600 border-emerald-100': user.role_id === 3
+        }" class="px-3 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest border">
+          {{getRoleName(user.role_id)}}
+        </span>
+      </div>
+      
+      <div class="space-y-1 mb-6">
+        <p class="text-xs font-bold text-slate-500 italic">{{user.email}}</p>
+        <p class="text-[10px] font-black text-blue-500 uppercase">{{user.phone_num || '-- SIN TELÉFONO --'}}</p>
+      </div>
+
+      <div class="flex gap-2">
+        <button (click)="openEditModal(user)" 
+                class="flex-1 py-4 bg-slate-50 text-slate-700 rounded-2xl font-black text-[10px] uppercase tracking-widest active:bg-slate-200 transition-colors">
+          Editar
+        </button>
+        <button (click)="deleteUser(user.id)" 
+                class="flex-1 py-4 bg-red-50 text-red-500 rounded-2xl font-black text-[10px] uppercase tracking-widest active:bg-red-100 transition-colors">
+          Borrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hidden md:block bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden mb-8">
     <table class="w-full text-left border-collapse">
       <thead>
         <tr class="bg-slate-900 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
           <th class="px-8 py-6 cursor-pointer hover:text-white transition-colors" (click)="toggleSort()">
             Nombre Completo {{sortAsc() ? '↑' : '↓'}}
           </th>
-          <th class="px-8 py-6">Email</th>
-          <th class="px-8 py-6">Teléfono</th>
-          <th class="px-8 py-6 text-center">Rol</th>
+          <th class="px-8 py-6">Contacto</th>
+          <th class="px-8 py-6 text-center">Rol Sistema</th>
           <th class="px-8 py-6 text-right">Acciones</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-50">
-        
-        <tr *ngFor="let user of paginatedUsers()" class="hover:bg-slate-50/50 transition-colors group h-18">
+        <tr *ngFor="let user of paginatedUsers()" class="hover:bg-slate-50/50 transition-colors group">
           <td class="px-8 py-5">
-            <p class="font-black text-slate-800 tracking-tight">{{user.name}} {{user.surnames}}</p>
+            <p class="font-black text-slate-800 tracking-tight text-sm">#{{user.id}} - {{user.name}} {{user.surnames}}</p>
           </td>
-          <td class="px-8 py-5 text-sm font-medium text-slate-500 italic">{{user.email}}</td>
-          <td class="px-8 py-5 text-sm font-bold text-slate-400">{{user.phone_num || '---'}}</td>
+          <td class="px-8 py-5">
+            <p class="text-xs font-bold text-slate-500 italic">{{user.email}}</p>
+            <p class="text-[10px] font-black text-blue-500 mt-1 uppercase">{{user.phone_num || '--'}}</p>
+          </td>
           <td class="px-8 py-5 text-center">
             <span [ngClass]="{
-              'bg-blue-100 text-blue-600': user.role_id === 1,
-              'bg-purple-100 text-purple-600': user.role_id === 2,
-              'bg-emerald-100 text-emerald-600': user.role_id === 3
-            }" class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
+              'bg-blue-50 text-blue-600 border-blue-100': user.role_id === 1,
+              'bg-purple-50 text-purple-600 border-purple-100': user.role_id === 2,
+              'bg-emerald-50 text-emerald-600 border-emerald-100': user.role_id === 3
+            }" class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border">
               {{getRoleName(user.role_id)}}
             </span>
           </td>
           <td class="px-8 py-5 text-right space-x-2">
-            <button (click)="openEditModal(user)" class="p-2 hover:bg-blue-50 text-blue-600 rounded-xl transition-colors">📝</button>
-            <button (click)="deleteUser(user.id)" class="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-colors">🗑️</button>
+            <button (click)="openEditModal(user)" class="p-3 hover:bg-blue-50 text-blue-600 rounded-2xl transition-all">✏️</button>
+            <button (click)="deleteUser(user.id)" class="p-3 hover:bg-red-50 text-red-500 rounded-2xl transition-all">🗑️</button>
           </td>
-        </tr>
-
-        <tr *ngFor="let empty of skeletonRows()" class="h-18 opacity-40">
-          <td class="px-8 py-5"><div class="h-4 w-32 bg-slate-100 rounded-full animate-pulse"></div></td>
-          <td class="px-8 py-5"><div class="h-4 w-40 bg-slate-50 rounded-full"></div></td>
-          <td class="px-8 py-5"><div class="h-4 w-24 bg-slate-50 rounded-full"></div></td>
-          <td class="px-8 py-5 flex justify-center items-center"><div class="h-6 w-16 bg-slate-100 rounded-lg"></div></td>
-          <td class="px-8 py-5"></td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <div class="flex justify-between items-center mt-6 px-4">
-    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+  <div class="flex flex-col sm:flex-row justify-between items-center mt-6 px-4 gap-4">
+    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
       Página {{currentPage()}} de {{totalPages()}}
     </p>
-    <div class="flex gap-2">
+    <div class="flex gap-3 w-full sm:w-auto">
       <button [disabled]="currentPage() === 1" (click)="currentPage.set(currentPage() - 1)"
-              class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold disabled:opacity-30 transition-all">
+              class="flex-1 sm:flex-none px-6 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase disabled:opacity-30 transition-all">
         Anterior
       </button>
       <button [disabled]="currentPage() === totalPages()" (click)="currentPage.set(currentPage() + 1)"
-              class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold disabled:opacity-30 transition-all shadow-lg">
+              class="flex-1 sm:flex-none px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase disabled:opacity-30 transition-all shadow-lg shadow-slate-200">
         Siguiente
       </button>
     </div>
   </div>
 
-  <div *ngIf="isModalOpen()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl p-10 animate-in zoom-in duration-300">
+  <div *ngIf="isModalOpen()" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-[2.5rem] md:rounded-[3.5rem] shadow-2xl p-8 md:p-12 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
       
-      <div class="flex justify-between items-center mb-8">
-        <h2 class="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">
-          {{ isEditing() ? 'Editar Usuario' : 'Nuevo Usuario' }}
-        </h2>
-        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-800 text-xl font-bold transition-colors">✕</button>
+      <div class="flex justify-between items-center mb-10">
+        <h2 class="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Editar Perfil</h2>
+        <button (click)="closeModal()" class="w-10 h-10 flex items-center justify-center bg-slate-50 rounded-full text-slate-400 hover:text-red-500 transition-colors">✕</button>
       </div>
 
-      <form (ngSubmit)="saveUser()" #userForm="ngForm" class="space-y-6">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Nombre</label>
-            <input type="text" name="name" [(ngModel)]="selectedUser().name" required class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
-          </div>
-          <div>
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Apellidos</label>
-            <input type="text" name="surnames" [(ngModel)]="selectedUser().surnames" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
-          </div>
+      <form (ngSubmit)="saveUser()" #userForm="ngForm" class="space-y-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <input type="text" name="name" [(ngModel)]="selectedUser().name" required placeholder="Nombre" 
+                 class="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none">
+          <input type="text" name="surnames" [(ngModel)]="selectedUser().surnames" placeholder="Apellidos" 
+                 class="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none">
         </div>
 
-        <div>
-          <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email</label>
-          <input type="email" name="email" [(ngModel)]="selectedUser().email" required class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
-        </div>
+        <input type="email" name="email" [(ngModel)]="selectedUser().email" required placeholder="Email" 
+               class="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none">
 
-        <div *ngIf="!isEditing()">
-          <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password Provisional</label>
-          <input type="password" name="password" [(ngModel)]="$any(selectedUser()).password" required class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
-        </div>
-
-        <div>
-          <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Rol en el Sistema</label>
-          <select name="role_id" [(ngModel)]="$any(selectedUser()).role_id" required class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-sm focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none transition-all">
+        <div class="pt-4 border-t border-slate-100">
+          <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2">Asignar Rol</label>
+          <select name="role_id" [(ngModel)]="$any(selectedUser()).role_id" required 
+                  class="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold outline-none appearance-none cursor-pointer">
             <option [value]="1">Administrador</option>
             <option [value]="2">Cuidador</option>
-            <option [value]="3">Usuario</option>
+            <option [value]="3">Usuario Final (Paciente)</option>
+          </select>
+        </div>
+
+        <div *ngIf="selectedUser().role_id == 3" class="animate-in slide-in-from-top-2">
+          <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2">Cuidador Responsable</label>
+          <select name="carer_id" [(ngModel)]="selectedUser().carer_id" 
+                  class="w-full bg-blue-50/50 border-2 border-blue-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none appearance-none cursor-pointer">
+            <option [value]="null">-- Sin Cuidador Asignado --</option>
+            <option *ngFor="let c of cuidadores()" [value]="c.id">{{c.name}} {{c.surnames}}</option>
           </select>
         </div>
 
         <button type="submit" [disabled]="!userForm.valid"
-                class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-600 transition-all shadow-lg disabled:opacity-30 mt-4">
-          {{ isEditing() ? 'Guardar Cambios' : 'Registrar en Base de Datos' }}
+                class="w-full bg-slate-900 text-white py-5 rounded-4xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-blue-600 transition-all shadow-2xl shadow-blue-100 mt-6">
+          Sincronizar con Base de Datos
         </button>
       </form>
     </div>
