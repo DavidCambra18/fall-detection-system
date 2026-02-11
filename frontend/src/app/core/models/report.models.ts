@@ -8,7 +8,13 @@ export interface Report {
   fall_detected: boolean;
   date_rep: string; // Viene como string ISO de la DB
   confirmed: boolean | null;
-  // Estos campos los uniremos en el backend para que la tabla sea legible
+  
+  // Propiedades opcionales para UI y Joins de backend
   user_name?: string;
   carer_id?: number; 
+
+  /** * Campo calculado en el frontend para distinguir 
+   * entre caída física y pulsación de botón manual 
+   */
+  isPanicButton?: boolean; 
 }
