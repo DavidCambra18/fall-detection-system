@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http'; // Añadido HttpHeaders
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 import { User } from '../models/auth.models';
@@ -9,25 +9,37 @@ export class UserService {
   private http = inject(HttpClient);
   private readonly API_URL = `${environment.apiUrl}/users`;
 
+  // Helper para obtener el token del localStorage
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
   getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(this.API_URL);
+    return this.http.get<User[]>(this.API_URL, { headers: this.getHeaders() });
   }
 
-  // AQUÍ ESTÁ EL ARREGLO DEL ERROR: Añadir <User> al post
-  createUser(user: User): Observable<User> {
-    return this.http.post<User>(this.API_URL, user);
+  // NUEVO MÉTODO: Trae solo los pacientes de un cuidador específico
+  getUsersCaredByCarer(carerId: number): Observable<User[]> {
+    // Este endpoint coincide con el que creamos en el backend: /users/cared
+    return this.http.get<User[]>(`${this.API_URL}/cared`, { headers: this.getHeaders() });
   }
 
-  // NUEVO MÉTODO para traer datos reales por ID
   getUserById(id: number): Observable<User> {
-    return this.http.get<User>(`${this.API_URL}/${id}`);
+    return this.http.get<User>(`${this.API_URL}/${id}`, { headers: this.getHeaders() });
+  }
+
+  createUser(user: User): Observable<User> {
+    return this.http.post<User>(this.API_URL, user, { headers: this.getHeaders() });
   }
 
   updateUser(id: number, user: Partial<User>): Observable<User> {
-    return this.http.put<User>(`${this.API_URL}/${id}`, user);
+    return this.http.put<User>(`${this.API_URL}/${id}`, user, { headers: this.getHeaders() });
   }
 
   deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/${id}`);
+    return this.http.delete<void>(`${this.API_URL}/${id}`, { headers: this.getHeaders() });
   }
 }
