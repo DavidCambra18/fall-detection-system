@@ -22,7 +22,7 @@
     
     <div class="grid grid-cols-1 gap-4 md:hidden mb-8">
       @for (user of filteredUsers(); track user.id) {
-        <div class="bg-white p-6 rounded-4xl border border-slate-100 shadow-sm relative overflow-hidden">
+        <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
           <div class="flex items-center gap-4 mb-4">
             <div [ngClass]="{
               'bg-emerald-100 text-emerald-600': user.status === 'active',
@@ -78,7 +78,7 @@
               
               <td class="px-8 py-6">
                 <p class="text-xs text-slate-500 font-bold italic leading-none">{{ user.email }}</p>
-                <p class="text-[9px] font-mono text-blue-500 mt-1 uppercase font-bold tracking-tighter">{{ user.device }}</p>
+                <p class="text-[9px] font-mono text-blue-500 mt-2 uppercase font-black tracking-tighter">{{ user.device }}</p>
               </td>
 
               <td class="px-8 py-6 text-center">

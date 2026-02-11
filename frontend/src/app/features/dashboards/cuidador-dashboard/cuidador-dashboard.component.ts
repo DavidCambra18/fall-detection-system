@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { EventService } from '../../../core/services/event.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
-import { Report } from '../../../core/models/report.models'; // Importamos tu interfaz corregida
+import { Report } from '../../../core/models/report.models'; 
 import { User } from '../../../core/models/auth.models';
 
 @Component({
@@ -20,14 +20,12 @@ export class CuidadorDashboardComponent implements OnInit, OnDestroy {
   
   private intervalId: any;
   
-  // Usamos el tipo Report de tu modelo para tener autocompletado
   public activeAlert = signal<Report | null>(null); 
   public myPatients = signal<User[]>([]);
   public stats = signal({ total: 0, critical: 0, active: 0 });
 
   ngOnInit() {
     this.loadInitialData();
-    // Polling de seguridad cada 5 segundos
     this.intervalId = setInterval(() => this.refreshData(), 5000);
   }
 
@@ -52,18 +50,24 @@ export class CuidadorDashboardComponent implements OnInit, OnDestroy {
 
     this.eventService.getEvents().subscribe({
       next: (events: Report[]) => {
-        // Filtramos eventos de mis pacientes
-        const myEvents = events.filter(e => patientIds.includes(Number(e.user_id)) && e.fall_detected);
+        // Filtramos: Solo de mis pacientes y que tengan el flag de caída/botón activado
+        const myEvents = events.filter(e => 
+          patientIds.includes(Number(e.user_id)) && e.fall_detected
+        );
         
-        // Buscamos emergencia sin confirmar
+        // Buscamos la alerta más reciente que no haya sido confirmada
         const emergency = myEvents.find(e => e.confirmed === null);
         
         if (emergency) {
-          // Ahora TypeScript conoce 'isPanicButton' gracias al report.models.ts
+          // LÓGICA DE CLASIFICACIÓN:
+          // Si el impacto (acc_z) es bajo (< 1.5G), es el pulsador manual.
+          // Si es alto, el sistema detectó una caída física.
           emergency.isPanicButton = Number(emergency.acc_z) < 1.5;
         }
 
         this.activeAlert.set(emergency || null);
+        
+        // El contador crítico suma ambas: caídas y pulsaciones de botón
         this.stats.update(s => ({
           ...s,
           critical: myEvents.filter(e => e.confirmed === null).length
