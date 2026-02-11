@@ -1,46 +1,62 @@
-<div class="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
-  <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-slate-100">
+<div class="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-8 md:py-12 font-sans">
+  
+  <div class="w-full max-w-md space-y-8 bg-white p-6 md:p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 relative overflow-hidden">
     
-    <div class="text-center">
-      <h2 class="text-3xl font-extrabold text-slate-900 italic tracking-tight">
+    <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/5 rounded-full"></div>
+
+    <div class="text-center relative z-10">
+      <h2 class="text-3xl md:text-4xl font-black text-slate-900 italic tracking-tighter uppercase leading-none">
         FALL<span class="text-blue-600">DETECTION</span>
       </h2>
+      <p class="text-slate-400 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mt-3 italic">
+        Sistema de Monitorización Profesional
+      </p>
     </div>
 
-    <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="mt-8 space-y-6">
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="mt-8 space-y-5 relative z-10">
       <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 ml-1">Email</label>
+        <div class="space-y-1">
+          <label class="block text-[9px] font-black uppercase text-slate-400 tracking-widest ml-4">Email de acceso</label>
           <input type="email" name="email" [(ngModel)]="credentials.email" required
-            class="mt-1 block w-full px-4 py-3 rounded-xl bg-slate-50 border-transparent focus:border-blue-500 focus:bg-white focus:ring-0 text-slate-900 transition-all">
+            class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-bold transition-all outline-none text-sm appearance-none">
         </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 ml-1">Contraseña</label>
+        
+        <div class="space-y-1">
+          <label class="block text-[9px] font-black uppercase text-slate-400 tracking-widest ml-4">Contraseña segura</label>
           <input type="password" name="password" [(ngModel)]="credentials.password" required
-            class="mt-1 block w-full px-4 py-3 rounded-xl bg-slate-50 border-transparent focus:border-blue-500 focus:bg-white focus:ring-0 text-slate-900 transition-all">
+            class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-bold transition-all outline-none text-sm appearance-none">
         </div>
       </div>
 
-      <div *ngIf="errorMessage" class="text-red-500 text-xs font-bold bg-red-50 p-3 rounded-lg border border-red-100">
-        {{ errorMessage }}
+      <div *ngIf="errorMessage" class="text-red-500 text-[10px] font-black uppercase bg-red-50 p-4 rounded-2xl border border-red-100 italic leading-tight">
+        ⚠️ {{ errorMessage }}
       </div>
 
       <button type="submit" [disabled]="!loginForm.valid"
-        class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95 disabled:bg-slate-300 disabled:shadow-none">
+        class="w-full py-5 px-4 bg-slate-900 hover:bg-blue-600 text-white font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-30 text-[11px]">
         Iniciar Sesión
       </button>
 
       <div class="relative flex items-center py-2">
-        <div class="flex-grow border-t border-slate-200"></div>
-        <span class="flex-shrink mx-4 text-slate-400 text-xs uppercase font-bold">O continúa con</span>
-        <div class="flex-grow border-t border-slate-200"></div>
+        <div class="flex-grow border-t border-slate-100"></div>
+        <span class="flex-shrink mx-4 text-slate-300 text-[8px] uppercase font-black tracking-widest">O accede con</span>
+        <div class="flex-grow border-t border-slate-100"></div>
       </div>
 
       <button (click)="loginWithGoogle()" type="button"
-        class="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm">
+        class="w-full flex items-center justify-center gap-3 py-4 px-4 bg-white border border-slate-100 text-slate-600 font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all active:scale-95 shadow-sm text-[10px]">
         <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" class="w-5 h-5" alt="Google">
         Google
       </button>
     </form>
+
+    <div class="mt-8 pt-8 border-t border-slate-50 text-center">
+      <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">¿No tienes cuenta todavía?</p>
+      <button routerLink="/register" 
+              class="w-full py-5 bg-blue-50 text-blue-600 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all shadow-sm border border-blue-100">
+        Crear Cuenta
+      </button>
+    </div>
+
   </div>
 </div>

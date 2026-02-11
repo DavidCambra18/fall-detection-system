@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable, tap } from 'rxjs';
-// CAMBIO: Importamos User en lugar de UserSession
 import { AuthResponse, LoginInput, User } from '../models/auth.models';
 
 @Injectable({
@@ -10,13 +9,18 @@ import { AuthResponse, LoginInput, User } from '../models/auth.models';
 })
 export class AuthService {
   private http = inject(HttpClient);
+  // Asegúrate de que environment.apiUrl sea 'http://localhost:3000/api'
   private readonly API_URL = `${environment.apiUrl}/auth`;
 
-  // CAMBIO: El Signal ahora maneja el tipo User
   currentUser = signal<User | null>(this.getUserFromStorage());
-
   isLoggedIn = computed(() => !!this.currentUser());
   userRole = computed(() => this.currentUser()?.role_id ?? null);
+
+  // --- NUEVO MÉTODO DE REGISTRO ---
+  register(userData: any): Observable<any> {
+    // Esto envía name, email, password, phone_num, etc., al backend
+    return this.http.post(`${this.API_URL}/register`, userData);
+  }
 
   login(credentials: LoginInput): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials).pipe(
@@ -32,6 +36,7 @@ export class AuthService {
     this.currentUser.set(null);
   }
 
+  // Métodos de utilidad para roles
   isAdmin(): boolean { return this.userRole() === 1; }
   isCuidador(): boolean { return this.userRole() === 2; }
   isPaciente(): boolean { return this.userRole() === 3; }
@@ -40,7 +45,6 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
-  // CAMBIO: Tipo User aquí también
   updateCurrentUserSignal(updatedData: Partial<User>): void {
     const current = this.currentUser();
     if (current) {
