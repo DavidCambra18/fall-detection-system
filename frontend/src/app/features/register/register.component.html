@@ -1,0 +1,74 @@
+<div class="min-h-screen bg-slate-50 flex items-center justify-center p-4 md:p-8 font-sans">
+  <div class="bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] shadow-2xl w-full max-w-lg border border-slate-100 relative overflow-hidden">
+    
+    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16"></div>
+
+    <header class="text-center mb-10">
+      <h2 class="text-4xl font-black text-slate-800 uppercase italic tracking-tighter leading-none mb-3">
+        Crear Cuenta
+      </h2>
+      <p class="text-blue-500 text-[10px] font-black uppercase tracking-[0.3em] italic">
+        Sistema de Detección de Caídas
+      </p>
+    </header>
+
+    <div *ngIf="errorMessage()" class="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 animate-pulse">
+      <span class="text-lg">⚠️</span>
+      <p class="text-red-600 text-[11px] font-bold uppercase tracking-tight">{{ errorMessage() }}</p>
+    </div>
+
+    <form (ngSubmit)="onRegister()" #regForm="ngForm" class="space-y-4">
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-1">
+          <label class="text-[9px] font-black text-slate-400 uppercase ml-4">Nombre</label>
+          <input type="text" [(ngModel)]="regData.name" name="name" required
+                 class="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-700 outline-none transition-all">
+        </div>
+        <div class="space-y-1">
+          <label class="text-[9px] font-black text-slate-400 uppercase ml-4">Apellidos</label>
+          <input type="text" [(ngModel)]="regData.surnames" name="surnames"
+                 class="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-700 outline-none transition-all">
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-[9px] font-black text-slate-400 uppercase ml-4">Correo Electrónico</label>
+        <input type="email" [(ngModel)]="regData.email" name="email" required
+               class="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-700 outline-none transition-all">
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-1">
+          <label class="text-[9px] font-black text-slate-400 uppercase ml-4">Teléfono</label>
+          <input type="text" [(ngModel)]="regData.phone_num" name="phone_num" required
+                 class="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-700 outline-none transition-all">
+        </div>
+        <div class="space-y-1">
+          <label class="text-[9px] font-black text-slate-400 uppercase ml-4">F. Nacimiento</label>
+          <input type="date" [(ngModel)]="regData.date_born" name="date_born"
+                 class="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-700 outline-none transition-all">
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-[9px] font-black text-slate-400 uppercase ml-4">Contraseña de Seguridad</label>
+        <input type="password" [(ngModel)]="regData.password" name="password" required
+               class="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-500/20 font-bold text-slate-700 outline-none transition-all">
+      </div>
+
+      <button type="submit" [disabled]="!regForm.form.valid || isLoading()"
+              class="w-full bg-slate-900 text-white py-5 rounded-[2rem] font-black uppercase tracking-[0.2em] text-[11px] 
+                     hover:bg-blue-600 transition-all shadow-xl shadow-blue-100 mt-6 disabled:opacity-50 disabled:bg-slate-300">
+        {{ isLoading() ? 'Procesando...' : 'Finalizar Registro' }}
+      </button>
+    </form>
+
+    <footer class="mt-8 pt-8 border-t border-slate-50 text-center">
+      <p class="text-[10px] font-bold uppercase text-slate-400 tracking-widest">
+        ¿Ya eres miembro? 
+        <a routerLink="/login" class="text-blue-500 hover:text-blue-600 ml-1">Inicia Sesión</a>
+      </p>
+    </footer>
+  </div>
+</div>
