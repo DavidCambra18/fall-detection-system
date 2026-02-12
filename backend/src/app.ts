@@ -5,6 +5,7 @@ import express from 'express';
 import authRoutes from './routes/auth.routes';
 import deviceRoutes from './routes/devices.routes';
 import eventsRoutes from './routes/events.routes';
+import mcpRoutes from './routes/mcp.routes';
 
 dotenv.config();
 
