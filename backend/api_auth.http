@@ -134,7 +134,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiO
 
 {
   "device_id_logic": "38182B841494",
-  "mac": "04:83:08:57:34:80",
+  "mac": "38:18:2B:84:14:94",
   "alias": "ESP32 Prototipo",
   "status": "active",
   "user_id": 1
