@@ -28,6 +28,7 @@ fall-detection-system/
 * **Hardware**: Placa ESP32, sensor acelerómetro, inclinómetro, LED/Buzzer y pulsador de emergencia.
 * **Funcionalidades**: Lectura continua del sensor, detección de evento sospechoso de caída e identificación del dispositivo (ID o MAC).
 * **Comunicación**: Envío de datos al backend vía HTTP REST o MQTT.
+* **Conexionado**: Esquema de conexion en la carpeta device/esp32/esquema
 
 ### 2. Backend (API REST)
 * **Tecnologías**: Node.js + Express + TypeScript.
