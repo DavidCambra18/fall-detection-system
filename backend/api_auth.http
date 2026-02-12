@@ -107,3 +107,20 @@ Content-Type: application/json
   "accZ": 9.81,
   "fallDetected": false
 }
+
+### Consultas Chatgpt
+POST http://localhost:3000/api/chatgpt/ask
+Content-Type: application/json
+
+{
+  "message": "Dame 5 consejos para evitar caídas en casa"
+}
+
+### Consulta a dispositivos sin datos
+GET http://localhost:3000/api/chatgpt/analyze/999
+
+### Reporte sin fechas
+POST http://localhost:3000/api/chatgpt/report
+Content-Type: application/json
+
+{}
