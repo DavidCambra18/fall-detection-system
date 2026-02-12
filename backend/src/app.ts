@@ -5,7 +5,7 @@ import express from 'express';
 import authRoutes from './routes/auth.routes';
 import deviceRoutes from './routes/devices.routes';
 import eventsRoutes from './routes/events.routes';
-import mcpRoutes from './routes/mcp.routes';
+import chatgptRoutes from './routes/chatgpt.routes';
 
 dotenv.config();
 
@@ -30,6 +30,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/chatgpt', chatgptRoutes);
 
 // Ruta base
 app.get('/', (req, res) => {
