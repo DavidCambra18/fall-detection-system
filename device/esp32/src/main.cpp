@@ -63,7 +63,8 @@ void sendData(float x, float y, float z, bool fall) {
         Serial.println("ERROR: WiFi desconectado.");
         return;
     }
-
+    WiFiClientSecure client;
+    client.setInsecure();
     HTTPClient http;
     
     Serial.println("\n========== ENVIANDO DATOS ==========");
