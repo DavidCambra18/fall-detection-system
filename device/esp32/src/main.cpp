@@ -3,6 +3,7 @@
 #include <HTTPClient.h>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
+#include <WiFiClientSecure.h>
 #include <Wire.h>
 #include <ArduinoJson.h>
 
@@ -71,7 +72,7 @@ void sendData(float x, float y, float z, bool fall) {
     Serial.printf("Estado de Caída (fallDetected): %s\n", fall ? "TRUE (PELIGRO)" : "FALSE (TODO BIEN)");
 
     http.setTimeout(5000); 
-    http.begin(serverUrl);
+    http.begin(client, serverUrl);
     http.addHeader("Content-Type", "application/json");
 
     StaticJsonDocument<256> doc;
