@@ -130,7 +130,8 @@ Content-Type: application/json
 ### Crear Dispositivo (Con Token) el token se manda sin las comillas ""
 POST http://localhost:3000/api/devices
 Content-Type: application/json
-// Authorization: Bearer 
+Authorization: Bearer toke_usuario
+// quitar antes de subir a produccion
 
 {
   "device_id_logic": "38182B841494",

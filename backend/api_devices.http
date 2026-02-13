@@ -1,5 +1,15 @@
+<<<<<<< HEAD
 POST http://localhost:3000/api/devices
 //Authorization: Bearer 
+=======
+@baseUrl = http://localhost:3000
+@token = token_usuario
+// quitar token antes de subir a produccion
+
+###
+POST {{baseUrl}}/api/devices
+Authorization: Bearer {{token}}
+>>>>>>> origin/develop
 Content-Type: application/json
 
 {
@@ -11,12 +21,21 @@ Content-Type: application/json
 }
 
 ###
+<<<<<<< HEAD
 GET http://localhost:3000/api/devices/3
 //Authorization: Bearer 
 
 ###
 PUT http://localhost:3000/api/devices/3
 //Authorization: Bearer 
+=======
+GET {{baseUrl}}/api/devices/3
+Authorization: Bearer {{token}}
+
+###
+PUT {{baseUrl}}/api/devices/3
+Authorization: Bearer {{token}}
+>>>>>>> origin/develop
 Content-Type: application/json
 
 {
@@ -26,8 +45,13 @@ Content-Type: application/json
 
 
 ###
+<<<<<<< HEAD
 PATCH http://localhost:3000/api/devices/3/status
 //Authorization: Bearer 
+=======
+PATCH {{baseUrl}}/api/devices/3/status
+Authorization: Bearer {{token}}
+>>>>>>> origin/develop
 Content-Type: application/json
 
 {
@@ -35,5 +59,10 @@ Content-Type: application/json
 }
 
 ###
+<<<<<<< HEAD
 DELETE http://localhost:3000/api/devices/3
 //Authorization: Bearer 
+=======
+DELETE {{baseUrl}}/api/devices/3
+Authorization: Bearer {{token}}
+>>>>>>> origin/develop

@@ -1,7 +1,7 @@
 import { pool } from '../db';
 
 export const getUsers = async () => {
-    const result = await pool.query(`
+  const result = await pool.query(`
     SELECT 
       u.id,
       u.email,
@@ -15,21 +15,21 @@ export const getUsers = async () => {
     ORDER BY u.id ASC
   `);
 
-    return result.rows;
+  return result.rows;
 };
 
 export async function getUsersCaredByCarer(carerId: number) {
-    const query = `
+  const query = `
     SELECT id, name, surnames, email, phone_num, date_born
     FROM users
     WHERE carer_id = $1
   `;
-    const { rows } = await pool.query(query, [carerId]);
-    return rows;
+  const { rows } = await pool.query(query, [carerId]);
+  return rows;
 }
 
 export async function getUserById(userId: number) {
-    const query = `
+  const query = `
     SELECT
       id,
       name,
@@ -43,16 +43,26 @@ export async function getUserById(userId: number) {
     WHERE id = $1
   `;
 
-    const { rows } = await pool.query(query, [userId]);
-    return rows[0];
+  const { rows } = await pool.query(query, [userId]);
+  return rows[0];
 }
 
-export async function updateUserById(userId: number, data: any) {
+export async function updateUserById(userId: number, data: any, requesterRoleId: number) {
   const allowedFields = ['name', 'surnames', 'email', 'phone_num', 'date_born', 'carer_id'];
+
+  // Solo admin puede cambiar el rol
+  if (requesterRoleId === 1) {
+    allowedFields.push('role_id');
+  }
 
   const fields = [];
   const values = [];
   let idx = 1;
+
+  // Si el admin cambia el rol a cuidador (2)
+  if (requesterRoleId === 1 && data.role_id === 2) {
+    data.carer_id = null;
+  }
 
   for (const key in data) {
     if (!allowedFields.includes(key)) continue;
@@ -69,6 +79,7 @@ export async function updateUserById(userId: number, data: any) {
     WHERE id = $${idx}
     RETURNING id, name, surnames, email, phone_num, role_id, carer_id, date_born
   `;
+
   values.push(userId);
 
   const { rows } = await pool.query(query, values);
