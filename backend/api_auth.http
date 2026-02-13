@@ -130,7 +130,7 @@ Content-Type: application/json
 ### Crear Dispositivo (Con Token) el token se manda sin las comillas ""
 POST http://localhost:3000/api/devices
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDg4ODI0NCwiZXhwIjoxNzcwOTE3MDQ0fQ.uyCkfMcqjb1Vyy4sGWbYqmfYydYUcNbecG0NovRmDIc
+// Authorization: Bearer 
 
 {
   "device_id_logic": "38182B841494",
