@@ -4,25 +4,36 @@
     
     <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/5 rounded-full"></div>
 
-    <div class="text-center relative z-10">
-      <h2 class="text-3xl md:text-4xl font-black text-slate-900 italic tracking-tighter uppercase leading-none">
-        FALL<span class="text-blue-600">DETECTION</span>
-      </h2>
-      <p class="text-slate-400 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mt-3 italic">
-        Sistema de Monitorización Profesional
-      </p>
-    </div>
+<div class="text-center relative z-10 flex flex-col items-center">
+  
+  <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-xl shadow-slate-200/50 mb-6 transition-transform hover:scale-105 border border-slate-100">
+    <img src="/favicon.ico" alt="Logo" class="w-8 h-8 object-contain">
+  </div>
+
+  <h2 class="text-3xl md:text-5xl font-black text-slate-900 italic tracking-tighter uppercase leading-none">
+    CAETE<span class="text-blue-600"> TU</span>
+  </h2>
+
+  <div class="flex items-center gap-3 mt-4">
+    <span class="h-px w-6 bg-blue-600/20"></span>
+    <p class="text-slate-400 text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] italic">
+      Monitorización Profesional
+    </p>
+    <span class="h-px w-6 bg-blue-600/20"></span>
+  </div>
+
+</div>
 
     <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="mt-8 space-y-5 relative z-10">
       <div class="space-y-4">
         <div class="space-y-1">
-          <label class="block text-[9px] font-black uppercase text-slate-400 tracking-widest ml-4">Email de acceso</label>
+          <label class="block text-[9px] font-black uppercase text-slate-400 tracking-widest ml-4">Email</label>
           <input type="email" name="email" [(ngModel)]="credentials.email" required
             class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-bold transition-all outline-none text-sm appearance-none">
         </div>
         
         <div class="space-y-1">
-          <label class="block text-[9px] font-black uppercase text-slate-400 tracking-widest ml-4">Contraseña segura</label>
+          <label class="block text-[9px] font-black uppercase text-slate-400 tracking-widest ml-4">Contraseña</label>
           <input type="password" name="password" [(ngModel)]="credentials.password" required
             class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-bold transition-all outline-none text-sm appearance-none">
         </div>
