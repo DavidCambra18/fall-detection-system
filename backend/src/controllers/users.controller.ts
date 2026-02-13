@@ -118,7 +118,11 @@ export async function updateUserController(req: Request, res: Response) {
       return res.status(403).json({ message: 'Acceso no autorizado' });
     }
 
-    const updatedUser = await updateUserById(targetUserId, req.body);
+    const updatedUser = await updateUserById(
+      targetUserId,
+      req.body,
+      requester.role_id
+    );
     return res.json(updatedUser);
   } catch (err) {
     console.error(err);
