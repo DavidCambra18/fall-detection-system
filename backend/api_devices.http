@@ -1,5 +1,10 @@
-POST http://localhost:3000/api/devices
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDIxMjcwMSwiZXhwIjoxNzcwMjQxNTAxfQ.eTc6fwEtKSUDl2eXm2hcn5kKvorFEoyncG3kUfvskZY
+@baseUrl = http://localhost:3000
+@token = token_usuario
+// quitar token antes de subir a produccion
+
+###
+POST {{baseUrl}}/api/devices
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -11,12 +16,12 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:3000/api/devices/3
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDIxMjcwMSwiZXhwIjoxNzcwMjQxNTAxfQ.eTc6fwEtKSUDl2eXm2hcn5kKvorFEoyncG3kUfvskZY
+GET {{baseUrl}}/api/devices/3
+Authorization: Bearer {{token}}
 
 ###
-PUT http://localhost:3000/api/devices/3
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDIxMjcwMSwiZXhwIjoxNzcwMjQxNTAxfQ.eTc6fwEtKSUDl2eXm2hcn5kKvorFEoyncG3kUfvskZY
+PUT {{baseUrl}}/api/devices/3
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -26,8 +31,8 @@ Content-Type: application/json
 
 
 ###
-PATCH http://localhost:3000/api/devices/3/status
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDIxMjcwMSwiZXhwIjoxNzcwMjQxNTAxfQ.eTc6fwEtKSUDl2eXm2hcn5kKvorFEoyncG3kUfvskZY
+PATCH {{baseUrl}}/api/devices/3/status
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -35,5 +40,5 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:3000/api/devices/3
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDIxMjcwMSwiZXhwIjoxNzcwMjQxNTAxfQ.eTc6fwEtKSUDl2eXm2hcn5kKvorFEoyncG3kUfvskZY
+DELETE {{baseUrl}}/api/devices/3
+Authorization: Bearer {{token}}

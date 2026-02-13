@@ -130,11 +130,12 @@ Content-Type: application/json
 ### Crear Dispositivo (Con Token) el token se manda sin las comillas ""
 POST http://localhost:3000/api/devices
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDM3ODQ3NywiZXhwIjoxNzcwNDA3Mjc3fQ.TYu9mgRyNKXtppoqDwt6aRUnqZroqeKN1-OBlru0axA
+Authorization: Bearer toke_usuario
+// quitar antes de subir a produccion
 
 {
-  "device_id_logic": "048308573480",
-  "mac": "04:83:08:57:34:80",
+  "device_id_logic": "38182B841494",
+  "mac": "38:18:2B:84:14:94",
   "alias": "ESP32 Prototipo",
   "status": "active",
   "user_id": 1
@@ -145,7 +146,20 @@ POST http://localhost:3000/api/auth/telemetry
 Content-Type: application/json
 
 {
-  "deviceId": "048308573480",
+  "deviceId": "38182B841494",
+  "accX": 0.45,
+  "accY": -0.12,
+  "accZ": 9.81,
+  "fallDetected": false
+}
+
+
+### Enviar Telemetría VERCEL (Ruta y Puerto corregidos)
+https://falldetectionsystem.vercel.app/api/auth/telemetry
+Content-Type: application/json
+
+{
+  "deviceId": "38182B841494",
   "accX": 0.45,
   "accY": -0.12,
   "accZ": 9.81,

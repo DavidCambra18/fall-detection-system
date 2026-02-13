@@ -14,19 +14,22 @@ const app = express();
 // AHORA USA EL PUERTO 3000 POR DEFECTO (Para coincidir con tu ESP32)
 const PORT = process.env.PORT || 3000;
 
-const FRONTEND_ORIGIN = process.env.NODE_ENV === 'production'
-  ? 'https://falldetectionsystem.com'
-  : 'http://localhost:4200';
+const FRONTEND_ORIGINS =
+  process.env.NODE_ENV === 'production'
+    ? process.env.FRONTEND_ORIGINS?.split(',') || []
+    : ['http://localhost:4200'];
 
-// CORS mejorado: Permite frontend Y dispositivos ESP32
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir sin origin (Postman, ESP32, etc.) o desde el frontend
-    if (!origin || origin === FRONTEND_ORIGIN) {
-      callback(null, true);
-    } else {
-      callback(null, true); // Permitir cualquier origen (desarrollo)
+
+    // Permitir peticiones sin origin (Postman, ESP32, etc.)
+    if (!origin) return callback(null, true);
+
+    if (FRONTEND_ORIGINS.includes(origin)) {
+      return callback(null, true);
     }
+
+    return callback(new Error('No permitido por CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
