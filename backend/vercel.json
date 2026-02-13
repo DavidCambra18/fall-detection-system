@@ -1,28 +1,9 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "src/app.ts",
-      "use": "@vercel/node"
+      "source": "/api/((?!telemetry).*)",
+      "destination": "/api/index"
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/telemetry",
-      "methods": ["POST", "OPTIONS"],
-      "dest": "src/app.ts",
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, User-Agent"
-      }
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "src/app.ts"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
