@@ -1,58 +1,98 @@
-<div class="p-8 bg-slate-50 min-h-screen font-sans">
-  <header class="mb-10">
-    <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Inventario de Hardware</h1>
-    <p class="text-slate-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">Gestión de activos en tiempo real</p>
+<div class="p-4 md:p-8 bg-slate-50 min-h-screen font-sans">
+  
+  <header class="mb-8 md:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Inventario Hardware</h1>
+      <p class="text-slate-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">Control y Alta de Dispositivos</p>
+    </div>
+    <button (click)="openCreateModal()" 
+            class="w-full sm:w-auto px-6 py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl flex items-center justify-center gap-2 transition-transform active:scale-95">
+      <span>➕</span> Registrar y Vincular
+    </button>
   </header>
 
-  <div *ngIf="isLoading()" class="flex flex-col items-center justify-center py-20 opacity-40">
-    <div class="w-12 h-12 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-    <p class="text-[10px] font-black uppercase tracking-widest">Sincronizando con base de datos...</p>
+  <div *ngIf="isLoading()" class="flex flex-col items-center justify-center py-20 opacity-30">
+    <div class="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
   </div>
 
-  <div *ngIf="!isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+  <div *ngIf="!isLoading()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
     <div *ngFor="let dev of devices()" 
-         [ngClass]="{'border-red-200 shadow-lg ring-2 ring-red-500/10': dev.status === 'low battery'}"
-         class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all group relative overflow-hidden">
+         class="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-100 shadow-sm relative flex flex-col justify-between h-full group hover:shadow-md transition-shadow">
       
-      <div class="flex justify-between items-start mb-6">
-        <div [ngClass]="dev.status === 'low battery' ? 'bg-red-50 text-red-600' : 'bg-purple-50 text-purple-600'" 
-             class="p-3 rounded-2xl text-xl">
-          {{ dev.status === 'low battery' ? '🪫' : '⌚' }}
-        </div>
-        
-        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
-          <div [ngClass]="dev.status === 'active' ? 'bg-emerald-500' : 'bg-red-500'" class="w-2 h-2 rounded-full animate-pulse"></div>
-          <span class="text-[9px] font-black uppercase tracking-widest" [ngClass]="dev.status === 'active' ? 'text-emerald-600' : 'text-red-600'">
-            {{ dev.status }}
-          </span>
-        </div>
-      </div>
-
-      <div class="mb-6">
-        <h3 class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-          {{ dev.device_id_logic }}
-        </h3>
-        <p class="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-4 italic">{{ dev.alias || 'Sin alias asignado' }}</p>
-        
-        <div class="space-y-3 bg-slate-50/50 p-5 rounded-3xl border border-slate-50">
-          <div class="flex flex-col">
-            <span class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 italic">Vínculo de Usuario</span>
-            <span class="text-sm font-black text-slate-700 tracking-tight">
-              {{ dev.user_id ? 'Usuario ID: #' + dev.user_id : 'Sin propietario' }}
-            </span>
+      <div>
+        <div class="flex justify-between items-start mb-6">
+          <div class="bg-blue-50 text-blue-600 p-3 rounded-2xl text-xl shadow-inner italic font-black">
+            ⌚
           </div>
-          <div class="flex flex-col">
-            <span class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 italic">Dirección MAC</span>
-            <span class="text-[10px] font-mono font-bold text-slate-400 bg-white px-2 py-1 rounded-lg border border-slate-100 w-fit">
-              {{ dev.mac }}
-            </span>
+          <button (click)="deleteDevice(dev.id)" 
+                  class="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-lg font-black text-slate-800 tracking-tight">{{ dev.device_id_logic }}</h3>
+          <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4 italic">
+            {{ dev.alias }}
+          </p>
+          
+          <div class="space-y-3 bg-slate-50/50 p-5 rounded-3xl border border-slate-50">
+            <div class="flex flex-col">
+              <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Paciente Vinculado</span>
+              <span class="text-sm font-black text-slate-700 tracking-tight">{{ getUserName(dev.user_id) }}</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">MAC Registrada</span>
+              <span class="text-[10px] font-mono font-bold text-slate-400 bg-white px-2 py-1 rounded-lg border border-slate-100 w-fit">{{ dev.mac }}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="pt-4 border-t border-slate-100 text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center italic">
-        Hardware verificado por sistema central
+      <div class="pt-4 mt-4 border-t border-slate-50 flex items-center justify-center gap-2">
+        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+        <span class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Enlace Activo</span>
       </div>
+    </div>
+  </div>
+
+  <div *ngIf="isModalOpen()" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-[2.5rem] p-8 md:p-10 shadow-2xl animate-in zoom-in duration-300 max-h-[95vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-xl font-black text-slate-800 tracking-tighter uppercase italic">Nuevo Registro</h2>
+        <button (click)="isModalOpen.set(false)" class="text-slate-300 hover:text-red-500 text-xl font-bold">✕</button>
+      </div>
+
+      <form (ngSubmit)="saveDevice()" #devForm="ngForm" class="space-y-5">
+        <div>
+          <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 italic">ID Lógico Hardware</label>
+          <input type="text" name="logic" [(ngModel)]="selectedDevice().device_id_logic" required placeholder="Ej: ESP32-01" 
+                 class="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none">
+        </div>
+        
+        <div>
+          <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 italic">Dirección MAC</label>
+          <input type="text" name="mac" [(ngModel)]="selectedDevice().mac" required placeholder="AA:BB:CC:DD:EE:FF" 
+                 class="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none">
+        </div>
+
+        <div class="pt-4 border-t border-slate-100">
+          <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2 italic">Asignar a Paciente (Obligatorio)</label>
+          <select name="user" [(ngModel)]="selectedDevice().user_id" required
+                  class="w-full bg-blue-50 border-2 border-blue-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none appearance-none cursor-pointer">
+            <option [value]="undefined" disabled>-- Seleccionar Paciente --</option>
+            <option *ngFor="let u of users()" [value]="u.id">{{ u.name }} {{ u.surnames }}</option>
+          </select>
+          <p class="text-[8px] text-slate-400 mt-2 ml-4 italic">El alias se generará automáticamente con el nombre del paciente.</p>
+        </div>
+
+        <button type="submit" [disabled]="!devForm.valid"
+                class="w-full bg-slate-900 text-white py-5 rounded-4xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-blue-600 transition-all shadow-xl shadow-blue-100 disabled:opacity-30 mt-4">
+          Registrar y Vincular Ahora
+        </button>
+      </form>
     </div>
   </div>
 </div>

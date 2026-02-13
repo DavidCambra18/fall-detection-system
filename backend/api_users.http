@@ -1,0 +1,41 @@
+@baseUrl = http://localhost:3000
+@token = toke_usuario
+# NO DESPLEGAR CON EL TOKEN DEL USUARIO
+
+### OBTENER TODOS LOS USUARIOS (solo ADMIN)
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
+
+### OBTENER USUARIO POR ID
+GET {{baseUrl}}/api/users/3
+Authorization: Bearer {{token}}
+
+### USUARIOS ASIGNADOS AL CUIDADOR
+GET {{baseUrl}}/api/users/cared
+Authorization: Bearer {{token}}
+
+### PERFIL DEL USUARIO LOGUEADO
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{token}}
+
+### Eventos de un usuario
+GET {{baseUrl}}/api/users/3/events
+Authorization: Bearer {{token}}
+
+### Editar un usuario (admin/cuidador/propio usuario)
+PUT {{baseUrl}}/api/users/7
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Karlos",
+  "surnames": "Mes Vades",
+  "email": "carlos@outlook.com",
+  "phone_num": "+34666888999",
+  "date_born": "1955-02-19"
+}
+
+
+### Borrar un usuario (solo admin)
+DELETE {{baseUrl}}/api/users/7
+Authorization: Bearer {{token}}

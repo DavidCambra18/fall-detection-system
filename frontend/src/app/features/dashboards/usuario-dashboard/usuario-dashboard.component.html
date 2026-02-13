@@ -1,82 +1,107 @@
-<div class="p-8 bg-slate-50 min-h-screen font-sans">
-  <header class="mb-10">
-    <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">
-      Hola, {{ $any(authService.currentUser())?.name }}
+<div class="p-4 md:p-8 bg-slate-50 min-h-screen font-sans">
+  
+  <header class="mb-8 md:mb-10">
+    <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">
+      Hola, {{ (authService.currentUser())?.name }}
     </h1>
-    <p class="text-emerald-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">Protección activa</p>
+    <div class="flex items-center gap-2 mt-2">
+      <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+      <p class="text-emerald-500 font-black text-[9px] uppercase tracking-[0.4em] italic leading-none">Protección activa</p>
+    </div>
   </header>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
     
     <div class="lg:col-span-2 space-y-6">
       
-      @if (showEmergency()) {
-        <div class="bg-red-600 rounded-[2.5rem] p-8 shadow-2xl animate-pulse border-4 border-white">
-          <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="flex items-center gap-5">
-              <span class="text-4xl">🚨</span>
-              <div>
-                <h3 class="text-white text-xl font-black uppercase italic leading-none">¡Cuidador en camino!</h3>
-                <p class="text-red-100 text-[10px] font-bold uppercase tracking-widest mt-2">Actualiza tu actividad pendiente</p>
-              </div>
-            </div>
-            <button (click)="irARevisarAlertas()" class="bg-white text-red-600 px-8 py-3 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-100 transition-all shadow-xl">
-              REVISAR AHORA 📋
-            </button>
-          </div>
-        </div>
-      }
-
-      <div class="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-        <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tighter mb-8 italic">Estado del Sensor</h2>
+      <div *ngIf="showEmergency()" 
+           [ngClass]="currentEmergency()?.isPanicButton ? 'bg-amber-500 border-amber-300 shadow-amber-900/20' : 'bg-red-600 border-red-400 shadow-red-900/20'"
+           class="rounded-4xl md:rounded-[2.5rem] p-6 md:p-8 shadow-2xl animate-in zoom-in duration-300 border-4 border-white transition-colors">
         
-        <div class="bg-slate-900 rounded-4xl p-8 mb-8">
-          <div class="flex items-end gap-2 h-32">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="flex items-center gap-4 text-center md:text-left">
+            <div class="w-14 h-14 md:w-16 md:h-16 bg-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
+              <span class="text-3xl md:text-4xl">{{ currentEmergency()?.isPanicButton ? '🆘' : '🚨' }}</span>
+            </div>
+            
+            <div>
+              <h3 class="text-white text-lg md:text-xl font-black uppercase italic leading-none">
+                {{ currentEmergency()?.isPanicButton ? '¡Aviso de emergencia enviado!' : '¡Detección de caída enviada!' }}
+              </h3>
+              <p class="text-white/90 text-[9px] md:text-[10px] font-bold uppercase tracking-widest mt-2 leading-tight">
+                Tu cuidador ha recibido la notificación y está revisando tu estado.
+              </p>
+            </div>
+          </div>
+
+          <button (click)="irARevisarAlertas()" 
+                  [ngClass]="currentEmergency()?.isPanicButton ? 'text-amber-600' : 'text-red-600'"
+                  class="w-full md:w-auto bg-white px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all shadow-xl">
+            REVISAR ESTADO 📋
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 md:p-10 rounded-[2.5rem] md:rounded-[3rem] border border-slate-100 shadow-sm">
+        <h2 class="text-xl md:text-2xl font-black text-slate-800 uppercase tracking-tighter mb-6 md:mb-8 italic leading-none">Monitor de Actividad</h2>
+        
+        <div class="bg-slate-900 rounded-4xl p-6 md:p-8 mb-8">
+          <div class="flex items-end gap-1.5 md:gap-2 h-24 md:h-32">
             @for (val of accelData(); track $index) {
-              <div [style.height.%]="val" class="flex-1 bg-blue-500/30 rounded-t-lg transition-all duration-500 shadow-[0_0_10px_rgba(59,130,246,0.2)]"></div>
+              <div [style.height.%]="val" 
+                   class="flex-1 bg-blue-500/40 rounded-t-sm md:rounded-t-lg transition-all duration-700 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+              </div>
             }
           </div>
+          <p class="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] mt-4 text-center italic">Telemetría en tiempo real desde {{ myDevice()?.device_id_logic || 'ESP32' }}</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-6">
-          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">MAC</p>
-            <p class="text-sm font-mono font-bold text-slate-700">{{ myDevice()?.mac }}</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+          <div class="bg-slate-50 p-5 md:p-6 rounded-2xl border border-slate-100 group transition-all hover:bg-white hover:shadow-md">
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Identificador MAC</p>
+            <p class="text-xs md:text-sm font-mono font-bold text-slate-700 truncate leading-none">{{ myDevice()?.mac || 'Sin vincular' }}</p>
           </div>
-          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Alias</p>
-            <p class="text-sm font-bold text-slate-700 uppercase">{{ myDevice()?.alias }}</p>
+          <div class="bg-slate-50 p-5 md:p-6 rounded-2xl border border-slate-100 group transition-all hover:bg-white hover:shadow-md">
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Nombre de Equipo</p>
+            <p class="text-xs md:text-sm font-bold text-slate-700 uppercase truncate leading-none">{{ myDevice()?.alias || 'No detectado' }}</p>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="bg-slate-900 p-8 rounded-[3rem] text-white flex flex-col shadow-2xl shadow-slate-900/20">
-      <div class="flex-1">
-        <h2 class="text-xl font-black uppercase italic tracking-tighter mb-8">Últimos Eventos</h2>
+    <div class="bg-slate-900 p-8 md:p-10 rounded-[2.5rem] md:rounded-[3rem] text-white flex flex-col shadow-2xl relative overflow-hidden">
+      <div class="absolute -top-4 -right-4 opacity-5 text-[120px] rotate-12 pointer-events-none">⌚</div>
+
+      <div class="flex-1 relative z-10">
+        <h2 class="text-xl font-black uppercase italic tracking-tighter mb-8 leading-none">Última Actividad</h2>
         
         <div class="space-y-4">
           @for (alert of recentAlerts(); track alert.id) {
-            <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex items-center justify-between">
+            <div class="bg-white/5 border border-white/10 p-4 rounded-2xl flex items-center justify-between group hover:bg-white/10 transition-all cursor-default">
               <div>
-                <p class="text-[10px] font-black uppercase tracking-tighter" [class.text-red-400]="alert.confirmed === null">
-                  {{ alert.fall_detected ? 'Caída Detectada' : 'Aviso Preventivo' }}
+                <p class="text-[9px] font-black uppercase tracking-tighter" 
+                   [ngClass]="alert.confirmed === null ? (alert.isPanicButton ? 'text-amber-400' : 'text-red-400') : 'text-slate-400'">
+                  {{ alert.isPanicButton ? 'Botón SOS Pulsado' : (alert.fall_detected ? 'Caída Detectada' : 'Actividad Normal') }}
                 </p>
-                <p class="text-[8px] text-slate-500 font-bold uppercase mt-1">
+                <p class="text-[8px] text-slate-500 font-bold uppercase mt-1 italic">
                   {{ alert.date_rep | date:'HH:mm · dd MMM' }}
                 </p>
               </div>
-              <span class="text-xs">{{ alert.confirmed === null ? '⚠️' : '✅' }}</span>
+              <div class="flex items-center gap-2">
+                <span *ngIf="alert.confirmed === null" class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                <span class="text-xs">{{ alert.confirmed === null ? '⚠️' : '✅' }}</span>
+              </div>
             </div>
           } @empty {
-            <div class="py-10 text-center border border-dashed border-white/10 rounded-3xl">
-              <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Sin actividad reciente</p>
+            <div class="py-12 text-center border border-dashed border-white/10 rounded-3xl">
+              <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] italic">Todo está en orden</p>
             </div>
           }
         </div>
       </div>
 
-      <button routerLink="/usuario-alerts" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-500 transition-all shadow-lg mt-8">
+      <button routerLink="/usuario-alerts" 
+              class="relative z-10 w-full bg-blue-600 hover:bg-blue-500 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-blue-900/20 active:scale-95 mt-8">
         Ver Historial Completo
       </button>
     </div>

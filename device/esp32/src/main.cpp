@@ -6,126 +6,124 @@
 #include <Wire.h>
 #include <ArduinoJson.h>
 
-// --- Configuración ---
+// --- TUS DATOS DEL PLATFORMIO.INI ---
+// Asegúrate de que SERVER_URL en platformio.ini apunta a tu IP (ej: http://10.101.21.152:4000...)
 const char* ssid = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
 const char* serverUrl = SERVER_URL;
 
 Adafruit_MPU6050 mpu;
-sensors_event_t a, g, temp; // Globales para que el botón tenga acceso a datos frescos
+sensors_event_t a, g, temp; 
 String deviceId;
 
 const int BUTTON_PIN = 4;
-const float FALL_THRESHOLD = 25.0;
-const float INCLINATION_THRESHOLD = 60.0; // Ángulo para considerar "tumbado"
+const float FALL_THRESHOLD = 25.0; 
+const float INCLINATION_THRESHOLD = 60.0; 
 
-unsigned long lastDebounceTime = 0;
-const unsigned long debounceDelay = 300;
+// Variables de control
 unsigned long lastSensorRead = 0;
 const unsigned long SENSOR_INTERVAL = 20; 
-
-// Variables de detección y reconexión
 bool potentialFall = false;
 unsigned long timeOfImpact = 0;
-const unsigned long CONFIRMATION_WINDOW = 10000;
+const unsigned long CONFIRMATION_WINDOW = 10000; // 10 Segundos para confirmar o cancelar
 
-unsigned long lastWiFiCheck = 0;
-const unsigned long WIFI_RETRY_INTERVAL = 5000; // Reintento cada 5 seg
+// Variables para el botón (Debounce)
+unsigned long lastButtonPress = 0;
+const unsigned long debounceDelay = 500; 
 
-// --- Funciones Auxiliares ---
+// --- Funciones ---
 
 String getDeviceId() {
     String id = WiFi.macAddress();
-    // id.replace(":", "");
+    id.replace(":", "");
     return id;
 }
 
 float calculateInclination(float x, float y, float z) {
     float totalAccel = sqrt(sq(x) + sq(y) + sq(z));
-    // Calculamos el ángulo respecto al eje Z (vertical)
+    if (totalAccel == 0) return 0;
     return acos(z / totalAccel) * RAD_TO_DEG;
 }
 
-void checkWiFi() {
-    if (WiFi.status() != WL_CONNECTED) {
-        unsigned long currentMillis = millis();
-        if (currentMillis - lastWiFiCheck >= WIFI_RETRY_INTERVAL) {
-            lastWiFiCheck = currentMillis;
-            Serial.println("WiFi desconectado. Intentando reconectar...");
-            WiFi.disconnect();
-            WiFi.begin(ssid, password);
-        }
-    }
+bool testConnection() {
+    HTTPClient http;
+    http.setTimeout(2000); // Reducido para no bloquear tanto tiempo
+    String baseUrl = String(serverUrl);
+    int pathIndex = baseUrl.indexOf("/api/");
+    if (pathIndex > 0) baseUrl = baseUrl.substring(0, pathIndex);
+    
+    http.begin(baseUrl);
+    int httpCode = http.GET();
+    http.end();
+    return (httpCode > 0);
 }
 
 void sendData(float x, float y, float z, bool fall) {
-    if (WiFi.status() == WL_CONNECTED) {
-        HTTPClient http;
-        http.begin(serverUrl);
-        http.addHeader("Content-Type", "application/json");
-        http.setTimeout(2000); // Evita que el ESP32 se quede colgado si el servidor no responde
-
-        StaticJsonDocument<200> doc;
-        doc["deviceId"] = deviceId;
-        doc["accX"] = x;
-        doc["accY"] = y;
-        doc["accZ"] = z;
-        doc["fallDetected"] = fall;
-
-        String requestBody;
-        serializeJson(doc, requestBody);
-
-        int httpResponseCode = http.POST(requestBody);
-        Serial.printf("Envío -> Código: %d\n", httpResponseCode);
-        
-        http.end();
-    } else {
-        Serial.println("Error: Datos no enviados (Sin WiFi)");
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("ERROR: WiFi desconectado.");
+        return;
     }
-}
 
-// --- Setup ---
+    HTTPClient http;
+    
+    Serial.println("\n========== ENVIANDO DATOS ==========");
+    Serial.printf("Estado de Caída (fallDetected): %s\n", fall ? "TRUE (PELIGRO)" : "FALSE (TODO BIEN)");
+
+    http.setTimeout(5000); 
+    http.begin(serverUrl);
+    http.addHeader("Content-Type", "application/json");
+
+    StaticJsonDocument<256> doc;
+    doc["deviceId"] = deviceId;
+    doc["accX"] = x;
+    doc["accY"] = y;
+    doc["accZ"] = z;
+    doc["fallDetected"] = fall;
+
+    String requestBody;
+    serializeJson(doc, requestBody);
+    Serial.println(requestBody);
+
+    int httpResponseCode = http.POST(requestBody);
+    
+    if (httpResponseCode > 0) {
+        Serial.printf("✓ Enviado. Código: %d\n", httpResponseCode);
+    } else {
+        Serial.printf("✗ Error envío: %s\n", http.errorToString(httpResponseCode).c_str());
+    }
+    
+    http.end();
+    Serial.println("====================================\n");
+}
 
 void setup() {
     Serial.begin(115200);
-   
-    // 2. ESPERAR A QUE EL MONITOR SERIAL ESTÉ LISTO
-    // Este delay es vital para que te dé tiempo a ver los mensajes
-    delay(2000); 
-
-    Serial.println("\n--- [DEBUG] ESP32 DESPIERTO ---");
-    Serial.println("Configurando WiFi...");
-
+    delay(1000); 
+    deviceId = getDeviceId();
     
+    pinMode(BUTTON_PIN, INPUT_PULLUP);
+    Wire.begin(21, 22); 
+
+    if (!mpu.begin()) {
+        Serial.println("FALLO MPU6050.");
+        while (1) { delay(100); } 
+    }
+    mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
 
     WiFi.mode(WIFI_STA);
-    WiFi.setAutoReconnect(true); // El ESP32 intentará reconectar automáticamente
-    
-    deviceId = getDeviceId();
-
-    Serial.print("Conectando a WiFi");
     WiFi.begin(ssid, password);
-    
-    // Solo bloqueamos en el setup inicial. Una vez en el loop, será no bloqueante.
-    unsigned long startAttempt = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startAttempt < 10000) {
+    Serial.print("Conectando WiFi...");
+    while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
     }
-
-    if (!mpu.begin()) {
-        Serial.println("\n¡Error MPU6050!");
-        while (1) yield();
-    }
-    Serial.println("\nSistema listo.");
+    Serial.println("\nConectado.");
 }
-
-// --- Loop Principal ---
 
 void loop() {
     unsigned long currentMillis = millis();
-    if (WiFi.status() != WL_CONNECTED) { /* Aquí podrías llamar a checkWiFi() */ }
 
+    // 1. Lectura del Sensor
     if (currentMillis - lastSensorRead >= SENSOR_INTERVAL) {
         lastSensorRead = currentMillis;
         mpu.getEvent(&a, &g, &temp);
@@ -133,48 +131,57 @@ void loop() {
         float x = a.acceleration.x;
         float y = a.acceleration.y;
         float z = a.acceleration.z;
-        
         float accelMag = sqrt(sq(x) + sq(y) + sq(z));
-        float currentAngle = calculateInclination(x, y, z);
-
-        // 1. Detección de impacto inicial
+        
+        // A) Detectar posible impacto inicial
         if (accelMag > FALL_THRESHOLD && !potentialFall) {
-            Serial.println("¡Impacto detectado! Esperando confirmación de posición...");
+            Serial.println("\n!!! IMPACTO DETECTADO !!!");
+            Serial.println("Esperando 10 segundos para confirmar...");
+            Serial.println("PULSA EL BOTÓN PARA CANCELAR LA ALERTA.");
             potentialFall = true;
             timeOfImpact = currentMillis;
         }
 
-        // 2. Ventana de confirmación de 10 segundos
+        // B) Confirmación automática tras 10 segundos (si no se canceló antes)
         if (potentialFall && (currentMillis - timeOfImpact > CONFIRMATION_WINDOW)) {
-            // Solo se envía fallDetected: true si el ángulo indica que sigue tumbado
-            if (currentAngle > INCLINATION_THRESHOLD) {
-                Serial.printf("Caída confirmada. Ángulo actual: %.2f\n", currentAngle);
-                sendData(x, y, z, true);
+            float angle = calculateInclination(x, y, z);
+            if (angle > INCLINATION_THRESHOLD) {
+                Serial.printf("TIEMPO AGOTADO -> Caída CONFIRMADA (Ángulo: %.1f). Enviando alerta...\n", angle);
+                sendData(x, y, z, true); // Envia TRUE
             } else {
-                Serial.println("Falsa alarma: El usuario se mantuvo erguido.");
+                Serial.println("Falsa alarma: El usuario se levantó (ángulo normal).");
             }
-            potentialFall = false;
-        }
-
-        // 3. Telemetría normal cada 5 segundos
-        static unsigned long lastSend = 0;
-        if (currentMillis - lastSend > 5000 && !potentialFall) {
-            sendData(x, y, z, false);
-            lastSend = currentMillis;
+            potentialFall = false; // Resetear estado
         }
     }
 
-    // Botón de emergencia o cancelación
+    // 2. Lógica del Botón (MODIFICADA)
     if (digitalRead(BUTTON_PIN) == LOW) {
-        if (currentMillis - lastDebounceTime > debounceDelay) {
+        if (currentMillis - lastButtonPress > debounceDelay) {
+            
+            // Actualizamos lectura para enviar datos frescos
+            mpu.getEvent(&a, &g, &temp);
+            lastButtonPress = currentMillis;
+
+            // --- AQUÍ ESTÁ EL CAMBIO PRINCIPAL ---
             if (potentialFall) {
-                Serial.println("Alarma cancelada por el usuario.");
-                potentialFall = false;
+                // ESCENARIO 1: Hay una caída pendiente -> El botón significa "ESTOY BIEN"
+                Serial.println("\n>>> BOTÓN PULSADO: CANCELANDO ALARMA DE CAÍDA <<<");
+                potentialFall = false; // Cancelamos la espera de los 10 segundos
+                
+                // Enviamos fallDetected = false como pediste
+                sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, false);
+                
             } else {
-                Serial.println("Alerta manual enviada.");
-                sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, true); 
+                // ESCENARIO 2: Todo estaba normal -> El botón significa "AYUDA MANUAL"
+                Serial.println("\n>>> BOTÓN PULSADO: ALERTA MANUAL <<<");
+                
+                // Enviamos fallDetected = true
+                sendData(a.acceleration.x, a.acceleration.y, a.acceleration.z, true);
             }
-            lastDebounceTime = currentMillis; 
+
+            // Evitar rebotes mientras se mantiene pulsado
+            while(digitalRead(BUTTON_PIN) == LOW) { delay(50); }
         }
     }
 }

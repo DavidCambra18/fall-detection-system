@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EventService } from '../../../core/services/event.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { Report } from '../../../core/models/report.models';
 
 @Component({
   selector: 'app-usuario-alerts',
@@ -13,12 +14,11 @@ export class UsuarioAlertsComponent implements OnInit {
   private eventService = inject(EventService);
   private authService = inject(AuthService);
 
-  myAlerts = signal<any[]>([]);
+  myAlerts = signal<Report[]>([]);
   isLoading = signal<boolean>(true);
   
-  // Lógica de paginación
   currentPage = signal<number>(1);
-  itemsPerPage = 5;
+  itemsPerPage = 6;
 
   ngOnInit() { this.loadMyHistory(); }
 
@@ -27,25 +27,31 @@ export class UsuarioAlertsComponent implements OnInit {
     if (!myId) return;
 
     this.eventService.getEvents().subscribe({
-      next: (events) => {
-        const filtered = events.filter(e => Number(e.user_id) === myId);
+      next: (events: Report[]) => {
+        // Filtramos por usuario y clasificamos el tipo de alerta
+        const filtered = events
+          .filter(e => Number(e.user_id) === myId)
+          .map(e => ({
+            ...e,
+            // Clasificación basada en la fuerza G de impacto
+            isPanicButton: Number(e.acc_z) < 1.5 && e.fall_detected
+          }));
+
         this.myAlerts.set(filtered.reverse());
         this.isLoading.set(false);
-      }
+      },
+      error: () => this.isLoading.set(false)
     });
   }
 
-  // Alertas paginadas reactivas
   paginatedAlerts = computed(() => {
     const start = (this.currentPage() - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.myAlerts().slice(start, end);
+    return this.myAlerts().slice(start, start + this.itemsPerPage);
   });
 
-  // Total de páginas
-  totalPages = computed(() => Math.ceil(this.myAlerts().length / this.itemsPerPage));
+  totalPages = computed(() => Math.ceil(this.myAlerts().length / this.itemsPerPage) || 1);
 
-  confirmarMiAlerta(alert: any, estado: boolean) {
+  confirmarMiAlerta(alert: Report, estado: boolean) {
     this.eventService.confirmEvent(alert.id, estado).subscribe({
       next: () => {
         this.myAlerts.update(alerts => 
@@ -55,7 +61,7 @@ export class UsuarioAlertsComponent implements OnInit {
     });
   }
 
-  resetearAlerta(alert: any) {
+  resetearAlerta(alert: Report) {
     this.eventService.confirmEvent(alert.id, null).subscribe({
       next: () => {
         this.myAlerts.update(alerts => 
