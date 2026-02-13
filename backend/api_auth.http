@@ -155,7 +155,7 @@ Content-Type: application/json
 
 
 ### Enviar Telemetría VERCEL (Ruta y Puerto corregidos)
-https://betafalldetectionsystem.vercel.app/api/auth/telemetry
+POST https://betafalldetectionsystem.vercel.app/api/telemetry
 Content-Type: application/json
 
 {

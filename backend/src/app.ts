@@ -6,7 +6,7 @@ import authRoutes from './routes/auth.routes';
 import deviceRoutes from './routes/devices.routes';
 import eventsRoutes from './routes/events.routes';
 import usersRoutes from './routes/users.routes';
-import telemetryRoutes from './routes/telemetry.routes'; // NUEVO
+import telemetryRoutes from './routes/telemetry.routes';
 
 dotenv.config();
 
@@ -18,31 +18,69 @@ const FRONTEND_ORIGINS =
     ? process.env.FRONTEND_ORIGINS?.split(',') || []
     : ['http://localhost:4200'];
 
+// CORS MÁS PERMISIVO PARA ESP32
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir peticiones sin origin (Postman, ESP32, etc.)
-    if (!origin) return callback(null, true);
-
-    if (FRONTEND_ORIGINS.includes(origin)) {
+    // Permitir peticiones sin origin (ESP32, Postman, curl)
+    if (!origin) {
+      console.log('✓ Petición sin origin permitida (ESP32/IoT)');
       return callback(null, true);
     }
 
+    // Permitir frontend
+    if (FRONTEND_ORIGINS.includes(origin)) {
+      console.log('✓ Petición desde frontend permitida:', origin);
+      return callback(null, true);
+    }
+
+    console.log('✗ Origin no permitido:', origin);
     return callback(new Error('No permitido por CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // AÑADIR ESTO
+  allowedHeaders: ['Content-Type', 'Authorization', 'User-Agent'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Middleware para logging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - Origin: ${req.get('origin') || 'NO ORIGIN'}`);
+  next();
+});
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-// Rutas (ORDEN IMPORTANTE: telemetría ANTES de las protegidas)
+// Rutas (ORDEN IMPORTANTE)
 app.use('/api/telemetry', telemetryRoutes); // SIN AUTENTICACIÓN
 app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/users', usersRoutes);
 
-// ...existing code...
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Manejo de rutas no encontradas
+app.use((req, res) => {
+  console.log('404 - Ruta no encontrada:', req.path);
+  res.status(404).json({ message: 'Ruta no encontrada' });
+});
+
+// Manejo de errores
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Error global:', err);
+  res.status(500).json({ message: 'Error interno del servidor', error: err.message });
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
+}
+
+export default app;
