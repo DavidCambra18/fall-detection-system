@@ -1,12 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
-import { getUserById, getUsers, getUsersCaredByCarer } from '../services/users.service';
+import { NextFunction, Request, Response } from 'express';
 import { EventsService } from '../services/events.service';
+import { deleteUserById, getUserById, getUsers, getUsersCaredByCarer, updateUserById } from '../services/users.service';
 
 // Listado de todos los usuarios (solo ADMIN)
 export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = (req as any).user;
-    if (user.roleId !== 1) return res.status(403).json({ message: 'Acceso denegado' });
+    if (user.role_id !== 1) return res.status(403).json({ message: 'Acceso denegado' });
 
     const users = await getUsers();
     res.json(users);
@@ -18,7 +18,7 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
 // Listado de usuarios asignados a un cuidador (solo CUIDADOR)
 export async function getCaredUsers(req: Request, res: Response) {
   const user = (req as any).user;
-  if (user.roleId !== 2) return res.status(403).json({ message: 'Acceso solo permitido a cuidadores' });
+  if (user.role_id !== 2) return res.status(403).json({ message: 'Acceso solo permitido a cuidadores' });
 
   try {
     const users = await getUsersCaredByCarer(user.id);
@@ -39,9 +39,9 @@ export async function getUserByIdController(req: Request, res: Response) {
     const user = await getUserById(targetUserId);
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-    if (requester.roleId === 1) return res.json(user);
-    if (requester.roleId === 2 && user.carer_id === requester.id) return res.json(user);
-    if (requester.roleId === 3 && requester.id === user.id) return res.json(user);
+    if (requester.role_id === 1) return res.json(user);
+    if (requester.role_id === 2 && user.carer_id === requester.id) return res.json(user);
+    if (requester.role_id === 3 && requester.id === user.id) return res.json(user);
 
     return res.status(403).json({ message: 'Acceso no autorizado' });
   } catch (err) {
@@ -77,13 +77,13 @@ export async function getUserEventsController(req: Request, res: Response) {
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
     // ADMIN puede ver todos
-    if (requester.roleId !== 1) {
+    if (requester.role_id !== 1) {
       // CUIDADOR solo puede ver eventos de sus pacientes
-      if (requester.roleId === 2 && user.carer_id !== requester.id) {
+      if (requester.role_id === 2 && user.carer_id !== requester.id) {
         return res.status(403).json({ message: 'Acceso no autorizado' });
       }
       // USUARIO solo sus propios eventos
-      if (requester.roleId === 3 && requester.id !== user.id) {
+      if (requester.role_id === 3 && requester.id !== user.id) {
         return res.status(403).json({ message: 'Acceso no autorizado' });
       }
     }
@@ -91,6 +91,52 @@ export async function getUserEventsController(req: Request, res: Response) {
     const events = await EventsService.getAll({ user_id: targetUserId });
     return res.json(events);
 
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Error interno del servidor' });
+  }
+}
+
+export async function updateUserController(req: Request, res: Response) {
+  const requester = (req as any).user;
+  const targetUserId = Number(req.params.id);
+
+  if (isNaN(targetUserId)) return res.status(400).json({ message: 'ID inválido' });
+
+  try {
+    const targetUser = await getUserById(targetUserId);
+    if (!targetUser) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    // Permisos
+    if (requester.role_id === 1) {
+      // Admin puede editar a cualquiera
+    } else if (requester.role_id === 2 && targetUser.carer_id === requester.id) {
+      // Cuidador puede editar solo a sus usuarios
+    } else if (requester.role_id === 3 && requester.id === targetUserId) {
+      // Usuario puede editar solo su propia cuenta
+    } else {
+      return res.status(403).json({ message: 'Acceso no autorizado' });
+    }
+
+    const updatedUser = await updateUserById(targetUserId, req.body);
+    return res.json(updatedUser);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Error interno del servidor' });
+  }
+}
+
+// Borrar usuario
+export async function deleteUserController(req: Request, res: Response) {
+  const requester = (req as any).user;
+  const targetUserId = Number(req.params.id);
+
+  if (requester.role_id !== 1) return res.status(403).json({ message: 'Solo admin puede borrar usuarios' });
+
+  try {
+    const deleted = await deleteUserById(targetUserId);
+    if (!deleted) return res.status(404).json({ message: 'Usuario no encontrado' });
+    return res.json({ message: 'Usuario borrado correctamente', id: deleted.id });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: 'Error interno del servidor' });

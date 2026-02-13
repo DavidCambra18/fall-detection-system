@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../core/services/user.service';
-import { User } from '../../../core/models/auth.models'; // <-- Importar desde auth.models
+import { User } from '../../../core/models/auth.models';
 
 @Component({
   selector: 'app-users',
@@ -21,8 +21,6 @@ export class UsersComponent implements OnInit {
   pageSize = 10;
 
   isModalOpen = signal(false);
-  isEditing = signal(false); 
-  // Usamos User completo para que TypeScript detecte roleId
   selectedUser = signal<Partial<User>>({});
 
   ngOnInit() {
@@ -31,6 +29,11 @@ export class UsersComponent implements OnInit {
 
   // --- LÓGICA REACTIVA ---
   
+  // Filtra los cuidadores disponibles para el selector del modal
+  cuidadores = computed(() => 
+    this.users().filter(u => u.role_id === 2)
+  );
+
   filteredUsers = computed(() => {
     const search = this.searchTerm().toLowerCase().trim();
     let result = this.users().filter(u => 
@@ -61,12 +64,11 @@ export class UsersComponent implements OnInit {
     return remaining > 0 ? Array(remaining).fill(0) : [];
   });
 
-  // --- ACCIONES ---
+  // --- ACCIONES OPERATIVAS ---
 
   loadUsers() {
     this.userService.getUsers().subscribe({
       next: (data: User[]) => {
-        // El servicio ya devuelve User[], manejamos la asignación directa
         this.users.set(data);
       },
       error: (err) => console.error('Error Backend:', err)
@@ -76,56 +78,48 @@ export class UsersComponent implements OnInit {
   saveUser() {
     const userData = this.selectedUser();
     
-    // Validamos que roleId exista antes de enviar para cumplir con la interfaz
-    if (this.isEditing() && userData.id) {
+    if (userData.id) {
       this.userService.updateUser(userData.id, userData).subscribe({
-        next: () => { this.loadUsers(); this.closeModal(); }
-      });
-    } else {
-      // Forzamos el tipado a User asegurando que los campos mínimos están
-      this.userService.createUser(userData as User).subscribe({
-        next: () => { this.loadUsers(); this.closeModal(); }
+        next: () => { 
+          this.loadUsers(); 
+          this.closeModal(); 
+          console.log('Usuario actualizado correctamente');
+        },
+        error: (err) => alert('Error al actualizar: ' + err.error.message)
       });
     }
   }
 
   deleteUser(id: number) {
-    if (confirm('¿Seguro?')) {
-      this.userService.deleteUser(id).subscribe(() => this.loadUsers());
+    if (confirm('¿Estás seguro de eliminar este usuario permanentemente?')) {
+      this.userService.deleteUser(id).subscribe({
+        next: () => {
+          this.loadUsers();
+          console.log('Usuario borrado');
+        },
+        error: (err) => alert('Error al borrar: ' + err.error.message)
+      });
     }
   }
 
   // --- HELPERS ---
-  
-  openCreateModal() {
-    this.isEditing.set(false);
-    // Cambiamos role_id por roleId para que coincida con la interfaz
-    this.selectedUser.set({ 
-      roleId: 3, 
-      name: '', 
-      email: '', 
-      surnames: '', 
-      phone_num: '' 
-    }); 
-    this.isModalOpen.set(true);
-  }
 
   openEditModal(user: User) {
-    this.isEditing.set(true);
     this.selectedUser.set({ ...user });
     this.isModalOpen.set(true);
   }
 
   closeModal() {
     this.isModalOpen.set(false);
+    this.selectedUser.set({});
   }
 
   toggleSort() {
     this.sortAsc.update(val => !val);
   }
 
-  getRoleName(roleId?: number): string {
+  getRoleName(role_id?: number): string {
     const roles: Record<number, string> = { 1: 'Admin', 2: 'Cuidador', 3: 'Usuario' };
-    return roles[roleId || 0] || 'Sin Rol';
+    return roles[role_id || 0] || 'Sin Rol';
   }
 }

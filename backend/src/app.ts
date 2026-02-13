@@ -11,11 +11,23 @@ dotenv.config();
 
 const app = express();
 
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN;
+// AHORA USA EL PUERTO 3000 POR DEFECTO (Para coincidir con tu ESP32)
+const PORT = process.env.PORT || 3000;
 
+const FRONTEND_ORIGIN = process.env.NODE_ENV === 'production'
+  ? 'https://falldetectionsystem.com'
+  : 'http://localhost:4200';
+
+// CORS mejorado: Permite frontend Y dispositivos ESP32
 app.use(cors({
-  origin: FRONTEND_ORIGIN,
-  credentials: true,
+  origin: (origin, callback) => {
+    // Permitir sin origin (Postman, ESP32, etc.) o desde el frontend
+    if (!origin || origin === FRONTEND_ORIGIN) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Permitir cualquier origen (desarrollo)
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -41,8 +53,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ message: 'Error interno del servidor' });
 });
 
-// Puerto
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+// --- EL CAMBIO CLAVE ESTÁ AQUÍ ABAJO ---
+// 1. Añadimos '0.0.0.0' para que escuche en toda la red, no solo en localhost.
+// 2. Usamos el PORT 3000 que definimos arriba.
+app.listen(PORT as number, '0.0.0.0', () => {
+  console.log(`🚀 Servidor accesible externamente en http://0.0.0.0:${PORT}`);
 });
