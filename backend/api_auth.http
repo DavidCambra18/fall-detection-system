@@ -142,7 +142,7 @@ Authorization: Bearer toke_usuario
 }
 
 ### Enviar Telemetría (Ruta y Puerto corregidos)
-POST http://localhost:3000/api/auth/telemetry
+POST http://localhost:3000/api/telemetry
 Content-Type: application/json
 
 {
@@ -155,7 +155,7 @@ Content-Type: application/json
 
 
 ### Enviar Telemetría VERCEL (Ruta y Puerto corregidos)
-https://falldetectionsystem.vercel.app/api/auth/telemetry
+POST https://betafalldetectionsystem.vercel.app/api/telemetry
 Content-Type: application/json
 
 {
@@ -163,5 +163,5 @@ Content-Type: application/json
   "accX": 0.45,
   "accY": -0.12,
   "accZ": 9.81,
-  "fallDetected": false
+  "fallDetected": true
 }

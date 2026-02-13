@@ -6,12 +6,11 @@ import authRoutes from './routes/auth.routes';
 import deviceRoutes from './routes/devices.routes';
 import eventsRoutes from './routes/events.routes';
 import usersRoutes from './routes/users.routes';
+import telemetryRoutes from './routes/telemetry.routes';
 
 dotenv.config();
 
 const app = express();
-
-// AHORA USA EL PUERTO 3000 POR DEFECTO (Para coincidir con tu ESP32)
 const PORT = process.env.PORT || 3000;
 
 const FRONTEND_ORIGINS =
@@ -19,46 +18,71 @@ const FRONTEND_ORIGINS =
     ? process.env.FRONTEND_ORIGINS?.split(',') || []
     : ['http://localhost:4200'];
 
+// CORS MÁS PERMISIVO PARA ESP32
 app.use(cors({
   origin: (origin, callback) => {
+    // Permitir peticiones sin origin (ESP32, Postman, curl)
+    if (!origin) {
+      return callback(null, true);
+    }
 
-    // Permitir peticiones sin origin (Postman, ESP32, etc.)
-    if (!origin) return callback(null, true);
-
+    // Permitir frontend
     if (FRONTEND_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // En producción, permitir todas las peticiones para debugging
+    if (process.env.NODE_ENV === 'production') {
       return callback(null, true);
     }
 
     return callback(new Error('No permitido por CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'User-Agent', 'Accept'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Middleware para logging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - Origin: ${req.get('origin') || 'NO ORIGIN'}`);
+  next();
+});
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-// Rutas
+// Rutas (ORDEN IMPORTANTE)
+app.use('/api/telemetry', telemetryRoutes); // SIN AUTENTICACIÓN
 app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/users', usersRoutes);
 
-// Ruta base
-app.get('/', (req, res) => {
-  res.json({ message: 'Backend funcionando correctamente' });
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Middleware global de errores
+// Manejo de rutas no encontradas
+app.use((req, res) => {
+  console.log('404 - Ruta no encontrada:', req.path);
+  res.status(404).json({ message: 'Ruta no encontrada' });
+});
+
+// Manejo de errores
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error global:', err);
-  res.status(500).json({ message: 'Error interno del servidor' });
+  res.status(500).json({ message: 'Error interno del servidor', error: err.message });
 });
 
-// --- EL CAMBIO CLAVE ESTÁ AQUÍ ABAJO ---
-// 1. Añadimos '0.0.0.0' para que escuche en toda la red, no solo en localhost.
-// 2. Usamos el PORT 3000 que definimos arriba.
-app.listen(PORT as number, '0.0.0.0', () => {
-  console.log(`🚀 Servidor accesible externamente en http://0.0.0.0:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
+}
+
+export default app;

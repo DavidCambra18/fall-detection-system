@@ -6,10 +6,23 @@
       "use": "@vercel/node"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "src/app.ts"
+      "src": "/api/telemetry",
+      "methods": ["POST", "OPTIONS"],
+      "dest": "src/app.ts",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, User-Agent"
+      }
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "src/app.ts"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
