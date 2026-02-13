@@ -1,5 +1,5 @@
 POST http://localhost:3000/api/devices
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDIxMjcwMSwiZXhwIjoxNzcwMjQxNTAxfQ.eTc6fwEtKSUDl2eXm2hcn5kKvorFEoyncG3kUfvskZY
+//Authorization: Bearer 
 Content-Type: application/json
 
 {
@@ -12,11 +12,11 @@ Content-Type: application/json
 
 ###
 GET http://localhost:3000/api/devices/3
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDIxMjcwMSwiZXhwIjoxNzcwMjQxNTAxfQ.eTc6fwEtKSUDl2eXm2hcn5kKvorFEoyncG3kUfvskZY
+//Authorization: Bearer 
 
 ###
 PUT http://localhost:3000/api/devices/3
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDIxMjcwMSwiZXhwIjoxNzcwMjQxNTAxfQ.eTc6fwEtKSUDl2eXm2hcn5kKvorFEoyncG3kUfvskZY
+//Authorization: Bearer 
 Content-Type: application/json
 
 {
@@ -27,7 +27,7 @@ Content-Type: application/json
 
 ###
 PATCH http://localhost:3000/api/devices/3/status
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDIxMjcwMSwiZXhwIjoxNzcwMjQxNTAxfQ.eTc6fwEtKSUDl2eXm2hcn5kKvorFEoyncG3kUfvskZY
+//Authorization: Bearer 
 Content-Type: application/json
 
 {
@@ -36,4 +36,4 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost:3000/api/devices/3
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlSWQiOjEsImlhdCI6MTc3MDIxMjcwMSwiZXhwIjoxNzcwMjQxNTAxfQ.eTc6fwEtKSUDl2eXm2hcn5kKvorFEoyncG3kUfvskZY
+//Authorization: Bearer 
