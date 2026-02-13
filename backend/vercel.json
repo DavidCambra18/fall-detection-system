@@ -6,10 +6,18 @@
       "use": "@vercel/node"
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "src/app.ts"
+      "src": "/api/telemetry",
+      "methods": ["POST", "OPTIONS"],
+      "dest": "src/app.ts"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "src/app.ts"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
