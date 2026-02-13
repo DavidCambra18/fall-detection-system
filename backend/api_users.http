@@ -1,5 +1,6 @@
 @baseUrl = http://localhost:3000
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlX2lkIjoxLCJpYXQiOjE3NzA5NzMzNjcsImV4cCI6MTc3MTAwMjE2N30.OEL8xgYDMZJPmOkPCtldEjYn6Uingpwxx8HbQ9SqAFc
+@token = "token" 
+
 # NO DESPLEGAR CON EL TOKEN DEL USUARIO
 
 ### OBTENER TODOS LOS USUARIOS (solo ADMIN)
