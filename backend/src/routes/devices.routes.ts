@@ -12,14 +12,13 @@ import { registerTelemetry } from '../services/devices.service';
 
 const router = Router();
 
+// IMPORTANTE: Esta ruta debe ir PRIMERO, antes de authenticateToken
 router.post('/telemetry', async (req, res) => {
-  // LOG PARA SABER SI LLEGA ALGO
   console.log("-----------------------------------------");
   console.log("📡 Petición recibida desde el ESP32");
   console.log("Cuerpo recibido:", req.body);
 
   try {
-    // Pasamos req.body (solo los datos), no el objeto req completo
     const report = await registerTelemetry(req.body);
     
     res.status(201).json({
@@ -34,10 +33,10 @@ router.post('/telemetry', async (req, res) => {
   console.log("-----------------------------------------");
 });
 
-// Solo admin puede gestionar dispositivos
-router.use(authenticateToken); // middleware global para todos
+// DESPUÉS de telemetry, aplicamos autenticación
+router.use(authenticateToken);
 
-// Endpoints CRUD
+// Endpoints CRUD protegidos
 router.post('/', createDeviceController);
 router.get('/', getDevicesController);
 router.get('/:id', getDeviceController);
