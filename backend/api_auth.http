@@ -142,7 +142,7 @@ Authorization: Bearer toke_usuario
 }
 
 ### Enviar Telemetría (Ruta y Puerto corregidos)
-POST http://localhost:3000/api/auth/telemetry
+POST http://localhost:3000/api/telemetry
 Content-Type: application/json
 
 {
@@ -159,7 +159,7 @@ POST https://betafalldetectionsystem.vercel.app/api/telemetry
 Content-Type: application/json
 
 {
-  "device_id_logic": "38182B841494",
+  "deviceId": "38182B841494",
   "accX": 0.45,
   "accY": -0.12,
   "accZ": 9.81,

@@ -23,21 +23,23 @@ app.use(cors({
   origin: (origin, callback) => {
     // Permitir peticiones sin origin (ESP32, Postman, curl)
     if (!origin) {
-      console.log('✓ Petición sin origin permitida (ESP32/IoT)');
       return callback(null, true);
     }
 
     // Permitir frontend
     if (FRONTEND_ORIGINS.includes(origin)) {
-      console.log('✓ Petición desde frontend permitida:', origin);
       return callback(null, true);
     }
 
-    console.log('✗ Origin no permitido:', origin);
+    // En producción, permitir todas las peticiones para debugging
+    if (process.env.NODE_ENV === 'production') {
+      return callback(null, true);
+    }
+
     return callback(new Error('No permitido por CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'User-Agent'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'User-Agent', 'Accept'],
   credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204
