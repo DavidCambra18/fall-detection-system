@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000
-@token = toke_usuario
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlX2lkIjoxLCJpYXQiOjE3NzA5NzMzNjcsImV4cCI6MTc3MTAwMjE2N30.OEL8xgYDMZJPmOkPCtldEjYn6Uingpwxx8HbQ9SqAFc
 # NO DESPLEGAR CON EL TOKEN DEL USUARIO
 
 ### OBTENER TODOS LOS USUARIOS (solo ADMIN)
@@ -23,16 +23,12 @@ GET {{baseUrl}}/api/users/3/events
 Authorization: Bearer {{token}}
 
 ### Editar un usuario (admin/cuidador/propio usuario)
-PUT {{baseUrl}}/api/users/7
+PUT {{baseUrl}}/api/users/3
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "name": "Karlos",
-  "surnames": "Mes Vades",
-  "email": "carlos@outlook.com",
-  "phone_num": "+34666888999",
-  "date_born": "1955-02-19"
+  "role_id": 2
 }
 
 
