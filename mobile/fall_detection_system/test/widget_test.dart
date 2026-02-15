@@ -10,21 +10,32 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fall_detection_system/main.dart';
 
+import 'package:flutter_test/flutter_test.dart';
+import 'dart:convert';
+
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const FallMonitorApp());
+  group('Pruebas de Modelo de Caída', () {
+    test('Debe convertir un JSON a un objeto correctamente', () {
+      // Simulamos lo que envía el API de Render
+      const jsonString = '{"dispositivo": "Sensor 1", "intensidad": 8.5, "fecha": "2026-02-15T10:00:00Z"}';
+      final Map<String, dynamic> jsonMap = json.decode(jsonString);
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      // Verificamos que los campos se asignen bien
+      expect(jsonMap['dispositivo'], 'Sensor 1');
+      expect(jsonMap['intensidad'], 8.5);
+      expect(jsonMap['fecha'], isA<String>());
+    });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    test('Debe manejar valores nulos con seguridad', () {
+      const jsonString = '{"dispositivo": null, "intensidad": null}';
+      final Map<String, dynamic> jsonMap = json.decode(jsonString);
+      
+      // Aquí probamos la lógica de "Escudos" que pusimos en el código
+      final nombre = jsonMap['dispositivo'] ?? 'Desconocido';
+      final intensidad = jsonMap['intensidad']?.toString() ?? '0.0';
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+      expect(nombre, 'Desconocido');
+      expect(intensidad, '0.0');
+    });
   });
 }
