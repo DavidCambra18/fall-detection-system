@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { DatePipe } from '@angular/common'; // Importaciones específicas
+import { DatePipe } from '@angular/common'; 
 import { FormsModule } from '@angular/forms'; 
 import { AuthService } from '../../../core/services/auth.service';
 import { DeviceService, Device } from '../../../core/services/device.service';
@@ -9,7 +9,7 @@ import { User } from '../../../core/models/auth.models';
 @Component({
   selector: 'app-usuario-users',
   standalone: true,
-  imports: [FormsModule, DatePipe], // Quitamos CommonModule
+  imports: [FormsModule, DatePipe], 
   templateUrl: './usuario-users.component.html'
 })
 export class UsuarioUsersComponent implements OnInit {
@@ -27,12 +27,18 @@ export class UsuarioUsersComponent implements OnInit {
     this.loadProfile();
   }
 
+  // Comprueba si el teléfono es el generado automáticamente por Google (G-...) 
+  // o el marcador de posición (PTE-...)
+  isPhonePending(): boolean {
+    const phone = this.fullUserData()?.phone_num;
+    return !!phone && (phone.startsWith('G-') || phone.startsWith('PTE-'));
+  }
+
   loadProfile() {
     this.isLoading.set(true);
     this.userService.getUserMe().subscribe({
       next: (user) => {
         if (user) {
-          // Normalización de fecha para el input type="date"
           if (user.date_born) {
             user.date_born = new Date(user.date_born).toISOString().split('T')[0];
           }
@@ -51,7 +57,6 @@ export class UsuarioUsersComponent implements OnInit {
   }
 
   resetForm() {
-    // Clonamos el objeto para evitar mutaciones directas en el Signal original
     this.editForm.set({ ...this.fullUserData() });
   }
 
@@ -67,7 +72,6 @@ export class UsuarioUsersComponent implements OnInit {
     this.userService.updateUser(userId, this.editForm()).subscribe({
       next: () => {
         this.fullUserData.set({ ...this.editForm() });
-        // Actualizamos el estado global en el AuthService para que el nombre cambie en el Navbar
         this.authService.updateCurrentUserSignal(this.editForm());
         this.isEditing.set(false);
       },

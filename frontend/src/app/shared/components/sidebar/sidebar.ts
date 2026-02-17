@@ -1,21 +1,23 @@
 import { Component, inject, computed, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { NgClass } from '@angular/common'; // Solo lo necesario
+import { NgClass } from '@angular/common';
+import { SocialAuthService } from '@abacritt/angularx-social-login'; // 🔥 Importación necesaria
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterModule, NgClass], // 🔥 Eliminamos CommonModule
+  imports: [RouterModule, NgClass],
   templateUrl: './sidebar.html'
 })
 export class SidebarComponent {
   public authService = inject(AuthService);
   private router = inject(Router);
+  private socialAuthService = inject(SocialAuthService); // 🔥 Inyectamos el servicio de Google
 
   public isMobileMenuOpen = signal(false);
 
-  // Mantenemos tu lógica de currentUser pero ahora es 100% reactiva con el Signal del AuthService
+  // Lógica reactiva para los datos del usuario
   public currentUser = computed(() => {
     const user = this.authService.currentUser();
     if (!user) return { role_id: 0, name: 'Usuario', email: '' };
@@ -30,10 +32,14 @@ export class SidebarComponent {
     };
   });
 
-  // Convertimos los getters en computed para máxima eficiencia
+  // Rutas computadas según el rol
   dashboardRoute = computed(() => {
     const role = this.currentUser().role_id;
-    const routes: Record<number, string> = { 1: '/admin-dashboard', 2: '/cuidador-dashboard', 3: '/usuario-dashboard' };
+    const routes: Record<number, string> = { 
+      1: '/admin-dashboard', 
+      2: '/cuidador-dashboard', 
+      3: '/usuario-dashboard' 
+    };
     return routes[role] || '/login';
   });
 
@@ -53,8 +59,20 @@ export class SidebarComponent {
     this.isMobileMenuOpen.update(v => !v);
   }
 
-  onLogout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  // Cierre de sesión corregido
+  async onLogout() {
+    try {
+      // 1. Cerramos sesión en el proveedor social (Google)
+      // Usamos await o finally para asegurar que se intente cerrar antes de limpiar local
+      await this.socialAuthService.signOut();
+    } catch (error) {
+      console.log('No había sesión de Google activa o ya estaba cerrada');
+    } finally {
+      // 2. Limpiamos el token y estado de nuestra App
+      this.authService.logout();
+      
+      // 3. Redirigimos al login
+      this.router.navigate(['/login']);
+    }
   }
 }
