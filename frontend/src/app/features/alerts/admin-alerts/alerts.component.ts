@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common'; // Importamos solo lo necesario
 import { ActivatedRoute } from '@angular/router'; 
 import { forkJoin } from 'rxjs';
 import { EventService } from '../../../core/services/event.service';
@@ -12,7 +12,8 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-alerts',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  // Cambiamos CommonModule por DatePipe y NgClass (que es más específico)
+  imports: [DatePipe, NgClass, FormsModule], 
   templateUrl: './alerts.component.html'
 })
 export class AlertsComponent implements OnInit {
@@ -61,7 +62,8 @@ export class AlertsComponent implements OnInit {
 
   loadAlerts() {
     const role = this.authService.userRole();
-    const userId = this.authService.currentUser()?.id;
+    const user = this.authService.currentUser();
+    const userId = user?.id;
 
     this.route.queryParams.subscribe(params => {
       const isTodayFilter = params['filter'] === 'today';
@@ -74,7 +76,7 @@ export class AlertsComponent implements OnInit {
         if (role === 3) result = result.filter(a => a.user_id === userId);
 
         if (isTodayFilter) {
-          const hoy = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+          const hoy = new Date().toLocaleDateString('en-CA');
           result = result.filter(a => a.fall_detected && String(a.date_rep).includes(hoy));
           this.viewTitle.set('Alertas Críticas de Hoy');
         }
@@ -84,12 +86,12 @@ export class AlertsComponent implements OnInit {
     });
   }
 
-  // Lógica Reactiva con Computed
   filteredAlerts = computed(() => {
     const search = this.searchTerm().toLowerCase().trim();
-    if (!search) return this.allAlerts();
+    const alerts = this.allAlerts();
+    if (!search) return alerts;
 
-    return this.allAlerts().filter(a => {
+    return alerts.filter(a => {
       const info = this.getDeviceInfo(a.device_id);
       return info.owner.toLowerCase().includes(search) || 
              info.alias.toLowerCase().includes(search) ||

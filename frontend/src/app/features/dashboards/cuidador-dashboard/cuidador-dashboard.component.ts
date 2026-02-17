@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgClass } from '@angular/common'; // Importación quirúrgica
 import { RouterModule } from '@angular/router';
 import { EventService } from '../../../core/services/event.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -10,7 +10,7 @@ import { User } from '../../../core/models/auth.models';
 @Component({
   selector: 'app-cuidador-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [NgClass, RouterModule], // Quitamos CommonModule
   templateUrl: './cuidador-dashboard.component.html'
 })
 export class CuidadorDashboardComponent implements OnInit, OnDestroy {
@@ -26,6 +26,7 @@ export class CuidadorDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadInitialData();
+    // Polling cada 5 segundos
     this.intervalId = setInterval(() => this.refreshData(), 5000);
   }
 
@@ -34,7 +35,8 @@ export class CuidadorDashboardComponent implements OnInit, OnDestroy {
   }
 
   loadInitialData() {
-    const carerId = this.authService.currentUser()?.id;
+    const user = this.authService.currentUser();
+    const carerId = user?.id;
     if (!carerId) return;
 
     this.userService.getUsersCaredByCarer(carerId).subscribe(users => {
@@ -55,19 +57,15 @@ export class CuidadorDashboardComponent implements OnInit, OnDestroy {
           patientIds.includes(Number(e.user_id)) && e.fall_detected
         );
         
-        // Buscamos la alerta más reciente que no haya sido confirmada
         const emergency = myEvents.find(e => e.confirmed === null);
         
         if (emergency) {
-          // LÓGICA DE CLASIFICACIÓN:
-          // Si el impacto (acc_z) es bajo (< 1.5G), es el pulsador manual.
-          // Si es alto, el sistema detectó una caída física.
+          // Clasificación reactiva
           emergency.isPanicButton = Number(emergency.acc_z) < 1.5;
         }
 
         this.activeAlert.set(emergency || null);
         
-        // El contador crítico suma ambas: caídas y pulsaciones de botón
         this.stats.update(s => ({
           ...s,
           critical: myEvents.filter(e => e.confirmed === null).length

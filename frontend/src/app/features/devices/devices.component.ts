@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgClass } from '@angular/common'; // Importamos NgClass específicamente
 import { FormsModule } from '@angular/forms';
 import { DeviceService, Device } from '../../core/services/device.service';
 import { UserService } from '../../core/services/user.service';
@@ -9,7 +9,7 @@ import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-devices',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule], // Quitamos CommonModule
   templateUrl: './devices.component.html'
 })
 export class DevicesComponent implements OnInit {
@@ -40,7 +40,7 @@ export class DevicesComponent implements OnInit {
     }).subscribe({
       next: (res) => {
         this.devices.set(res.devices);
-        // Filtramos para mostrar solo pacientes (Rol 3) en el selector
+        // Filtramos para mostrar solo pacientes (Rol 3)
         this.users.set(res.users.filter(u => u.role_id === 3));
         this.isLoading.set(false);
       },
@@ -70,7 +70,6 @@ export class DevicesComponent implements OnInit {
       return;
     }
 
-    // Lógica de Alias Automático solicitada
     const deviceToSave = {
       ...dev,
       alias: `Dispositivo de ${user.name}`
@@ -81,12 +80,12 @@ export class DevicesComponent implements OnInit {
         this.loadData();
         this.isModalOpen.set(false);
       },
-      error: (err) => alert('Error al registrar en BD: ' + (err.error?.message || 'Error desconocido'))
+      error: (err) => alert('Error al registrar: ' + (err.error?.message || 'Error desconocido'))
     });
   }
 
   deleteDevice(id: number) {
-    if (confirm('¿Estás seguro de eliminar este dispositivo? Deberás volver a registrarlo para reasignarlo.')) {
+    if (confirm('¿Estás seguro de eliminar este dispositivo?')) {
       this.deviceService.deleteDevice(id).subscribe({
         next: () => this.loadData(),
         error: (err) => alert('Error al eliminar')

@@ -10,72 +10,74 @@
     </span>
   </header>
 
-  <div *ngIf="isLoading()" class="flex justify-center py-20">
-    <div class="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
-  </div>
-
-  <div *ngIf="!isLoading()" class="space-y-4">
-    @for (alert of paginatedAlerts(); track alert.id) {
-      <div class="bg-white p-5 md:p-6 rounded-4xl border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all">
-        
-        <div class="flex items-center gap-4 md:gap-6">
-          <div [ngClass]="{
-            'bg-emerald-100 text-emerald-600': alert.confirmed === true,
-            'bg-slate-100 text-slate-400': alert.confirmed === false,
-            'bg-amber-500 text-white shadow-lg shadow-amber-200': alert.confirmed === null && alert.isPanicButton,
-            'bg-red-500 text-white animate-pulse shadow-lg shadow-red-200': alert.confirmed === null && !alert.isPanicButton
-          }" class="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-xl shrink-0 transition-all">
-            {{ alert.confirmed === true ? '✅' : (alert.confirmed === false ? '⚪' : (alert.isPanicButton ? '🆘' : '🚨')) }}
-          </div>
+  @if (isLoading()) {
+    <div class="flex justify-center py-20">
+      <div class="w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+    </div>
+  } @else {
+    <div class="space-y-4">
+      @for (alert of paginatedAlerts(); track alert.id) {
+        <div class="bg-white p-5 md:p-6 rounded-4xl border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all">
           
-          <div class="min-w-0">
-            <h3 class="text-base md:text-lg font-black text-slate-800 leading-tight truncate uppercase italic">
-              {{ alert.isPanicButton ? 'Botón SOS Pulsado' : (alert.fall_detected ? 'Detección de Caída' : 'Actividad Normal') }}
-            </h3>
-            <p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase mt-1 italic">
-              {{ alert.date_rep | date:'EEEE, d MMMM · HH:mm' }}
-            </p>
+          <div class="flex items-center gap-4 md:gap-6">
+            <div [ngClass]="{
+              'bg-emerald-100 text-emerald-600': alert.confirmed === true,
+              'bg-slate-100 text-slate-400': alert.confirmed === false,
+              'bg-amber-500 text-white shadow-lg shadow-amber-200': alert.confirmed === null && alert.isPanicButton,
+              'bg-red-500 text-white animate-pulse shadow-lg shadow-red-200': alert.confirmed === null && !alert.isPanicButton
+            }" class="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-xl shrink-0 transition-all">
+              {{ alert.confirmed === true ? '✅' : (alert.confirmed === false ? '⚪' : (alert.isPanicButton ? '🆘' : '🚨')) }}
+            </div>
+            
+            <div class="min-w-0">
+              <h3 class="text-base md:text-lg font-black text-slate-800 leading-tight truncate uppercase italic">
+                {{ alert.isPanicButton ? 'Botón SOS Pulsado' : (alert.fall_detected ? 'Detección de Caída' : 'Actividad Normal') }}
+              </h3>
+              <p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase mt-1 italic">
+                {{ alert.date_rep | date:'EEEE, d MMMM · HH:mm' }}
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div class="flex flex-col md:items-end gap-3 pt-4 md:pt-0 border-t md:border-t-0 border-slate-50">
-          @if (alert.confirmed === null) {
-            <div class="flex flex-col w-full md:w-auto gap-3">
-              <span class="text-[8px] font-black uppercase tracking-[0.2em] animate-pulse text-center md:text-right"
-                    [class]="alert.isPanicButton ? 'text-amber-600' : 'text-red-500'">
-                {{ alert.isPanicButton ? 'Emergencia Manual' : 'Caída por Confirmar' }}
-              </span>
-              <div class="flex gap-2">
-                <button (click)="confirmarMiAlerta(alert, true)" 
-                        class="flex-1 md:flex-none px-6 py-4 md:py-2.5 bg-emerald-500 text-white text-[10px] font-black uppercase rounded-xl hover:bg-emerald-600 shadow-lg active:scale-95 transition-all">
-                  Estoy bien
-                </button>
-                <button (click)="confirmarMiAlerta(alert, false)" 
-                        class="flex-1 md:flex-none px-6 py-4 md:py-2.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase rounded-xl hover:bg-slate-200 active:scale-95 transition-all">
-                  Falsa Alarma
+          <div class="flex flex-col md:items-end gap-3 pt-4 md:pt-0 border-t md:border-t-0 border-slate-50">
+            @if (alert.confirmed === null) {
+              <div class="flex flex-col w-full md:w-auto gap-3">
+                <span class="text-[8px] font-black uppercase tracking-[0.2em] animate-pulse text-center md:text-right"
+                      [class]="alert.isPanicButton ? 'text-amber-600' : 'text-red-500'">
+                  {{ alert.isPanicButton ? 'Emergencia Manual' : 'Caída por Confirmar' }}
+                </span>
+                <div class="flex gap-2">
+                  <button (click)="confirmarMiAlerta(alert, true)" 
+                          class="flex-1 md:flex-none px-6 py-4 md:py-2.5 bg-emerald-500 text-white text-[10px] font-black uppercase rounded-xl hover:bg-emerald-600 shadow-lg active:scale-95 transition-all">
+                    Estoy bien
+                  </button>
+                  <button (click)="confirmarMiAlerta(alert, false)" 
+                          class="flex-1 md:flex-none px-6 py-4 md:py-2.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase rounded-xl hover:bg-slate-200 active:scale-95 transition-all">
+                    Falsa Alarma
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="flex items-center justify-between md:justify-end gap-3 w-full">
+                <span [ngClass]="alert.confirmed ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'" 
+                      class="text-[9px] font-black uppercase px-4 py-2.5 rounded-xl border italic">
+                  {{ alert.confirmed ? 'Atendido / Seguro' : 'Reportado como Error' }}
+                </span>
+                <button (click)="resetearAlerta(alert)" 
+                        class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm">
+                  🔄
                 </button>
               </div>
-            </div>
-          } @else {
-            <div class="flex items-center justify-between md:justify-end gap-3 w-full">
-              <span [ngClass]="alert.confirmed ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'" 
-                    class="text-[9px] font-black uppercase px-4 py-2.5 rounded-xl border italic">
-                {{ alert.confirmed ? 'Atendido / Seguro' : 'Reportado como Error' }}
-              </span>
-              <button (click)="resetearAlerta(alert)" 
-                      class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm">
-                🔄
-              </button>
-            </div>
-          }
+            }
+          </div>
         </div>
-      </div>
-    } @empty {
-      <div class="py-20 text-center bg-white rounded-[3rem] border border-dashed border-slate-200">
-        <p class="text-slate-300 font-black uppercase tracking-[0.3em] text-[10px]">Sin actividad registrada</p>
-      </div>
-    }
-  </div>
+      } @empty {
+        <div class="py-20 text-center bg-white rounded-[3rem] border border-dashed border-slate-200">
+          <p class="text-slate-300 font-black uppercase tracking-[0.3em] text-[10px]">Sin actividad registrada</p>
+        </div>
+      }
+    </div>
+  }
 
   <div class="mt-10 flex flex-col md:flex-row justify-center items-center gap-6">
     <div class="flex items-center gap-4">
@@ -86,11 +88,11 @@
       </button>
       
       <div class="flex gap-1.5">
-        @for (p of [].constructor(totalPages()); track $index) {
-          <button (click)="currentPage.set($index + 1)"
-                  [class]="$index + 1 === currentPage() ? 'bg-slate-900 text-white shadow-xl scale-110' : 'bg-white text-slate-400'"
+        @for (pageNum of pagesArray(); track pageNum) {
+          <button (click)="currentPage.set(pageNum)"
+                  [class]="pageNum === currentPage() ? 'bg-slate-900 text-white shadow-xl scale-110' : 'bg-white text-slate-400'"
                   class="w-8 h-8 md:w-10 md:h-10 rounded-xl font-black text-[10px] transition-all border border-slate-100">
-            {{ $index + 1 }}
+            {{ pageNum }}
           </button>
         }
       </div>

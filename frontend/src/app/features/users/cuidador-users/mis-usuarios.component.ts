@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgClass } from '@angular/common'; // Importación específica
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router'; 
 import { AuthService } from '../../../core/services/auth.service';
@@ -11,7 +11,7 @@ import { catchError } from 'rxjs/operators';
 @Component({
   selector: 'app-cuidador-users',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [NgClass, FormsModule], // Quitamos CommonModule
   templateUrl: './mis-usuarios.component.html'
 })
 export class MisUsuariosComponent implements OnInit {
@@ -31,15 +31,15 @@ export class MisUsuariosComponent implements OnInit {
   }
 
   loadMyPatients() {
-    const carerId = this.authService.currentUser()?.id;
+    const user = this.authService.currentUser();
+    const carerId = user?.id;
     if (!carerId) return;
 
     this.isLoading.set(true);
     
-    // 1. Cargamos pacientes y dispositivos al mismo tiempo
     forkJoin({
       patients: this.userService.getUsersCaredByCarer(carerId),
-      devices: this.deviceService.getDevices() // Usamos la lista general que ya funciona
+      devices: this.deviceService.getDevices()
     }).pipe(
       catchError(err => {
         console.error('Error cargando datos del cuidador:', err);
@@ -47,14 +47,11 @@ export class MisUsuariosComponent implements OnInit {
       })
     ).subscribe({
       next: ({ patients, devices }) => {
-        // 2. Cruzamos los datos en el frontend
         const enrichedUsers = patients.map(patient => {
-          // Buscamos el dispositivo cuyo user_id coincida con el id del paciente
           const deviceMatch = devices.find(d => Number(d.user_id) === Number(patient.id));
           
           return {
             ...patient,
-            // Si hay coincidencia, usamos el ID lógico, si no, mostramos "NO VINCULADO"
             device: deviceMatch ? deviceMatch.device_id_logic : 'NO VINCULADO',
             status: deviceMatch ? deviceMatch.status : 'inactive',
             lastConnect: deviceMatch?.status === 'active' ? 'En línea' : 'Desconectado'
@@ -68,21 +65,23 @@ export class MisUsuariosComponent implements OnInit {
     });
   }
 
-  filteredUsers = computed(() => {
-    const term = this.searchTerm().toLowerCase();
-    const data = this.allUsers().filter(u => 
+  // --- Lógica de filtrado reactiva ---
+  filteredData = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    if (!term) return this.allUsers();
+    
+    return this.allUsers().filter(u => 
       u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)
     );
+  });
+
+  paginatedUsers = computed(() => {
     const startIndex = (this.currentPage() - 1) * this.pageSize;
-    return data.slice(startIndex, startIndex + this.pageSize);
+    return this.filteredData().slice(startIndex, startIndex + this.pageSize);
   });
 
   totalPages = computed(() => {
-    const term = this.searchTerm().toLowerCase();
-    const data = this.allUsers().filter(u => 
-      u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)
-    );
-    return Math.ceil(data.length / this.pageSize) || 1;
+    return Math.ceil(this.filteredData().length / this.pageSize) || 1;
   });
 
   verHistorial(userId: number) { 

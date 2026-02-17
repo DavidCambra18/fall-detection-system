@@ -1,13 +1,12 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms'; // Eliminamos CommonModule
 import { UserService } from '../../../core/services/user.service';
 import { User } from '../../../core/models/auth.models';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule], // 🔥 Solo FormsModule, usaremos bindings nativos
   templateUrl: './users.component.html'
 })
 export class UsersComponent implements OnInit {
@@ -29,13 +28,14 @@ export class UsersComponent implements OnInit {
 
   // --- LÓGICA REACTIVA ---
   
-  // Filtra los cuidadores disponibles para el selector del modal
   cuidadores = computed(() => 
     this.users().filter(u => u.role_id === 2)
   );
 
   filteredUsers = computed(() => {
     const search = this.searchTerm().toLowerCase().trim();
+    const isAsc = this.sortAsc();
+    
     let result = this.users().filter(u => 
       u.name?.toLowerCase().includes(search) ||
       u.surnames?.toLowerCase().includes(search) ||
@@ -43,13 +43,11 @@ export class UsersComponent implements OnInit {
       u.phone_num?.includes(search)
     );
 
-    result.sort((a, b) => {
+    return result.sort((a, b) => {
       const nameA = (a.name || '').toLowerCase();
       const nameB = (b.name || '').toLowerCase();
-      return this.sortAsc() ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+      return isAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
     });
-
-    return result;
   });
 
   paginatedUsers = computed(() => {
@@ -59,31 +57,22 @@ export class UsersComponent implements OnInit {
 
   totalPages = computed(() => Math.ceil(this.filteredUsers().length / this.pageSize) || 1);
 
-  skeletonRows = computed(() => {
-    const remaining = this.pageSize - this.paginatedUsers().length;
-    return remaining > 0 ? Array(remaining).fill(0) : [];
-  });
-
   // --- ACCIONES OPERATIVAS ---
 
   loadUsers() {
     this.userService.getUsers().subscribe({
-      next: (data: User[]) => {
-        this.users.set(data);
-      },
+      next: (data) => this.users.set(data),
       error: (err) => console.error('Error Backend:', err)
     });
   }
 
   saveUser() {
     const userData = this.selectedUser();
-    
     if (userData.id) {
       this.userService.updateUser(userData.id, userData).subscribe({
         next: () => { 
           this.loadUsers(); 
           this.closeModal(); 
-          console.log('Usuario actualizado correctamente');
         },
         error: (err) => alert('Error al actualizar: ' + err.error.message)
       });
@@ -93,10 +82,7 @@ export class UsersComponent implements OnInit {
   deleteUser(id: number) {
     if (confirm('¿Estás seguro de eliminar este usuario permanentemente?')) {
       this.userService.deleteUser(id).subscribe({
-        next: () => {
-          this.loadUsers();
-          console.log('Usuario borrado');
-        },
+        next: () => this.loadUsers(),
         error: (err) => alert('Error al borrar: ' + err.error.message)
       });
     }

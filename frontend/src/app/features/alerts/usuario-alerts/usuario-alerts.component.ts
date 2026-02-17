@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common'; // Solo lo necesario
 import { EventService } from '../../../core/services/event.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Report } from '../../../core/models/report.models';
@@ -7,14 +7,14 @@ import { Report } from '../../../core/models/report.models';
 @Component({
   selector: 'app-usuario-alerts',
   standalone: true,
-  imports: [CommonModule],
+  imports: [DatePipe, NgClass], // Reemplazamos CommonModule por pipes y directivas específicas
   templateUrl: './usuario-alerts.component.html'
 })
 export class UsuarioAlertsComponent implements OnInit {
   private eventService = inject(EventService);
   private authService = inject(AuthService);
 
-  myAlerts = signal<Report[]>([]);
+  myAlerts = signal<any[]>([]); // Usamos any o extendemos Report para incluir isPanicButton
   isLoading = signal<boolean>(true);
   
   currentPage = signal<number>(1);
@@ -23,7 +23,8 @@ export class UsuarioAlertsComponent implements OnInit {
   ngOnInit() { this.loadMyHistory(); }
 
   loadMyHistory() {
-    const myId = this.authService.currentUser()?.id;
+    const user = this.authService.currentUser();
+    const myId = user?.id;
     if (!myId) return;
 
     this.eventService.getEvents().subscribe({
@@ -44,12 +45,16 @@ export class UsuarioAlertsComponent implements OnInit {
     });
   }
 
+  // Paginación reactiva
   paginatedAlerts = computed(() => {
     const start = (this.currentPage() - 1) * this.itemsPerPage;
     return this.myAlerts().slice(start, start + this.itemsPerPage);
   });
 
   totalPages = computed(() => Math.ceil(this.myAlerts().length / this.itemsPerPage) || 1);
+
+  // Array para generar los botones de páginas en el @for
+  pagesArray = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
   confirmarMiAlerta(alert: Report, estado: boolean) {
     this.eventService.confirmEvent(alert.id, estado).subscribe({

@@ -2,21 +2,22 @@
         class="lg:hidden fixed top-5 left-5 z-110 w-12 h-12 flex items-center justify-center bg-slate-900/90 backdrop-blur-md text-white rounded-2xl shadow-2xl shadow-slate-900/40 border border-white/10 active:scale-90 transition-all duration-300 group">
   
   <div class="relative w-5 h-4 flex flex-col justify-between overflow-hidden">
-    <span [class]="isMobileMenuOpen() ? 'rotate-45 translate-y-1.75' : ''" 
+    <span [class.rotate-45]="isMobileMenuOpen()" [class.translate-y-1.75]="isMobileMenuOpen()" 
           class="w-full h-0.5 bg-white rounded-full transition-all duration-300 origin-center"></span>
     
-    <span [class]="isMobileMenuOpen() ? '-translate-x-10 opacity-0' : 'opacity-100'" 
+    <span [class.-translate-x-10]="isMobileMenuOpen()" [class.opacity-0]="isMobileMenuOpen()" 
           class="w-full h-0.5 bg-white rounded-full transition-all duration-300"></span>
     
-    <span [class]="isMobileMenuOpen() ? '-rotate-45 -translate-y-1.75' : ''" 
+    <span [class.-rotate-45]="isMobileMenuOpen()" [class.-translate-y-1.75]="isMobileMenuOpen()" 
           class="w-full h-0.5 bg-white rounded-full transition-all duration-300 origin-center"></span>
   </div>
 </button>
 
-<div *ngIf="isMobileMenuOpen()" 
-     (click)="toggleMobileMenu()"
-     class="lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-80 animate-in fade-in duration-300">
-</div>
+@if (isMobileMenuOpen()) {
+  <div (click)="toggleMobileMenu()"
+       class="lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-80 animate-in fade-in duration-300">
+  </div>
+}
 
 <div [class.translate-x-0]="isMobileMenuOpen()"
      [class.-translate-x-full]="!isMobileMenuOpen()"
@@ -32,7 +33,7 @@
   </div>
 
   <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
-    <a [routerLink]="[dashboardRoute]" 
+    <a [routerLink]="[dashboardRoute()]" 
        (click)="isMobileMenuOpen.set(false)"
        routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
        [routerLinkActiveOptions]="{ exact: true }"
@@ -70,7 +71,7 @@
 
     <div class="pt-6">
       <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Seguimiento</p>
-      <a [routerLink]="[historyRoute]" 
+      <a [routerLink]="[historyRoute()]" 
          (click)="isMobileMenuOpen.set(false)"
          routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
          class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
@@ -84,7 +85,7 @@
     @if (currentUser().role_id === 3) {
       <div class="pt-6">
         <p class="px-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Ajustes</p>
-        <a [routerLink]="[profileRoute]" 
+        <a [routerLink]="[profileRoute()]" 
            (click)="isMobileMenuOpen.set(false)"
            routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/40" 
            class="flex items-center gap-4 px-4 py-3 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-800 transition-all group">
@@ -98,7 +99,7 @@
   <div class="p-4 mt-auto">
     <div class="bg-slate-800/50 rounded-3xl p-4 border border-slate-700/50">
       
-      <a [routerLink]="currentUser().role_id === 3 ? [profileRoute] : null" 
+      <a [routerLink]="currentUser().role_id === 3 ? [profileRoute()] : null" 
          (click)="isMobileMenuOpen.set(false)"
          class="flex items-center gap-3 mb-4 p-1 rounded-xl transition-all"
          [ngClass]="{'hover:bg-slate-700/50 cursor-pointer group': currentUser().role_id === 3}">
