@@ -4,25 +4,25 @@
     
     <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/5 rounded-full"></div>
 
-<div class="text-center relative z-10 flex flex-col items-center">
-  
-  <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-xl shadow-slate-200/50 mb-6 transition-transform hover:scale-105 border border-slate-100">
-    <img src="/favicon.ico" alt="Logo" class="w-8 h-8 object-contain">
-  </div>
+    <div class="text-center relative z-10 flex flex-col items-center">
+      
+      <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-xl shadow-slate-200/50 mb-6 transition-transform hover:scale-105 border border-slate-100">
+        <img src="/favicon.ico" alt="Logo" class="w-8 h-8 object-contain">
+      </div>
 
-  <h2 class="text-3xl md:text-5xl font-black text-slate-900 italic tracking-tighter uppercase leading-none">
-    CAETE<span class="text-blue-600"> TU</span>
-  </h2>
+      <h2 class="text-3xl md:text-5xl font-black text-slate-900 italic tracking-tighter uppercase leading-none">
+        CAETE<span class="text-blue-600"> TU</span>
+      </h2>
 
-  <div class="flex items-center gap-3 mt-4">
-    <span class="h-px w-6 bg-blue-600/20"></span>
-    <p class="text-slate-400 text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] italic">
-      Monitorización Profesional
-    </p>
-    <span class="h-px w-6 bg-blue-600/20"></span>
-  </div>
+      <div class="flex items-center gap-3 mt-4">
+        <span class="h-px w-6 bg-blue-600/20"></span>
+        <p class="text-slate-400 text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] italic">
+          Monitorización Profesional
+        </p>
+        <span class="h-px w-6 bg-blue-600/20"></span>
+      </div>
 
-</div>
+    </div>
 
     <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="mt-8 space-y-5 relative z-10">
       <div class="space-y-4">
@@ -39,9 +39,11 @@
         </div>
       </div>
 
-      <div *ngIf="errorMessage" class="text-red-500 text-[10px] font-black uppercase bg-red-50 p-4 rounded-2xl border border-red-100 italic leading-tight">
-        ⚠️ {{ errorMessage }}
-      </div>
+      @if (errorMessage()) {
+        <div class="text-red-500 text-[10px] font-black uppercase bg-red-50 p-4 rounded-2xl border border-red-100 italic leading-tight animate-in fade-in slide-in-from-top-2 duration-300">
+          ⚠️ {{ errorMessage() }}
+        </div>
+      }
 
       <button type="submit" [disabled]="!loginForm.valid"
         class="w-full py-5 px-4 bg-slate-900 hover:bg-blue-600 text-white font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-slate-200 transition-all active:scale-95 disabled:opacity-30 text-[11px]">

@@ -1,12 +1,12 @@
 import { Component, inject, computed, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { CommonModule } from '@angular/common';
+import { NgClass } from '@angular/common'; // Solo lo necesario
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule, NgClass], // 🔥 Eliminamos CommonModule
   templateUrl: './sidebar.html'
 })
 export class SidebarComponent {
@@ -15,12 +15,13 @@ export class SidebarComponent {
 
   public isMobileMenuOpen = signal(false);
 
+  // Mantenemos tu lógica de currentUser pero ahora es 100% reactiva con el Signal del AuthService
   public currentUser = computed(() => {
     const user = this.authService.currentUser();
     if (!user) return { role_id: 0, name: 'Usuario', email: '' };
 
     const fallback = user.email ? user.email.split('@')[0] : 'Usuario';
-    const displayName = (user as any).name || (user as any).nombre || fallback;
+    const displayName = user.name || (user as any).nombre || fallback;
 
     return {
       role_id: user.role_id || 0,
@@ -29,26 +30,24 @@ export class SidebarComponent {
     };
   });
 
-  get dashboardRoute(): string {
+  // Convertimos los getters en computed para máxima eficiencia
+  dashboardRoute = computed(() => {
     const role = this.currentUser().role_id;
     const routes: Record<number, string> = { 1: '/admin-dashboard', 2: '/cuidador-dashboard', 3: '/usuario-dashboard' };
     return routes[role] || '/login';
-  }
+  });
 
-  get historyRoute(): string {
+  historyRoute = computed(() => {
     const role = this.currentUser().role_id;
     if (role === 1) return '/history-admin';
     if (role === 2) return '/history-cuidador';
     if (role === 3) return '/usuario-alerts';
     return '/login';
-  }
+  });
 
-  // Nueva ruta para el perfil del usuario
-  get profileRoute(): string {
-    const role = this.currentUser().role_id;
-    if (role === 3) return '/usuario-users';
-    return ''; 
-  }
+  profileRoute = computed(() => {
+    return this.currentUser().role_id === 3 ? '/usuario-users' : '';
+  });
 
   toggleMobileMenu() {
     this.isMobileMenuOpen.update(v => !v);

@@ -1,13 +1,12 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router'; // Importamos RouterModule
+import { Router, RouterModule } from '@angular/router'; 
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule], // Añadido RouterModule aquí
+  imports: [FormsModule, RouterModule], // 🔥 Eliminamos CommonModule, no se usa
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
@@ -15,7 +14,7 @@ export class LoginComponent {
   private router = inject(Router);
 
   credentials = { email: '', password: '' };
-  errorMessage = '';
+  errorMessage = signal<string>(''); // 🔥 Mensaje de error como Signal
 
   private readonly ROUTES: Record<number, string> = {
     1: '/admin-dashboard',
@@ -24,12 +23,14 @@ export class LoginComponent {
   };
 
   onLogin() {
+    this.errorMessage.set(''); // Limpiamos errores previos
+    
     this.authService.login(this.credentials).subscribe({
       next: (res) => {
         const user = res.user; 
         
         if (!user || !user.role_id) {
-          this.errorMessage = 'Información de usuario incompleta.';
+          this.errorMessage.set('Información de usuario incompleta.');
           return;
         }
 
@@ -37,7 +38,7 @@ export class LoginComponent {
         this.router.navigate([target]);
       },
       error: (err) => {
-        this.errorMessage = 'Credenciales inválidas o error de conexión.';
+        this.errorMessage.set('Credenciales inválidas o error de conexión.');
       }
     });
   }

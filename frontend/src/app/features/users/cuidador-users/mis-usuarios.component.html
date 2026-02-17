@@ -14,14 +14,13 @@
     </div>
   </header>
 
-  <div *ngIf="isLoading()" class="flex flex-col items-center justify-center py-20 opacity-30">
-    <div class="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
-  </div>
-
-  <div *ngIf="!isLoading()">
-    
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center py-20 opacity-30">
+      <div class="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+    </div>
+  } @else {
     <div class="grid grid-cols-1 gap-4 md:hidden mb-8">
-      @for (user of filteredUsers(); track user.id) {
+      @for (user of paginatedUsers(); track user.id) {
         <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
           <div class="flex items-center gap-4 mb-4">
             <div [ngClass]="{
@@ -35,7 +34,7 @@
               <h3 class="text-base font-black text-slate-800 leading-none">{{ user.name }}</h3>
               <p class="text-[10px] font-bold text-blue-500 uppercase mt-1 italic tracking-widest">{{ user.device }}</p>
             </div>
-            <div [ngClass]="user.status === 'active' ? 'bg-emerald-500' : 'bg-red-500'" class="w-2 h-2 rounded-full animate-pulse"></div>
+            <div [class.bg-emerald-500]="user.status === 'active'" [class.bg-red-500]="user.status !== 'active'" class="w-2 h-2 rounded-full animate-pulse"></div>
           </div>
 
           <div class="bg-slate-50 p-4 rounded-2xl border border-slate-50 mb-4">
@@ -48,6 +47,8 @@
             Ver Actividad Real 📈
           </button>
         </div>
+      } @empty {
+        <p class="text-center py-10 text-slate-400 font-bold uppercase text-[10px] tracking-widest">No tienes pacientes asignados.</p>
       }
     </div>
 
@@ -62,7 +63,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
-          @for (user of filteredUsers(); track user.id) {
+          @for (user of paginatedUsers(); track user.id) {
             <tr class="hover:bg-blue-50/30 transition-all group">
               <td class="px-8 py-6">
                 <div class="flex items-center gap-4">
@@ -118,5 +119,5 @@
         </button>
       </div>
     </div>
-  </div>
+  }
 </div>

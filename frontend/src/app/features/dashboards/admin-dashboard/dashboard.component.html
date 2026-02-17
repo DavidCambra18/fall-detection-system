@@ -1,35 +1,34 @@
-<div *ngIf="activeEmergency()" 
-     class="fixed inset-0 pointer-events-none z-100 border-8 md:border-16 border-red-500/20 shadow-[inset_0_0_100px_rgba(239,68,68,0.3)] animate-pulse">
-</div>
+@if (activeEmergency()) {
+  <div class="fixed inset-0 pointer-events-none z-100 border-8 md:border-16 border-red-500/20 shadow-[inset_0_0_100px_rgba(239,68,68,0.3)] animate-pulse"></div>
 
-<div *ngIf="activeEmergency()" 
-     class="fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-110 w-[95%] max-w-xl px-4 animate-in slide-in-from-top duration-500">
-  <div class="bg-slate-900 border-2 border-red-600 rounded-4xl md:rounded-[2.5rem] p-5 md:p-6 shadow-2xl">
-    <div class="flex items-center gap-4 mb-6">
-      <div class="relative shrink-0">
-        <div class="absolute inset-0 bg-red-500 rounded-2xl animate-ping opacity-20"></div>
-        <div class="relative w-10 h-10 md:w-12 md:h-12 bg-red-600 rounded-2xl flex items-center justify-center text-xl md:text-2xl animate-bounce">⚠️</div>
+  <div class="fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-110 w-[95%] max-w-xl px-4 animate-in slide-in-from-top duration-500">
+    <div class="bg-slate-900 border-2 border-red-600 rounded-4xl md:rounded-[2.5rem] p-5 md:p-6 shadow-2xl">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="relative shrink-0">
+          <div class="absolute inset-0 bg-red-500 rounded-2xl animate-ping opacity-20"></div>
+          <div class="relative w-10 h-10 md:w-12 md:h-12 bg-red-600 rounded-2xl flex items-center justify-center text-xl md:text-2xl animate-bounce">⚠️</div>
+        </div>
+        <div>
+          <h4 class="text-red-500 text-[9px] font-black uppercase tracking-widest mb-1">Confirmación Requerida</h4>
+          <p class="text-white font-bold text-xs md:text-sm tracking-tight leading-tight">
+            ¿Es real la caída de {{ getPatientName(activeEmergency().user_id) }}?
+          </p>
+        </div>
       </div>
-      <div>
-        <h4 class="text-red-500 text-[9px] font-black uppercase tracking-widest mb-1">Confirmación Requerida</h4>
-        <p class="text-white font-bold text-xs md:text-sm tracking-tight leading-tight">
-          ¿Es real la caída de {{ getPatientName(activeEmergency().user_id) }}?
-        </p>
-      </div>
-    </div>
 
-    <div class="grid grid-cols-2 gap-3 md:gap-4">
-      <button (click)="confirmFall(false)" 
-              class="bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest transition-all border border-slate-700">
-        Falsa Alarma
-      </button>
-      <button (click)="confirmFall(true)" 
-              class="bg-red-600 hover:bg-red-500 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest transition-all shadow-lg">
-        Confirmar
-      </button>
+      <div class="grid grid-cols-2 gap-3 md:gap-4">
+        <button (click)="confirmFall(false)" 
+                class="bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest transition-all border border-slate-700">
+          Falsa Alarma
+        </button>
+        <button (click)="confirmFall(true)" 
+                class="bg-red-600 hover:bg-red-500 text-white py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest transition-all shadow-lg">
+          Confirmar
+        </button>
+      </div>
     </div>
   </div>
-</div>
+}
 
 <div class="p-4 md:p-8 bg-slate-50 min-h-screen font-sans relative">
   <header class="flex justify-between items-start mb-8 md:mb-10">
@@ -55,7 +54,9 @@
     <div (click)="goToTodayFalls()" 
          [ngClass]="activeEmergency() ? 'bg-red-50 border-red-200 ring-4 ring-red-500/10' : 'bg-white border-slate-100'"
          class="p-6 md:p-8 rounded-4xl md:rounded-[2.5rem] border shadow-sm cursor-pointer transition-all group relative overflow-hidden">
-      <div *ngIf="activeEmergency()" class="absolute inset-0 bg-red-500/5 animate-pulse"></div>
+      @if (activeEmergency()) {
+        <div class="absolute inset-0 bg-red-500/5 animate-pulse"></div>
+      }
       <div class="relative z-10">
         <div [class.text-red-600]="activeEmergency()" class="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center text-lg mb-4">🛡️</div>
         <h3 [class.text-red-600]="activeEmergency()" class="text-3xl md:text-4xl font-black text-slate-800 mb-1 tracking-tighter">{{ todayFalls() }}</h3>
@@ -76,13 +77,15 @@
     
     <div class="overflow-x-auto pb-4">
       <div class="flex items-end justify-between h-48 min-w-150 gap-2 px-2">
-        <div *ngFor="let data of activityData()" class="flex-1 flex flex-col items-center group relative h-full justify-end">
-          <div [style.height.%]="data.count > 0 ? (data.count * 15 + 10) : 5" 
-               [ngClass]="data.isFall ? 'bg-red-500 shadow-lg shadow-red-100' : 'bg-blue-500'"
-               class="w-full max-w-8 rounded-t-lg transition-all duration-700 group-hover:scale-y-110 origin-bottom relative">
+        @for (data of activityData(); track data.hour) {
+          <div class="flex-1 flex flex-col items-center group relative h-full justify-end">
+            <div [style.height.%]="data.count > 0 ? (data.count * 15 + 10) : 5" 
+                 [ngClass]="data.isFall ? 'bg-red-500 shadow-lg shadow-red-100' : 'bg-blue-500'"
+                 class="w-full max-w-8 rounded-t-lg transition-all duration-700 group-hover:scale-y-110 origin-bottom relative">
+            </div>
+            <span class="text-[7px] md:text-[8px] font-black text-slate-300 uppercase mt-4">{{ data.hour }}</span>
           </div>
-          <span class="text-[7px] md:text-[8px] font-black text-slate-300 uppercase mt-4">{{ data.hour }}</span>
-        </div>
+        }
       </div>
     </div>
   </div>
@@ -90,32 +93,36 @@
   <div class="mb-12">
     <h2 class="text-lg md:text-xl font-black text-slate-800 uppercase italic tracking-tighter mb-6">Sensores en Vivo</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div *ngFor="let dev of deviceTelemetry()" 
-           class="bg-white p-6 rounded-4xl md:rounded-[2.5rem] border border-slate-100 shadow-sm">
-        <div class="flex justify-between items-start mb-4">
-          <p class="text-[9px] font-black text-blue-500 uppercase">Device {{ dev.deviceId }}</p>
-          <div class="flex items-center gap-1 animate-pulse">
-            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-            <span class="text-[8px] font-black text-emerald-600 uppercase">Live</span>
-          </div>
-        </div>
-        <h4 class="text-sm font-black text-slate-800 mb-4">{{ dev.patientName }}</h4>
-        
-        <div class="space-y-3">
-          <div *ngFor="let axis of ['acc_x', 'acc_y', 'acc_z']; let i = index">
-            <div class="flex justify-between text-[8px] font-black text-slate-400 uppercase mb-1">
-              <span>Eje {{ axis.split('_')[1] }}</span>
-              <span class="text-slate-600 font-mono">{{ dev.lastData?.[axis] | number:'1.1-1' }}G</span>
-            </div>
-            <div class="h-8 bg-slate-50 rounded-lg p-1 flex items-end gap-0.5 overflow-hidden">
-               <div *ngFor="let point of dev.history" 
-                    [style.height.%]="Math.abs(point[axis]) * 4 + 10"
-                    [ngClass]="point.fall_detected ? 'bg-red-500' : 'bg-blue-400'"
-                    class="flex-1 rounded-sm"></div>
+      @for (dev of deviceTelemetry(); track dev.deviceId) {
+        <div class="bg-white p-6 rounded-4xl md:rounded-[2.5rem] border border-slate-100 shadow-sm">
+          <div class="flex justify-between items-start mb-4">
+            <p class="text-[9px] font-black text-blue-500 uppercase">Device {{ dev.deviceId }}</p>
+            <div class="flex items-center gap-1 animate-pulse">
+              <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+              <span class="text-[8px] font-black text-emerald-600 uppercase">Live</span>
             </div>
           </div>
+          <h4 class="text-sm font-black text-slate-800 mb-4">{{ dev.patientName }}</h4>
+          
+          <div class="space-y-3">
+            @for (axis of ['acc_x', 'acc_y', 'acc_z']; track axis) {
+              <div>
+                <div class="flex justify-between text-[8px] font-black text-slate-400 uppercase mb-1">
+                  <span>Eje {{ axis.split('_')[1] }}</span>
+                  <span class="text-slate-600 font-mono">{{ dev.lastData?.[axis] | number:'1.1-1' }}G</span>
+                </div>
+                <div class="h-8 bg-slate-50 rounded-lg p-1 flex items-end gap-0.5 overflow-hidden">
+                   @for (point of dev.history; track $index) {
+                      <div [style.height.%]="Math.abs(point[axis]) * 4 + 10"
+                           [ngClass]="point.fall_detected ? 'bg-red-500' : 'bg-blue-400'"
+                           class="flex-1 rounded-sm"></div>
+                   }
+                </div>
+              </div>
+            }
+          </div>
         </div>
-      </div>
+      }
     </div>
   </div>
 </div>
