@@ -15,7 +15,11 @@ const PORT = process.env.PORT || 3000;
 
 const FRONTEND_ORIGINS =
   process.env.NODE_ENV === 'production'
-    ? process.env.FRONTEND_ORIGINS?.split(',') || []
+    ? [
+        'https://betafalldetectionsystem.vercel.app',
+        'https://falldetectionsystem.vercel.app',
+        ...(process.env.FRONTEND_ORIGINS?.split(',') || [])
+      ]
     : ['http://localhost:4200'];
 
 // CORS MÁS PERMISIVO PARA ESP32
