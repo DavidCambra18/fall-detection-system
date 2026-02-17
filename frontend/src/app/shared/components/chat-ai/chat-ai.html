@@ -1,0 +1,68 @@
+<div class="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-150 font-sans flex flex-col items-end">
+  
+  @if (isOpen()) {
+    <div class="w-[calc(100vw-2rem)] md:w-96 mb-4 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+      
+      <div class="bg-slate-900 p-5 md:p-6 text-white flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-blue-900/40">🤖</div>
+          <div>
+            <h4 class="text-xs font-black uppercase italic tracking-tighter">Asistente IA</h4>
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <p class="text-[8px] text-emerald-500 font-black uppercase tracking-widest italic">Soporte en línea</p>
+            </div>
+          </div>
+        </div>
+        <button (click)="toggleChat()" class="w-8 h-8 flex items-center justify-center bg-white/10 rounded-full hover:bg-white/20 transition-colors">✕</button>
+      </div>
+
+      <div #scrollContainer class="h-87.5 md:h-100 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+        @for (msg of messages(); track $index) {
+          <div class="flex flex-col" [class.items-end]="msg.sender === 'user'">
+            <div [ngClass]="msg.sender === 'user' 
+                  ? 'bg-blue-600 text-white rounded-2xl rounded-tr-none' 
+                  : 'bg-white text-slate-700 border border-slate-100 rounded-2xl rounded-tl-none'"
+                 class="max-w-[85%] p-4 shadow-sm">
+              <p class="text-xs font-bold leading-relaxed">{{ msg.text }}</p>
+            </div>
+            <span class="text-[7px] mt-1 text-slate-400 font-black uppercase px-1 italic">
+              {{ msg.time | date:'HH:mm' }}
+            </span>
+          </div>
+        }
+
+        @if (isTyping()) {
+          <div class="flex items-center gap-2">
+            <div class="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm flex gap-1">
+              <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce"></span>
+              <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+              <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <form (ngSubmit)="sendMessage()" class="p-4 bg-white border-t border-slate-100 flex gap-2">
+        <input type="text" [(ngModel)]="newMessage" name="msg" 
+               placeholder="Escribe tu consulta..."
+               class="flex-1 bg-slate-50 border-none rounded-2xl px-5 py-3 text-xs font-bold focus:ring-4 focus:ring-blue-500/10 outline-none transition-all">
+        <button type="submit" [disabled]="!newMessage() || isTyping()" 
+                class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center disabled:opacity-30 active:scale-90 transition-all shadow-lg">
+          🚀
+        </button>
+      </form>
+    </div>
+  }
+
+  <button (click)="toggleChat()" 
+          [class.bg-red-500]="isOpen()"
+          [class.rotate-90]="isOpen()"
+          class="w-16 h-16 bg-blue-600 text-white rounded-3xl shadow-2xl shadow-blue-500/40 flex items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all duration-300 border-4 border-white">
+    @if (isOpen()) {
+      <span class="text-xl italic font-black">X</span>
+    } @else {
+      <span class="animate-in zoom-in">💬</span>
+    }
+  </button>
+</div>
