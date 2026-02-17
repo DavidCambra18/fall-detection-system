@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.routes';
 import deviceRoutes from './routes/devices.routes';
 import eventsRoutes from './routes/events.routes';
 import usersRoutes from './routes/users.routes';
+import chatgptRoutes from './routes/chatgpt.routes';
 import telemetryRoutes from './routes/telemetry.routes';
 
 dotenv.config();
@@ -64,6 +65,7 @@ app.use('/api/telemetry', telemetryRoutes); // SIN AUTENTICACIÓN
 app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/chatgpt', chatgptRoutes);
 app.use('/api/users', usersRoutes);
 
 // Health check
