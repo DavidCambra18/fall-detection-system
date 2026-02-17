@@ -48,13 +48,25 @@
         
         <div class="bg-slate-900 rounded-4xl p-6 md:p-8 mb-8">
           <div class="flex items-end gap-1.5 md:gap-2 h-24 md:h-32">
-            @for (val of accelData(); track $index) {
-              <div [style.height.%]="val" 
-                   class="flex-1 bg-blue-500/40 rounded-t-sm md:rounded-t-lg transition-all duration-700 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+            @for (item of accelData(); track $index) {
+              <div [style.height.%]="Math.min(item.val + 5, 100)" 
+                   [ngClass]="item.isFall ? 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse' : 'bg-blue-500/40'"
+                   class="flex-1 rounded-t-sm md:rounded-t-lg transition-all duration-700 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
               </div>
+            } @empty {
+              @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+                <div class="flex-1 h-2 bg-white/5 rounded-t-lg"></div>
+              }
             }
           </div>
-          <p class="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] mt-4 text-center italic">Telemetría en tiempo real desde {{ myDevice()?.device_id_logic || 'ESP32' }}</p>
+          <div class="flex justify-between items-center mt-4">
+            <p class="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] italic">Telemetría desde {{ myDevice()?.device_id_logic || 'ESP32' }}</p>
+            @if (accelData().length > 0) {
+              <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded-full">
+                Intensidad: {{ (accelData()[accelData().length - 1].val / 10) | number:'1.1-1' }}G
+              </span>
+            }
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">

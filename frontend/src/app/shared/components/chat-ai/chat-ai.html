@@ -7,24 +7,26 @@
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-blue-900/40">🤖</div>
           <div>
-            <h4 class="text-xs font-black uppercase italic tracking-tighter">Asistente IA</h4>
-            <div class="flex items-center gap-1.5">
+            <h4 class="text-xs font-black uppercase italic tracking-tighter leading-none">Asistente IA</h4>
+            <div class="flex items-center gap-1.5 mt-1">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <p class="text-[8px] text-emerald-500 font-black uppercase tracking-widest italic">Soporte en línea</p>
+              <p class="text-[8px] text-emerald-500 font-black uppercase tracking-widest italic leading-none">Soporte en línea</p>
             </div>
           </div>
         </div>
         <button (click)="toggleChat()" class="w-8 h-8 flex items-center justify-center bg-white/10 rounded-full hover:bg-white/20 transition-colors">✕</button>
       </div>
 
-      <div #scrollContainer class="h-87.5 md:h-100 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+      <div #scrollContainer class="h-87.5 md:h-100 overflow-y-auto p-4 space-y-4 bg-slate-50/50 scroll-smooth">
         @for (msg of messages(); track $index) {
           <div class="flex flex-col" [class.items-end]="msg.sender === 'user'">
             <div [ngClass]="msg.sender === 'user' 
-                  ? 'bg-blue-600 text-white rounded-2xl rounded-tr-none' 
-                  : 'bg-white text-slate-700 border border-slate-100 rounded-2xl rounded-tl-none'"
-                 class="max-w-[85%] p-4 shadow-sm">
-              <p class="text-xs font-bold leading-relaxed">{{ msg.text }}</p>
+                  ? 'bg-blue-600 text-white rounded-2xl rounded-tr-none shadow-blue-100' 
+                  : 'bg-white text-slate-700 border border-slate-100 rounded-2xl rounded-tl-none shadow-xs'"
+                 class="max-w-[85%] p-4 shadow-sm animate-in zoom-in-95 duration-200">
+              
+              <markdown [data]="msg.text" class="text-xs font-bold leading-relaxed prose prose-slate max-w-none"></markdown>
+              
             </div>
             <span class="text-[7px] mt-1 text-slate-400 font-black uppercase px-1 italic">
               {{ msg.time | date:'HH:mm' }}
@@ -34,17 +36,47 @@
 
         @if (isTyping()) {
           <div class="flex items-center gap-2">
-            <div class="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm flex gap-1">
-              <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce"></span>
-              <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-              <span class="w-1 h-1 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+            <div class="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm flex gap-1 items-center">
+              <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></span>
+              <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+              <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
             </div>
+          </div>
+        }
+      </div>
+
+      <div class="px-4 py-2 bg-white flex gap-2 overflow-x-auto no-scrollbar border-t border-slate-50">
+        
+        @let roleId = authService.currentUser()?.role_id;
+
+        @if (roleId === 3) {
+          <button (click)="generateAIReport()" [disabled]="isTyping()"
+                  class="flex-none px-3 py-2 bg-blue-50 text-[9px] font-black text-blue-600 rounded-xl border border-blue-100 hover:bg-blue-100 transition-all uppercase italic">
+            📊 Mi Reporte
+          </button>
+          <button (click)="getAISuggestions()" [disabled]="isTyping()"
+                  class="flex-none px-3 py-2 bg-emerald-50 text-[9px] font-black text-emerald-600 rounded-xl border border-emerald-100 hover:bg-emerald-100 transition-all uppercase italic">
+            🛡️ Sugerencias
+          </button>
+        } 
+        
+        @else if (roleId === 2) {
+          <button (click)="analyzeCaregiverPatients()" [disabled]="isTyping()"
+                  class="flex-none px-3 py-2 bg-purple-50 text-[9px] font-black text-purple-600 rounded-xl border border-purple-100 hover:bg-purple-100 transition-all uppercase italic">
+            📋 Incidencias Pacientes
+          </button>
+        }
+
+        @else if (roleId === 1) {
+          <div class="w-full text-center py-1">
+            <p class="text-[7px] text-slate-400 font-black uppercase italic tracking-widest">Consola de Administración</p>
           </div>
         }
       </div>
 
       <form (ngSubmit)="sendMessage()" class="p-4 bg-white border-t border-slate-100 flex gap-2">
         <input type="text" [(ngModel)]="newMessage" name="msg" 
+               [disabled]="isTyping()"
                placeholder="Escribe tu consulta..."
                class="flex-1 bg-slate-50 border-none rounded-2xl px-5 py-3 text-xs font-bold focus:ring-4 focus:ring-blue-500/10 outline-none transition-all">
         <button type="submit" [disabled]="!newMessage() || isTyping()" 
