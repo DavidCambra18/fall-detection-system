@@ -10,33 +10,49 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password123
+          POSTGRES_DB: fall_detection_pg
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
     steps:
     - uses: actions/checkout@v3
 
-    - name: Start Infrastructure (Postgres & Redis)
-      run: docker-compose up -d postgres_db redis_cache
-
-    - name: Use Node.js
+    - name: Configurar Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18.x'
         cache: 'npm'
         cache-dependency-path: './backend/package-lock.json'
 
-    - name: Install dependencies
+    - name: Instalar dependencias
       run: npm install
       working-directory: ./backend
 
-    - name: Wait for Postgres
+    - name: Inicializar Base de Datos
       run: |
-        until docker exec fall_detection_pg pg_isready ; do
-          sleep 2
-        done
+        PGPASSWORD=password123 psql -h localhost -U postgres -d fall_detection_pg -f database/init.sql
 
-    - name: Run Tests
+    - name: Ejecutar Pruebas (Jest)
       run: npm test
       working-directory: ./backend
       env:
         DATABASE_URL: postgres://postgres:password123@localhost:5432/fall_detection_pg
-        JWT_SECRET: test_secret_key
+        JWT_SECRET: secretkey123
         NODE_ENV: test
+        REDIS_URL: redis://localhost:6379
