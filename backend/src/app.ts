@@ -85,11 +85,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ message: 'Error interno del servidor', error: err.message });
 });
 
-// Escuchar en el puerto si no estamos en un entorno serverless (Vercel)
-// O si estamos explícitamente en Render u otro hosting tradicional
-if (process.env.NODE_ENV !== 'production' || process.env.RENDER_EXTERNAL_URL) {
+if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
-    console.log(`Servidor corriendo en port ${PORT}`);
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
   });
 }
 
