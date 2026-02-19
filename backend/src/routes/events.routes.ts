@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import { EventsController } from '../controllers/events.controller';
+import { authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
+
+router.use(authenticateToken);
+
+router.get('/export', authenticateToken, EventsController.exportCSV);
 
 router.get('/', EventsController.getAll);
 router.get('/:id', EventsController.getById);

@@ -1,0 +1,42 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Start Infrastructure (Postgres & Redis)
+      run: docker-compose up -d postgres_db redis_cache
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        cache-dependency-path: './backend/package-lock.json'
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: ./backend
+
+    - name: Wait for Postgres
+      run: |
+        until docker exec fall_detection_pg pg_isready ; do
+          sleep 2
+        done
+
+    - name: Run Tests
+      run: npm test
+      working-directory: ./backend
+      env:
+        DATABASE_URL: postgres://postgres:password123@localhost:5432/fall_detection_pg
+        JWT_SECRET: test_secret_key
+        NODE_ENV: test
