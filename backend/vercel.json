@@ -7,18 +7,22 @@
         {
           "key": "Cross-Origin-Opener-Policy",
           "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "cross-origin"
         }
       ]
     }
   ],
   "rewrites": [
     {
-      "source": "/api/((?!telemetry).*)",
-      "destination": "https://fall-detection-system-6qw5.onrender.com/api/$1"
-    },
-    {
       "source": "/api/telemetry/:path*",
       "destination": "https://fall-detection-system-6qw5.onrender.com/api/telemetry/:path*"
+    },
+    {
+      "source": "/api/(auth/.*|users/.*|chatgpt/.*|devices/.*|events/.*)",
+      "destination": "https://fall-detection-system-6qw5.onrender.com/api/$1"
     },
     {
       "source": "/(.*)",
