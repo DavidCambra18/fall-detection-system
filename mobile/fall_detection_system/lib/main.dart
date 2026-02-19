@@ -1,3 +1,4 @@
+import 'package:fall_detection_system/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'screens/dashboard_screen.dart';
@@ -26,7 +27,7 @@ class FallMonitorApp extends StatelessWidget {
           primary: const Color(0xFF3B82F6),
         ),
       ),
-      home: const DashboardScreen(),
+      home: const LoginScreen(),
     );
   }
 }
