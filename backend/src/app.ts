@@ -85,10 +85,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ message: 'Error interno del servidor', error: err.message });
 });
 
-// Iniciar servidor solo si el archivo se ejecuta directamente
-if (require.main === module) {
+if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
   });
 }
 
