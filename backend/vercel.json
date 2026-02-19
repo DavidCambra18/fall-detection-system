@@ -14,7 +14,11 @@
   "rewrites": [
     {
       "source": "/api/((?!telemetry).*)",
-      "destination": "/api/index"
+      "destination": "https://fall-detection-system-6qw5.onrender.com/api/$1"
+    },
+    {
+      "source": "/api/telemetry/:path*",
+      "destination": "https://fall-detection-system-6qw5.onrender.com/api/telemetry/:path*"
     },
     {
       "source": "/(.*)",
