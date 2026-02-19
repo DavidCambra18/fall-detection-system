@@ -14,46 +14,59 @@
     
     <div class="lg:col-span-2 space-y-6">
       
-      <div *ngIf="showEmergency()" 
-           [ngClass]="currentEmergency()?.isPanicButton ? 'bg-amber-500 border-amber-300 shadow-amber-900/20' : 'bg-red-600 border-red-400 shadow-red-900/20'"
-           class="rounded-4xl md:rounded-[2.5rem] p-6 md:p-8 shadow-2xl animate-in zoom-in duration-300 border-4 border-white transition-colors">
-        
-        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div class="flex items-center gap-4 text-center md:text-left">
-            <div class="w-14 h-14 md:w-16 md:h-16 bg-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
-              <span class="text-3xl md:text-4xl">{{ currentEmergency()?.isPanicButton ? '🆘' : '🚨' }}</span>
+      @if (showEmergency()) {
+        <div [ngClass]="currentEmergency()?.isPanicButton ? 'bg-amber-500 border-amber-300 shadow-amber-900/20' : 'bg-red-600 border-red-400 shadow-red-900/20'"
+             class="rounded-4xl md:rounded-[2.5rem] p-6 md:p-8 shadow-2xl animate-in zoom-in duration-300 border-4 border-white transition-colors">
+          
+          <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4 text-center md:text-left">
+              <div class="w-14 h-14 md:w-16 md:h-16 bg-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
+                <span class="text-3xl md:text-4xl">{{ currentEmergency()?.isPanicButton ? '🆘' : '🚨' }}</span>
+              </div>
+              
+              <div>
+                <h3 class="text-white text-lg md:text-xl font-black uppercase italic leading-none">
+                  {{ currentEmergency()?.isPanicButton ? '¡Aviso de emergencia enviado!' : '¡Detección de caída enviada!' }}
+                </h3>
+                <p class="text-white/90 text-[9px] md:text-[10px] font-bold uppercase tracking-widest mt-2 leading-tight">
+                  Tu cuidador ha recibido la notificación y está revisando tu estado.
+                </p>
+              </div>
             </div>
-            
-            <div>
-              <h3 class="text-white text-lg md:text-xl font-black uppercase italic leading-none">
-                {{ currentEmergency()?.isPanicButton ? '¡Aviso de emergencia enviado!' : '¡Detección de caída enviada!' }}
-              </h3>
-              <p class="text-white/90 text-[9px] md:text-[10px] font-bold uppercase tracking-widest mt-2 leading-tight">
-                Tu cuidador ha recibido la notificación y está revisando tu estado.
-              </p>
-            </div>
-          </div>
 
-          <button (click)="irARevisarAlertas()" 
-                  [ngClass]="currentEmergency()?.isPanicButton ? 'text-amber-600' : 'text-red-600'"
-                  class="w-full md:w-auto bg-white px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all shadow-xl">
-            REVISAR ESTADO 📋
-          </button>
+            <button (click)="irARevisarAlertas()" 
+                    [ngClass]="currentEmergency()?.isPanicButton ? 'text-amber-600' : 'text-red-600'"
+                    class="w-full md:w-auto bg-white hover:bg-gray-200 px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all shadow-xl">
+              REVISAR ESTADO
+            </button>
+          </div>
         </div>
-      </div>
+      }
 
       <div class="bg-white p-6 md:p-10 rounded-[2.5rem] md:rounded-[3rem] border border-slate-100 shadow-sm">
         <h2 class="text-xl md:text-2xl font-black text-slate-800 uppercase tracking-tighter mb-6 md:mb-8 italic leading-none">Monitor de Actividad</h2>
         
         <div class="bg-slate-900 rounded-4xl p-6 md:p-8 mb-8">
           <div class="flex items-end gap-1.5 md:gap-2 h-24 md:h-32">
-            @for (val of accelData(); track $index) {
-              <div [style.height.%]="val" 
-                   class="flex-1 bg-blue-500/40 rounded-t-sm md:rounded-t-lg transition-all duration-700 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+            @for (item of accelData(); track $index) {
+              <div [style.height.%]="Math.min(item.val + 5, 100)" 
+                   [ngClass]="item.isFall ? 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse' : 'bg-blue-500/40'"
+                   class="flex-1 rounded-t-sm md:rounded-t-lg transition-all duration-700 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
               </div>
+            } @empty {
+              @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+                <div class="flex-1 h-2 bg-white/5 rounded-t-lg"></div>
+              }
             }
           </div>
-          <p class="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] mt-4 text-center italic">Telemetría en tiempo real desde {{ myDevice()?.device_id_logic || 'ESP32' }}</p>
+          <div class="flex justify-between items-center mt-4">
+            <p class="text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] italic">Telemetría desde {{ myDevice()?.device_id_logic || 'ESP32' }}</p>
+            @if (accelData().length > 0) {
+              <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded-full">
+                Intensidad: {{ (accelData()[accelData().length - 1].val / 10) | number:'1.1-1' }}G
+              </span>
+            }
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
@@ -88,7 +101,9 @@
                 </p>
               </div>
               <div class="flex items-center gap-2">
-                <span *ngIf="alert.confirmed === null" class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                @if (alert.confirmed === null) {
+                  <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                }
                 <span class="text-xs">{{ alert.confirmed === null ? '⚠️' : '✅' }}</span>
               </div>
             </div>

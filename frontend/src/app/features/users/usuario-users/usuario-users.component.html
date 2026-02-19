@@ -8,98 +8,143 @@
     
     <button (click)="toggleEdit()" 
             class="w-full sm:w-auto px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-md active:scale-95"
-            [ngClass]="isEditing() ? 'bg-slate-200 text-slate-600' : 'bg-blue-600 text-white shadow-blue-200'">
+            [class.bg-slate-200]="isEditing()" [class.text-slate-600]="isEditing()"
+            [class.bg-blue-600]="!isEditing()" [class.text-white]="!isEditing()" [class.shadow-blue-200]="!isEditing()">
       {{ isEditing() ? 'Cancelar Edición' : 'Modificar Datos' }}
     </button>
   </header>
 
-  <div *ngIf="!isLoading()" class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 max-w-7xl mx-auto">
-    
-    <div class="lg:col-span-4 space-y-6">
-      <div class="bg-slate-900 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 text-white shadow-2xl flex flex-col items-center">
-        <div class="w-24 h-24 md:w-32 md:h-32 rounded-4xl md:rounded-[2.5rem] bg-linear-to-br from-blue-600 to-blue-400 flex items-center justify-center text-3xl md:text-4xl font-black shadow-xl mb-6 border-4 border-white/10 uppercase italic">
-          {{ fullUserData()?.name?.substring(0,2) }}
-        </div>
-        <h2 class="text-xl md:text-2xl font-black tracking-tighter uppercase mb-1 text-center italic">{{ fullUserData()?.name }}</h2>
-        <p class="text-blue-400 text-[9px] font-black uppercase tracking-widest mb-8 italic">Paciente Registrado</p>
-        
-        <div class="w-full space-y-4 pt-6 border-t border-white/5">
-          <div class="flex justify-between items-center text-[9px] font-bold uppercase text-slate-500 italic">
-            <span>ID de Paciente</span>
-            <span class="text-white font-mono bg-white/5 px-2 py-1 rounded-lg">#00{{ fullUserData()?.id }}</span>
+  @if (isPhonePending() && !isLoading()) {
+    <div class="max-w-7xl mx-auto mb-8 animate-in fade-in zoom-in duration-500">
+      <div class="bg-amber-50 border-2 border-amber-200 rounded-[2.5rem] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+        <div class="flex items-center gap-5">
+          <div class="w-14 h-14 bg-amber-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-amber-200">
+            ⚠️
           </div>
-          <div class="flex justify-between items-center text-[9px] font-bold uppercase text-slate-500 italic">
-            <span>Protección</span>
-            <span class="text-emerald-400 flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Activada
-            </span>
+          <div>
+            <h4 class="text-amber-900 font-black text-sm uppercase italic tracking-tighter leading-none">Acción Requerida: Seguridad</h4>
+            <p class="text-amber-700 font-bold text-[10px] uppercase tracking-widest mt-2 leading-tight">
+              Por favor, actualiza tu teléfono de emergencia real para poder recibir alertas.
+            </p>
           </div>
         </div>
-      </div>
-
-      <div class="bg-white p-6 md:p-8 rounded-4xl md:rounded-[2.5rem] border border-slate-100 shadow-sm">
-        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-6 italic">Sensor Vinculado</p>
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-xl shadow-inner italic">⌚</div>
-          <div class="min-w-0">
-            <p class="text-xs font-black text-slate-800 uppercase leading-none truncate">{{ myDevice()?.alias || 'Sin hardware' }}</p>
-            <p class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mt-2 italic truncate">{{ myDevice()?.device_id_logic || 'Pendiente de asignar' }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="lg:col-span-8">
-      <div class="bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-slate-100 shadow-sm h-full flex flex-col">
-        <h3 class="text-xl font-black text-slate-800 uppercase italic tracking-tighter leading-none mb-10">Datos del Registro</h3>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 mb-10">
-          
-          <div class="space-y-2">
-            <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic ml-1">Nombre</label>
-            <input *ngIf="isEditing()" type="text" [(ngModel)]="editForm().name" class="w-full bg-slate-50 border-none rounded-xl px-4 py-3 font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/10 outline-none text-sm">
-            <p *ngIf="!isEditing()" class="text-sm font-bold text-slate-800 bg-slate-50/50 px-4 py-3 rounded-xl">{{ fullUserData()?.name }}</p>
-          </div>
-
-          <div class="space-y-2">
-            <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic ml-1">Apellidos</label>
-            <input *ngIf="isEditing()" type="text" [(ngModel)]="editForm().surnames" class="w-full bg-slate-50 border-none rounded-xl px-4 py-3 font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/10 outline-none text-sm">
-            <p *ngIf="!isEditing()" class="text-sm font-bold text-slate-800 bg-slate-50/50 px-4 py-3 rounded-xl">{{ fullUserData()?.surnames }}</p>
-          </div>
-
-          <div class="space-y-2">
-            <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic ml-1">Email (Fijo)</label>
-            <p class="text-sm font-bold text-slate-400 bg-slate-50 px-4 py-3 rounded-xl border border-dashed border-slate-100 italic">{{ fullUserData()?.email }}</p>
-          </div>
-
-          <div class="space-y-2">
-            <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic ml-1">Teléfono de Emergencia</label>
-            <input *ngIf="isEditing()" type="text" [(ngModel)]="editForm().phone_num" class="w-full bg-slate-50 border-none rounded-xl px-4 py-3 font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/10 outline-none text-sm">
-            <p *ngIf="!isEditing()" class="text-sm font-bold text-slate-800 bg-slate-50/50 px-4 py-3 rounded-xl">{{ fullUserData()?.phone_num || 'No registrado' }}</p>
-          </div>
-
-          <div class="space-y-2 sm:col-span-2">
-            <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic ml-1">Fecha de Nacimiento</label>
-            <input *ngIf="isEditing()" type="date" [(ngModel)]="editForm().date_born" class="w-full bg-slate-50 border-none rounded-xl px-4 py-3 font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/10 outline-none text-sm">
-            <p *ngIf="!isEditing()" class="text-sm font-bold text-slate-800 bg-slate-50/50 px-4 py-3 rounded-xl">{{ (fullUserData()?.date_born | date:'dd MMMM, yyyy') || '---' }}</p>
-          </div>
-        </div>
-
-        <button *ngIf="isEditing()" (click)="saveProfile()"
-                class="w-full mb-8 bg-slate-900 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-emerald-600 transition-all active:scale-95">
-          Confirmar Cambios en Servidor
+        <button (click)="toggleEdit()" 
+                class="px-8 py-4 bg-amber-900 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg hover:scale-105 transition-transform active:scale-95">
+          Completar ahora
         </button>
-
-        <div class="mt-auto bg-slate-900 rounded-4xl p-6 text-white flex justify-between items-center gap-4">
-          <div class="min-w-0">
-            <h4 class="text-sm font-black uppercase italic tracking-tighter leading-none">Protección de Datos</h4>
-            <p class="text-slate-500 text-[8px] mt-2 uppercase tracking-widest leading-relaxed">Información cifrada bajo protocolos de seguridad HIPAA / GDPR</p>
-          </div>
-          <div class="text-2xl shrink-0 opacity-20">🛡️</div>
-        </div>
       </div>
     </div>
+  }
 
-  </div>
+  @if (!isLoading()) {
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 max-w-7xl mx-auto">
+      
+      <div class="lg:col-span-4 space-y-6">
+        <div class="bg-slate-900 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 text-white shadow-2xl flex flex-col items-center">
+          <div class="w-24 h-24 md:w-32 md:h-32 rounded-4xl md:rounded-[2.5rem] bg-linear-to-br from-blue-600 to-blue-400 flex items-center justify-center text-3xl md:text-4xl font-black shadow-xl mb-6 border-4 border-white/10 uppercase italic">
+            {{ fullUserData()?.name?.substring(0,2) }}
+          </div>
+          <h2 class="text-xl md:text-2xl font-black tracking-tighter uppercase mb-1 text-center italic">{{ fullUserData()?.name }}</h2>
+          <p class="text-blue-400 text-[9px] font-black uppercase tracking-widest mb-8 italic">Paciente Registrado</p>
+          
+          <div class="w-full space-y-4 pt-6 border-t border-white/5">
+            <div class="flex justify-between items-center text-[9px] font-bold uppercase text-slate-500 italic">
+              <span>ID de Paciente</span>
+              <span class="text-white font-mono bg-white/5 px-2 py-1 rounded-lg">#00{{ fullUserData()?.id }}</span>
+            </div>
+            <div class="flex justify-between items-center text-[9px] font-bold uppercase text-slate-500 italic">
+              <span>Protección</span>
+              <span class="text-emerald-400 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Activada
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 md:p-8 rounded-4xl md:rounded-[2.5rem] border border-slate-100 shadow-sm">
+          <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-6 italic">Sensor Vinculado</p>
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-xl shadow-inner italic">⌚</div>
+            <div class="min-w-0">
+              <p class="text-xs font-black text-slate-800 uppercase leading-none truncate">{{ myDevice()?.alias || 'Sin hardware' }}</p>
+              <p class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mt-2 italic truncate">{{ myDevice()?.device_id_logic || 'Pendiente de asignar' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-8">
+        <div class="bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-slate-100 shadow-sm h-full flex flex-col">
+          <h3 class="text-xl font-black text-slate-800 uppercase italic tracking-tighter leading-none mb-10">Datos del Registro</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 mb-10">
+            
+            <div class="space-y-2">
+              <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic ml-1">Nombre</label>
+              @if (isEditing()) {
+                <input type="text" [(ngModel)]="editForm().name" class="w-full bg-slate-50 border-none rounded-xl px-4 py-3 font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/10 outline-none text-sm">
+              } @else {
+                <p class="text-sm font-bold text-slate-800 bg-slate-50/50 px-4 py-3 rounded-xl">{{ fullUserData()?.name }}</p>
+              }
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic ml-1">Apellidos</label>
+              @if (isEditing()) {
+                <input type="text" [(ngModel)]="editForm().surnames" class="w-full bg-slate-50 border-none rounded-xl px-4 py-3 font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/10 outline-none text-sm">
+              } @else {
+                <p class="text-sm font-bold text-slate-800 bg-slate-50/50 px-4 py-3 rounded-xl">{{ fullUserData()?.surnames }}</p>
+              }
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic ml-1">Email (Fijo)</label>
+              <p class="text-sm font-bold text-slate-400 bg-slate-50 px-4 py-3 rounded-xl border border-dashed border-slate-100 italic">{{ fullUserData()?.email }}</p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic ml-1">Teléfono de Emergencia</label>
+              @if (isEditing()) {
+                <input type="text" [(ngModel)]="editForm().phone_num" class="w-full bg-slate-50 border-none rounded-xl px-4 py-3 font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/10 outline-none text-sm">
+              } @else {
+                <p class="text-sm font-bold px-4 py-3 rounded-xl" [class.text-amber-600]="isPhonePending()" [class.bg-amber-50]="isPhonePending()" [class.text-slate-800]="!isPhonePending()" [class.bg-slate-50/50]="!isPhonePending()">
+                  {{ fullUserData()?.phone_num || 'No registrado' }}
+                </p>
+              }
+            </div>
+
+            <div class="space-y-2 sm:col-span-2">
+              <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic ml-1">Fecha de Nacimiento</label>
+              @if (isEditing()) {
+                <input type="date" [(ngModel)]="editForm().date_born" class="w-full bg-slate-50 border-none rounded-xl px-4 py-3 font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/10 outline-none text-sm">
+              } @else {
+                <p class="text-sm font-bold text-slate-800 bg-slate-50/50 px-4 py-3 rounded-xl">{{ (fullUserData()?.date_born | date:'dd MMMM, yyyy') || '---' }}</p>
+              }
+            </div>
+          </div>
+
+          @if (isEditing()) {
+            <button (click)="saveProfile()"
+                    class="w-full mb-8 bg-slate-900 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-emerald-600 transition-all active:scale-95">
+              Confirmar Cambios en Servidor
+            </button>
+          }
+
+          <div class="mt-auto bg-slate-900 rounded-4xl p-6 text-white flex justify-between items-center gap-4">
+            <div class="min-w-0">
+              <h4 class="text-sm font-black uppercase italic tracking-tighter leading-none">Protección de Datos</h4>
+              <p class="text-slate-500 text-[8px] mt-2 uppercase tracking-widest leading-relaxed">Información cifrada bajo protocolos de seguridad HIPAA / GDPR</p>
+            </div>
+            <div class="text-2xl shrink-0 opacity-20">🛡️</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  } @else {
+    <div class="flex justify-center py-20 opacity-30">
+      <div class="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+    </div>
+  }
 </div>

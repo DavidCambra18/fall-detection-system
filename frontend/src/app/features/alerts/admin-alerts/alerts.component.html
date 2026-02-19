@@ -13,38 +13,49 @@
   </div>
 
   <div class="grid grid-cols-1 gap-4 md:hidden mb-8">
-    <div *ngFor="let alert of paginatedAlerts()" 
-         [ngClass]="alert.fall_detected ? 'border-red-100 bg-red-50/30' : 'bg-white'"
-         class="p-6 rounded-4xl border shadow-sm relative overflow-hidden">
-      
-      <div class="flex justify-between items-start mb-4">
-        <div>
-          <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ alert.date_rep | date:'dd/MM/yyyy HH:mm' }}</p>
-          <h3 class="font-black text-slate-800 text-base leading-tight mt-1">{{ getDeviceInfo(alert.device_id).owner }}</h3>
+    @for (alert of paginatedAlerts(); track alert.id) {
+      <div [ngClass]="alert.fall_detected ? 'border-red-100 bg-red-50/30' : 'bg-white'"
+           class="p-6 rounded-4xl border shadow-sm relative overflow-hidden">
+        
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ alert.date_rep | date:'dd/MM/yyyy HH:mm' }}</p>
+            <h3 class="font-black text-slate-800 text-base leading-tight mt-1">{{ getDeviceInfo(alert.device_id).owner }}</h3>
+          </div>
+          <div class="text-right">
+            <span [ngClass]="alert.fall_detected ? 'text-red-600' : 'text-emerald-600'" class="text-xs font-black italic">
+              {{alert.acc_z}} G
+            </span>
+          </div>
         </div>
-        <div class="text-right">
-          <span [ngClass]="alert.fall_detected ? 'text-red-600' : 'text-emerald-600'" class="text-xs font-black italic">
-            {{alert.acc_z}} G
-          </span>
-        </div>
-      </div>
 
-      <div class="bg-white/50 p-3 rounded-xl border border-slate-100 mb-4">
-        <p class="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{{ getDeviceInfo(alert.device_id).alias }}</p>
-        <p class="text-[9px] text-purple-600 font-mono font-black">{{ getDeviceInfo(alert.device_id).mac }}</p>
-      </div>
+        <div class="bg-white/50 p-3 rounded-xl border border-slate-100 mb-4">
+          <p class="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{{ getDeviceInfo(alert.device_id).alias }}</p>
+          <p class="text-[9px] text-purple-600 font-mono font-black">{{ getDeviceInfo(alert.device_id).mac }}</p>
+        </div>
 
-      <div *ngIf="alert.fall_detected" class="mt-4 pt-4 border-t border-slate-100">
-        <div *ngIf="alert.confirmed === null" class="grid grid-cols-2 gap-2">
-          <button (click)="onConfirm(alert.id, true)" class="bg-slate-900 text-white py-3 rounded-xl font-black text-[10px] uppercase">✓ Real</button>
-          <button (click)="onConfirm(alert.id, false)" class="bg-white border border-slate-200 text-slate-400 py-3 rounded-xl font-black text-[10px] uppercase">✕ Falsa</button>
-        </div>
-        <div *ngIf="alert.confirmed !== null" class="text-center">
-          <span *ngIf="alert.confirmed === true" class="text-emerald-500 text-[10px] font-black uppercase italic tracking-widest">✓ Verificada</span>
-          <span *ngIf="alert.confirmed === false" class="text-amber-500 text-[10px] font-black uppercase italic tracking-widest">⚠ Falsa Alarma</span>
-        </div>
+        @if (alert.fall_detected) {
+          <div class="mt-4 pt-4 border-t border-slate-100">
+            @if (alert.confirmed === null) {
+              <div class="grid grid-cols-2 gap-2">
+                <button (click)="onConfirm(alert.id, true)" class="bg-slate-900 text-white py-3 rounded-xl font-black text-[10px] uppercase">✓ Real</button>
+                <button (click)="onConfirm(alert.id, false)" class="bg-white border border-slate-200 text-slate-400 py-3 rounded-xl font-black text-[10px] uppercase">✕ Falsa</button>
+              </div>
+            } @else {
+              <div class="text-center">
+                @if (alert.confirmed === true) {
+                  <span class="text-emerald-500 text-[10px] font-black uppercase italic tracking-widest">✓ Verificada</span>
+                } @else if (alert.confirmed === false) {
+                  <span class="text-amber-500 text-[10px] font-black uppercase italic tracking-widest">⚠ Falsa Alarma</span>
+                }
+              </div>
+            }
+          </div>
+        }
       </div>
-    </div>
+    } @empty {
+      <div class="p-10 text-center text-slate-400 uppercase font-black text-xs tracking-widest">No hay alertas registradas</div>
+    }
   </div>
 
   <div class="hidden md:block bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden mb-8">
@@ -59,37 +70,44 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-50">
-        <tr *ngFor="let alert of paginatedAlerts()" class="hover:bg-slate-50/50 transition-colors">
-          <td class="px-8 py-5 text-xs">
-            <p class="font-black text-slate-800">{{ alert.date_rep | date:'dd/MM/yyyy' }}</p>
-            <p class="text-[9px] text-slate-400 font-bold uppercase">{{ alert.date_rep | date:'HH:mm:ss' }}</p>
-          </td>
-          <td class="px-8 py-5">
-            <div class="flex flex-col">
-              <span class="font-black text-slate-700 text-sm tracking-tight leading-none">{{ getDeviceInfo(alert.device_id).alias }}</span>
-              <span class="text-[9px] text-purple-600 font-mono font-black mt-1 uppercase">{{ getDeviceInfo(alert.device_id).mac }}</span>
-            </div>
-          </td>
-          <td class="px-8 py-5 text-center">
-            <div class="inline-flex items-center px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100">
-              <span class="font-black text-slate-700 text-[10px] uppercase">{{ getDeviceInfo(alert.device_id).owner }}</span>
-            </div>
-          </td>
-          <td class="px-8 py-5 text-center font-black" [ngClass]="alert.fall_detected ? 'text-red-600' : 'text-emerald-600'">
-            {{alert.acc_z}} G
-          </td>
-          <td class="px-8 py-5 text-right">
-            <div *ngIf="alert.fall_detected; else stable">
-               <div *ngIf="alert.confirmed === null" class="flex gap-1 justify-end">
-                <button (click)="onConfirm(alert.id, true)" class="w-8 h-8 bg-slate-900 text-white rounded-lg hover:bg-emerald-600 transition-colors shadow-lg">✓</button>
-                <button (click)="onConfirm(alert.id, false)" class="w-8 h-8 bg-slate-100 text-slate-400 rounded-lg hover:bg-red-500 hover:text-white transition-colors">✕</button>
-               </div>
-               <span *ngIf="alert.confirmed === true" class="text-emerald-500 text-[9px] font-black uppercase tracking-[0.2em]">✓ Verificada</span>
-               <span *ngIf="alert.confirmed === false" class="text-amber-500 text-[9px] font-black uppercase tracking-[0.2em]">⚠ Falsa Alarma</span>
-            </div>
-            <ng-template #stable><span class="text-[8px] text-slate-200 font-black uppercase tracking-widest">Estable</span></ng-template>
-          </td>
-        </tr>
+        @for (alert of paginatedAlerts(); track alert.id) {
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="px-8 py-5 text-xs">
+              <p class="font-black text-slate-800">{{ alert.date_rep | date:'dd/MM/yyyy' }}</p>
+              <p class="text-[9px] text-slate-400 font-bold uppercase">{{ alert.date_rep | date:'HH:mm:ss' }}</p>
+            </td>
+            <td class="px-8 py-5">
+              <div class="flex flex-col">
+                <span class="font-black text-slate-700 text-sm tracking-tight leading-none">{{ getDeviceInfo(alert.device_id).alias }}</span>
+                <span class="text-[9px] text-purple-600 font-mono font-black mt-1 uppercase">{{ getDeviceInfo(alert.device_id).mac }}</span>
+              </div>
+            </td>
+            <td class="px-8 py-5 text-center">
+              <div class="inline-flex items-center px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100">
+                <span class="font-black text-slate-700 text-[10px] uppercase">{{ getDeviceInfo(alert.device_id).owner }}</span>
+              </div>
+            </td>
+            <td class="px-8 py-5 text-center font-black" [ngClass]="alert.fall_detected ? 'text-red-600' : 'text-emerald-600'">
+              {{alert.acc_z}} G
+            </td>
+            <td class="px-8 py-5 text-right">
+              @if (alert.fall_detected) {
+                @if (alert.confirmed === null) {
+                  <div class="flex gap-1 justify-end">
+                    <button (click)="onConfirm(alert.id, true)" class="w-8 h-8 bg-slate-900 text-white rounded-lg hover:bg-emerald-600 transition-colors shadow-lg">✓</button>
+                    <button (click)="onConfirm(alert.id, false)" class="w-8 h-8 bg-slate-100 text-slate-400 rounded-lg hover:bg-red-500 hover:text-white transition-colors">✕</button>
+                  </div>
+                } @else if (alert.confirmed === true) {
+                  <span class="text-emerald-500 text-[9px] font-black uppercase tracking-[0.2em]">✓ Verificada</span>
+                } @else {
+                  <span class="text-amber-500 text-[9px] font-black uppercase tracking-[0.2em]">⚠ Falsa Alarma</span>
+                }
+              } @else {
+                <span class="text-[8px] text-slate-200 font-black uppercase tracking-widest">Estable</span>
+              }
+            </td>
+          </tr>
+        }
       </tbody>
     </table>
   </div>

@@ -1,6 +1,6 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map } from 'rxjs'; // Importamos map para limpiar la respuesta del back
+import { inject, Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface Device {
@@ -12,7 +12,6 @@ export interface Device {
   user_id: number | null;
 }
 
-// Interfaz para manejar las respuestas envueltas del backend
 interface DeviceResponse {
   message: string;
   device: Device;
@@ -23,39 +22,36 @@ interface DeviceResponse {
 })
 export class DeviceService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/devices`;
+  private readonly apiUrl = `${environment.apiUrl}/devices`;
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
-  }
+  // OPCIONAL: Podemos tener una señal para el conteo global de dispositivos activos
+  // Esto es muy útil para mostrar contadores en el Dashboard sin volver a llamar a la API
+  // devices = signal<Device[]>([]);
 
   // Obtener todos los dispositivos
   getDevices(): Observable<Device[]> {
-    return this.http.get<Device[]>(this.apiUrl, { headers: this.getHeaders() });
+    // Ya no necesitas 'headers'. El authInterceptor se encarga de eso por ti.
+    return this.http.get<Device[]>(this.apiUrl);
   }
 
-  // Crear un nuevo dispositivo (POST) [Sincronizado con createDeviceController]
+  // Crear un nuevo dispositivo
   createDevice(deviceData: Partial<Device>): Observable<Device> {
-    return this.http.post<DeviceResponse>(this.apiUrl, deviceData, { headers: this.getHeaders() })
-      .pipe(map(res => res.device)); // Extraemos el objeto device de la respuesta
+    return this.http.post<DeviceResponse>(this.apiUrl, deviceData)
+      .pipe(map(res => res.device));
   }
 
-  // Actualizar dispositivo (PUT) [Sincronizado con updateDeviceController]
+  // Actualizar dispositivo
   updateDevice(id: number, deviceData: Partial<Device>): Observable<Device> {
-    return this.http.put<DeviceResponse>(`${this.apiUrl}/${id}`, deviceData, { headers: this.getHeaders() })
-      .pipe(map(res => res.device)); // Extraemos el objeto device de la respuesta
+    return this.http.put<DeviceResponse>(`${this.apiUrl}/${id}`, deviceData)
+      .pipe(map(res => res.device));
   }
 
-  // Borrar dispositivo (DELETE) [Sincronizado con deleteDeviceController]
+  // Borrar dispositivo
   deleteDevice(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
   getDeviceByUserId(userId: number): Observable<Device> {
-    return this.http.get<Device>(`${this.apiUrl}/user/${userId}`, { headers: this.getHeaders() });
+    return this.http.get<Device>(`${this.apiUrl}/user/${userId}`);
   }
 }

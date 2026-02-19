@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common'; 
 import { FormsModule } from '@angular/forms'; 
 import { AuthService } from '../../../core/services/auth.service';
 import { DeviceService, Device } from '../../../core/services/device.service';
@@ -9,7 +9,7 @@ import { User } from '../../../core/models/auth.models';
 @Component({
   selector: 'app-usuario-users',
   standalone: true,
-  imports: [CommonModule, FormsModule], 
+  imports: [FormsModule, DatePipe], 
   templateUrl: './usuario-users.component.html'
 })
 export class UsuarioUsersComponent implements OnInit {
@@ -27,9 +27,15 @@ export class UsuarioUsersComponent implements OnInit {
     this.loadProfile();
   }
 
+  // Comprueba si el teléfono es el generado automáticamente por Google (G-...) 
+  // o el marcador de posición (PTE-...)
+  isPhonePending(): boolean {
+    const phone = this.fullUserData()?.phone_num;
+    return !!phone && (phone.startsWith('G-') || phone.startsWith('PTE-'));
+  }
+
   loadProfile() {
     this.isLoading.set(true);
-    // Pedimos "mis datos" al servidor
     this.userService.getUserMe().subscribe({
       next: (user) => {
         if (user) {
@@ -39,7 +45,6 @@ export class UsuarioUsersComponent implements OnInit {
           this.fullUserData.set(user);
           this.resetForm();
 
-          // Buscamos el dispositivo vinculado a este ID
           this.deviceService.getDevices().subscribe(devices => {
             const found = devices.find(d => d.user_id === user.id);
             this.myDevice.set(found || null);

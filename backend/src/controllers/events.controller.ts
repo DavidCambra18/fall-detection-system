@@ -53,4 +53,38 @@ export class EventsController {
       res.status(500).json({ message: 'Error al actualizar evento' });
     }
   }
+
+  static async exportCSV(req: Request, res: Response) {
+    try {
+      const filters = {
+        user_id: req.query.user_id ? Number(req.query.user_id) : undefined,
+        device_id: req.query.device_id ? Number(req.query.device_id) : undefined,
+        start: req.query.start as string,
+        end: req.query.end as string
+      };
+
+      const events = await EventsService.getAll(filters);
+
+      if (events.length === 0) {
+        return res.status(404).json({ message: 'No hay datos para exportar' });
+      }
+
+      const csvHeaders = 'ID,User_ID,Device_ID,Acc_X,Acc_Y,Acc_Z,Fall_Detected,Date,Confirmed\n';
+      
+      const csvRows = events.map(e => 
+        `${e.id},${e.user_id},${e.device_id},${e.acc_x},${e.acc_y},${e.acc_z},${e.fall_detected},"${e.date_rep}",${e.confirmed}`
+      ).join('\n');
+
+      const csvContent = csvHeaders + csvRows;
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=historial_caidas.csv');
+      
+      return res.status(200).send(csvContent);
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Error al generar el CSV' });
+    }
+  }
 }

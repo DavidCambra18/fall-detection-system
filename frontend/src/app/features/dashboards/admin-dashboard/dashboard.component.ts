@@ -1,24 +1,23 @@
-// dashboard.component.ts refactorizado
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DecimalPipe, NgClass } from '@angular/common'; // Importaciones específicas
 import { Router, RouterModule } from '@angular/router'; 
 import { AuthService } from '../../../core/services/auth.service';
 import { EventService } from '../../../core/services/event.service';
 import { UserService } from '../../../core/services/user.service';
-import { DeviceService } from '../../../core/services/device.service'; // Asegúrate de tener este servicio
+import { DeviceService } from '../../../core/services/device.service'; 
 import { timer, Subscription, switchMap, forkJoin } from 'rxjs'; 
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule], 
+  imports: [NgClass, RouterModule, DecimalPipe], // Sin CommonModule
   templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   private eventService = inject(EventService);
   private userService = inject(UserService);
-  private deviceService = inject(DeviceService); // Inyectado
+  private deviceService = inject(DeviceService);
   private router = inject(Router);
 
   public Math = Math; 
@@ -48,7 +47,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const user = this.authService.currentUser();
     if (user) this.userName.set(user.name || user.email.split('@')[0]);
 
-    // Carga inicial de usuarios para el cache de nombres
     this.userService.getUsers().subscribe(users => {
       this.usersCache.set(users);
       this.totalUsers.set(users.length);
@@ -56,28 +54,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private startDataRefresh() {
-    // Polling cada 5 segundos
     this.poller = timer(0, 5000).pipe(
       switchMap(() => forkJoin({
         events: this.eventService.getEvents(),
-        devices: this.deviceService.getDevices() // Traemos dispositivos reales
+        devices: this.deviceService.getDevices()
       }))
     ).subscribe({
       next: ({ events, devices }) => {
         const hoy = this.getFechaHoyLocal();
         
-        // 1. Contador de Hardware Real
         this.totalDevices.set(devices.length); 
 
-        // 2. Caídas de hoy
         const caidasHoy = events.filter(e => e.fall_detected && e.date_rep.startsWith(hoy));
         this.todayFalls.set(caidasHoy.length);
 
-        // 3. Batería Baja (Basado en el estado real de la tabla 'devices')
         const lowBat = devices.filter((d: any) => d.status === 'low battery').length;
         this.lowBatteryCount.set(lowBat);
 
-        // 4. Emergencia activa (Caída detectada hoy NO confirmada)
         const emergencia = events.find(e => 
           e.fall_detected && 
           (e.confirmed === null || e.confirmed === undefined) && 
@@ -87,7 +80,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         this.updateRealTimeChart(events);
         
-        // 5. Telemetría en vivo (Últimos 3 dispositivos con actividad)
         const activeIds = [...new Set(events.map(e => e.device_id))].slice(-3);
         const telemetry = activeIds.map(id => {
           const deviceEvents = events.filter(e => e.device_id === id).slice(-15);
@@ -103,8 +95,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ... (confirmFall, updateRealTimeChart, getFechaHoyLocal se mantienen igual)
-  
   confirmFall(confirmed: boolean) {
     const event = this.activeEmergency();
     if (event && event.id) {

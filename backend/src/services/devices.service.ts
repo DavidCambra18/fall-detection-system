@@ -1,5 +1,6 @@
 import { pool } from '../db';
 import { isValidDeviceId, isValidMAC } from '../utils/validators';
+import { sendDiscordFallAlert } from "./discord.service";
 
 export interface DeviceInput {
   device_id_logic: string;
@@ -120,6 +121,21 @@ export const registerTelemetry = async (data: any) => {
      RETURNING *`,
     [dbUserId, dbDeviceId, accX, accY, accZ, fallDetected]
   );
+
+  // Enviar alerta a Discord solo si se detecta una caída
+  if (fallDetected) {
+    try {
+      await sendDiscordFallAlert({
+        deviceId: cleanId,
+        userId: dbUserId,
+        accX,
+        accY,
+        accZ,
+      });
+    } catch (err) {
+      console.error("Error enviando alerta a Discord", err);
+    }
+  }
 
   return result.rows[0];
 };

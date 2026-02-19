@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common'; // Solo importamos lo necesario
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EventService } from '../../../core/services/event.service';
@@ -9,7 +9,7 @@ import { UserService } from '../../../core/services/user.service';
 @Component({
   selector: 'app-cuidador-alerts',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [DatePipe, NgClass, FormsModule], // Quitamos CommonModule
   templateUrl: './cuidador-alerts.component.html'
 })
 export class CuidadorAlertsComponent implements OnInit {
@@ -20,7 +20,7 @@ export class CuidadorAlertsComponent implements OnInit {
   private router = inject(Router);
 
   allAlerts = signal<any[]>([]);
-  myPatients = signal<any[]>([]); // Cache para nombres reales
+  myPatients = signal<any[]>([]); 
   searchTerm = signal<string>('');
   currentPage = signal<number>(1);
   pageSize = 10;
@@ -39,11 +39,11 @@ export class CuidadorAlertsComponent implements OnInit {
   }
 
   loadInitialData() {
-    const carerId = this.authService.currentUser()?.id;
+    const user = this.authService.currentUser();
+    const carerId = user?.id;
     if (!carerId) return;
 
     this.isLoading.set(true);
-    // Cargamos primero los pacientes para tener sus nombres
     this.userService.getUsersCaredByCarer(carerId).subscribe(users => {
       this.myPatients.set(users);
       this.loadHistory();
@@ -53,7 +53,6 @@ export class CuidadorAlertsComponent implements OnInit {
   loadHistory() {
     this.eventService.getEvents().subscribe(events => {
       const patientIds = this.myPatients().map(p => p.id);
-      // Filtramos solo eventos de MIS pacientes reales
       const filtered = events.filter(e => 
         patientIds.includes(Number(e.user_id)) && e.fall_detected === true
       );
@@ -62,8 +61,9 @@ export class CuidadorAlertsComponent implements OnInit {
     });
   }
 
-  filteredAlerts = computed(() => {
-    const term = this.searchTerm().toLowerCase();
+  // Primero calculamos el total de filtrados (para paginación y títulos)
+  allFilteredData = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
     const filterId = this.userIdParam();
     let data = this.allAlerts();
 
@@ -73,18 +73,16 @@ export class CuidadorAlertsComponent implements OnInit {
         this.formatPatientName(a.user_id).toLowerCase().includes(term)
       );
     }
+    return data;
+  });
 
+  filteredAlerts = computed(() => {
     const startIndex = (this.currentPage() - 1) * this.pageSize;
-    return data.slice(startIndex, startIndex + this.pageSize);
+    return this.allFilteredData().slice(startIndex, startIndex + this.pageSize);
   });
 
   totalPages = computed(() => {
-    const term = this.searchTerm().toLowerCase();
-    const filterId = this.userIdParam();
-    let data = this.allAlerts();
-    if (filterId) data = data.filter(a => Number(a.user_id) === filterId);
-    if (term) data = data.filter(a => this.formatPatientName(a.user_id).toLowerCase().includes(term));
-    return Math.ceil(data.length / this.pageSize) || 1;
+    return Math.ceil(this.allFilteredData().length / this.pageSize) || 1;
   });
 
   formatPatientName(id: number): string {
