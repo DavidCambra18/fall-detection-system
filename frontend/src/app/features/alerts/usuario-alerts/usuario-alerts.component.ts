@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { DatePipe, NgClass } from '@angular/common'; // Solo lo necesario
+import { DatePipe, NgClass } from '@angular/common';
 import { EventService } from '../../../core/services/event.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Report } from '../../../core/models/report.models';
@@ -7,20 +7,37 @@ import { Report } from '../../../core/models/report.models';
 @Component({
   selector: 'app-usuario-alerts',
   standalone: true,
-  imports: [DatePipe, NgClass], // Reemplazamos CommonModule por pipes y directivas específicas
+  imports: [DatePipe, NgClass], 
   templateUrl: './usuario-alerts.component.html'
 })
 export class UsuarioAlertsComponent implements OnInit {
   private eventService = inject(EventService);
   private authService = inject(AuthService);
 
-  myAlerts = signal<any[]>([]); // Usamos any o extendemos Report para incluir isPanicButton
+  myAlerts = signal<any[]>([]); 
   isLoading = signal<boolean>(true);
   
   currentPage = signal<number>(1);
   itemsPerPage = 6;
 
   ngOnInit() { this.loadMyHistory(); }
+
+  exportarMiHistorial() {
+    const miId = this.authService.currentUser()?.id;
+    if (!miId) return;
+
+    this.eventService.exportToCsv(miId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mi_historial_caete.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => console.error('Error al exportar:', err)
+    });
+  }
 
   loadMyHistory() {
     const user = this.authService.currentUser();

@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { NgClass } from '@angular/common'; // Importación específica
+import { NgClass } from '@angular/common'; 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router'; 
 import { AuthService } from '../../../core/services/auth.service';
@@ -7,17 +7,19 @@ import { UserService } from '../../../core/services/user.service';
 import { DeviceService } from '../../../core/services/device.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { EventService } from '../../../core/services/event.service';
 
 @Component({
   selector: 'app-cuidador-users',
   standalone: true,
-  imports: [NgClass, FormsModule], // Quitamos CommonModule
+  imports: [NgClass, FormsModule], 
   templateUrl: './mis-usuarios.component.html'
 })
 export class MisUsuariosComponent implements OnInit {
   private router = inject(Router);
   private userService = inject(UserService);
   private deviceService = inject(DeviceService);
+  private eventService = inject(EventService);
   public authService = inject(AuthService);
 
   allUsers = signal<any[]>([]);
@@ -28,6 +30,22 @@ export class MisUsuariosComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadMyPatients();
+  }
+
+  exportarCSV(userId: number) {
+    this.eventService.exportToCsv(userId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `historial_paciente_${userId}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => console.error('Error al exportar:', err)
+    });
   }
 
   loadMyPatients() {
@@ -64,6 +82,7 @@ export class MisUsuariosComponent implements OnInit {
       error: () => this.isLoading.set(false)
     });
   }
+  
 
   // --- Lógica de filtrado reactiva ---
   filteredData = computed(() => {

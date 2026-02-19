@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Observable, map } from 'rxjs';
 import { Report } from '../models/report.models';
@@ -40,4 +40,16 @@ export class EventService {
   getEventsByUserId(userId: number): Observable<Report[]> {
     return this.http.get<Report[]>(`${this.API_URL}/user/${userId}`);
   }
+
+  exportToCsv(userId?: number): Observable<Blob> {
+  // Construimos los parámetros de búsqueda (filtros)
+  let params = new HttpParams();
+  if (userId) params = params.set('user_id', userId.toString());
+
+  return this.http.get(`${this.API_URL}/export`, {
+    params,
+    responseType: 'blob' 
+  });
 }
+}
+
