@@ -107,7 +107,12 @@ export async function updateUserController(req: Request, res: Response) {
     const targetUser = await getUserById(targetUserId);
     if (!targetUser) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-    // Permisos
+    if (req.body.role_id !== undefined && requester.role_id !== 1) {
+      return res.status(403).json({ 
+        message: 'No tienes permisos para modificar el rol de usuario' 
+      });
+    }
+
     if (requester.role_id === 1) {
       // Admin puede editar a cualquiera
     } else if (requester.role_id === 2 && targetUser.carer_id === requester.id) {
