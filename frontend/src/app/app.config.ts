@@ -31,15 +31,19 @@ export const appConfig: ApplicationConfig = {
             provider: new GoogleLoginProvider(
               environment.googleClientId,
               {
-                // DESACTIVA el popup automático (One Tap)
-                oneTapEnabled: false, 
-                // Indica que solo queremos el flujo de login clásico
-                plugin_name: 'login' 
+                oneTapEnabled: false,
+                // Esto ayuda a mitigar errores de comunicación en entornos cross-origin
+                prompt: 'select_account',
+                // Forzamos scopes básicos para que la respuesta sea ligera
+                scopes: 'email profile'
               }
             )
           }
         ],
-        onError: (err: any) => console.error('Social Auth Error:', err)
+        onError: (err: any) => {
+          // Si el error es de COOP, aquí verás más info
+          console.error('Social Auth Error:', err);
+        }
       } as SocialAuthServiceConfig
     }
   ]
