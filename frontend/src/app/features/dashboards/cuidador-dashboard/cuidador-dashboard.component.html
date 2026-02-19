@@ -3,18 +3,18 @@
   @if (activeAlert()) {
     <div class="mb-8 animate-bounce">
       <div [ngClass]="activeAlert()?.isPanicButton ? 'bg-amber-500 border-amber-300 shadow-amber-900/20' : 'bg-red-600 border-red-400 shadow-red-900/20'" 
-           class="border-2 md:border-4 rounded-4xl md:rounded-[3rem] p-5 md:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 transition-colors duration-500">
+           class="border-2 md:border-4 rounded-3xl md:rounded-[3rem] p-5 md:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
         
         <div class="flex items-center gap-4 md:gap-8">
-          <div class="w-16 h-16 md:w-20 md:h-20 bg-white rounded-2xl md:rounded-3xl flex items-center justify-center animate-pulse shrink-0 shadow-lg">
+          <div class="w-16 h-16 md:w-20 md:h-20 bg-white rounded-2xl md:rounded-3xl flex items-center justify-center animate-pulse shrink-0">
             <span class="text-3xl md:text-5xl">{{ activeAlert()?.isPanicButton ? '🆘' : '🚨' }}</span>
           </div>
           <div class="text-center md:text-left">
-            <h2 class="text-white font-black text-xl md:text-3xl uppercase italic tracking-tighter leading-none">
-              {{ activeAlert()?.isPanicButton ? '¡BOTÓN DE EMERGENCIA ACTIVADO!' : '¡CAÍDA DETECTADA!' }}
+            <h2 class="text-white font-black text-lg md:text-3xl uppercase italic tracking-tighter leading-none">
+              {{ activeAlert()?.isPanicButton ? '¡BOTÓN DE EMERGENCIA!' : '¡CAÍDA DETECTADA!' }}
             </h2>
-            <p class="text-white/90 font-bold text-sm md:text-lg mt-1 italic">
-              {{ activeAlert()?.isPanicButton ? 'Asistencia solicitada manualmente por' : 'Urgencia detectada para' }} 
+            <p class="text-white/90 font-bold text-xs md:text-lg mt-1 italic">
+              {{ activeAlert()?.isPanicButton ? 'Asistencia solicitada por' : 'Urgencia para' }} 
               <span class="text-white underline font-black italic">{{ getPatientName(activeAlert()!.user_id) }}</span>
             </p>
           </div>
@@ -23,13 +23,13 @@
         <a routerLink="/history-cuidador" 
            [ngClass]="activeAlert()?.isPanicButton ? 'text-amber-600' : 'text-red-600'"
            class="w-full md:w-auto bg-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-[10px] md:text-xs text-center shadow-xl active:scale-95 transition-all">
-          Atender de inmediato
+          Atender ahora
         </a>
       </div>
     </div>
   }
 
-  <header class="mb-8 md:mb-10 text-center md:text-left">
+  <header class="mb-8 text-center md:text-left">
     <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Panel del Cuidador</h1>
     <p class="text-blue-500 font-black text-[9px] uppercase tracking-[0.4em] mt-2 italic">
       Sincronizado con Base de Datos · {{ authService.currentUser()?.name }}
@@ -37,42 +37,100 @@
   </header>
 
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-10">
-    <div class="bg-white p-6 md:p-8 rounded-4xl md:rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center md:items-start">
-      <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">Pacientes Asignados</p>
-      <h4 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tighter">{{ stats().total }}</h4>
+    <div class="bg-white p-6 rounded-3xl md:rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center md:items-start">
+      <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Pacientes</p>
+      <h4 class="text-3xl font-black text-slate-800 tracking-tighter">{{ stats().total }}</h4>
     </div>
 
     <div [ngClass]="stats().critical > 0 ? 'bg-red-600 shadow-red-200' : 'bg-slate-900 shadow-slate-200'" 
-         class="p-6 md:p-8 rounded-4xl md:rounded-[2.5rem] shadow-xl transition-colors duration-500 flex flex-col items-center md:items-start">
-      <p class="text-[9px] font-black text-white/50 uppercase tracking-widest mb-2 italic">Alertas Pendientes</p>
-      <h4 class="text-3xl md:text-4xl font-black text-white tracking-tighter">{{ stats().critical }}</h4>
+         class="p-6 rounded-3xl md:rounded-[2.5rem] shadow-xl flex flex-col items-center md:items-start transition-colors">
+      <p class="text-[9px] font-black text-white/50 uppercase tracking-widest mb-1 italic">Alertas Pendientes</p>
+      <h4 class="text-3xl font-black text-white tracking-tighter">{{ stats().critical }}</h4>
     </div>
 
-    <div class="bg-white p-6 md:p-8 rounded-4xl md:rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center md:items-start">
-      <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic">Dispositivos Activos</p>
-      <h4 class="text-3xl md:text-4xl font-black text-emerald-500 tracking-tighter">{{ stats().active }}</h4>
+    <div class="bg-white p-6 rounded-3xl md:rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center md:items-start">
+      <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Sensores Online</p>
+      <h4 class="text-3xl font-black text-emerald-500 tracking-tighter">{{ stats().active }}</h4>
     </div>
   </div>
 
-  <div class="mt-8">
-    <div class="flex flex-col sm:flex-row items-center justify-between mb-6 px-2 gap-2">
-      <h2 class="text-xl font-black text-slate-800 uppercase italic tracking-tighter">Análisis de Telemetría</h2>
-      <div class="flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-        <span class="text-[8px] font-black uppercase text-blue-500 tracking-widest italic">Live Data</span>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <div class="lg:col-span-2">
+      <div class="flex items-center justify-between mb-4 px-2">
+        <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest italic">Historial Reciente</h3>
+        <span class="animate-pulse text-[9px] font-black text-emerald-500 uppercase">En Vivo •</span>
+      </div>
+      
+      <div class="bg-white rounded-4xl md:rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse min-w-125">
+            <thead>
+              <tr class="bg-slate-50/50">
+                <th class="p-5 text-[9px] font-black text-slate-400 uppercase italic">Paciente</th>
+                <th class="p-5 text-[9px] font-black text-slate-400 uppercase italic">Tipo</th>
+                <th class="p-5 text-[9px] font-black text-slate-400 uppercase italic">Hora</th>
+                <th class="p-5 text-[9px] font-black text-slate-400 uppercase italic">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+              @for (event of latestEvents(); track event.id) {
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                  <td class="p-5">
+                    <p class="font-black text-slate-800 tracking-tight text-xs">{{ getPatientName(event.user_id) }}</p>
+                  </td>
+                  <td class="p-5">
+                    <span [ngClass]="event.fall_detected ? 'text-red-600' : 'text-slate-400'" class="text-[10px] font-black uppercase italic">
+                      {{ event.fall_detected ? '⚠️ Caída' : '✓ Normal' }}
+                    </span>
+                  </td>
+                  <td class="p-5">
+                    <p class="text-[10px] font-bold text-slate-400">{{ event.date_rep | date:'HH:mm' }}</p>
+                  </td>
+                  <td class="p-5">
+                    <span [ngClass]="{
+                      'bg-red-100 text-red-700': event.confirmed === false,
+                      'bg-amber-100 text-amber-700': event.confirmed === true,
+                      'bg-slate-100 text-slate-400': event.confirmed === null
+                    }" class="px-2 py-1 rounded-lg text-[8px] font-black uppercase italic">
+                      {{ event.confirmed === null ? 'Pendiente' : (event.confirmed ? 'Falso' : 'Real') }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div class="bg-white p-2 md:p-4 rounded-[2.5rem] md:rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden h-112.5 md:h-150 relative">
-      <iframe 
-        src="URL_DE_GRAFANA_AQUI" 
-        class="w-full h-full rounded-4xl md:rounded-[3rem]" 
-        frameborder="0">
-      </iframe>
+    <div>
+      <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest italic mb-4 px-2">Estado de Sensores</h3>
+      <div class="space-y-3">
+        @for (device of devices(); track device.id) {
+          <div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all">
+            <div class="flex items-center gap-3">
+              <div [ngClass]="device.status === 'active' ? 'bg-emerald-50 text-emerald-500' : 'bg-slate-50 text-slate-300'" 
+                   class="w-10 h-10 rounded-xl flex items-center justify-center text-lg">
+                {{ device.status === 'active' ? '📡' : '💤' }}
+              </div>
+              <div>
+                <p class="font-black text-slate-800 text-xs leading-none">{{ device.alias || 'Sensor s/n' }}</p>
+                <p class="text-[8px] font-bold text-slate-400 uppercase mt-1 tracking-tighter">ID: {{ device.device_id_logic }}</p>
+              </div>
+            </div>
+            <div [ngClass]="{
+              'bg-emerald-500': device.status === 'active',
+              'bg-amber-500': device.status === 'low battery',
+              'bg-slate-200': device.status === 'inactive'
+            }" class="w-2 h-2 rounded-full shadow-lg"></div>
+          </div>
+        } @empty {
+          <div class="bg-slate-100/50 border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center">
+            <p class="text-[9px] font-black text-slate-400 uppercase italic">Sin dispositivos vinculados</p>
+          </div>
+        }
+      </div>
     </div>
-    
-    <p class="text-center text-[8px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-6 italic">
-      Métricas procesadas en tiempo real desde PostgreSQL
-    </p>
   </div>
 </div>
