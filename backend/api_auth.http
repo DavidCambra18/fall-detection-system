@@ -155,11 +155,11 @@ Content-Type: application/json
 
 
 ### Enviar Telemetría VERCEL (Ruta y Puerto corregidos)
-POST https://betafalldetectionsystem.vercel.app/api/telemetry
+POST https://fall-detection-system-6qw5.onrender.com/api/telemetry
 Content-Type: application/json
 
 {
-  "deviceId": "38182B841494",
+  "deviceId": "38:18:2B:84:14:94",
   "accX": 0.45,
   "accY": -0.12,
   "accZ": 9.81,
