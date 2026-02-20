@@ -33,7 +33,7 @@ El procesamiento intensivo se realiza en memoria mediante Redis, mientras que lo
 ---
 
 # 📂 Estructura del Repositorio
-
+```
 fall-detection-system/
 │
 ├── device/ # Código y esquema del ESP32
@@ -47,7 +47,7 @@ fall-detection-system/
 ├── README.md
 │
 └── .gitignore
-
+```
 ---
 
 # 🛠️ Especificaciones Técnicas
