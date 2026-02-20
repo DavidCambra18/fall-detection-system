@@ -2,31 +2,57 @@
 
 ## 3.1 Introducción
 
-Este manual explica el uso del sistema **fall-detection-system** desde el punto de vista del usuario final y del cuidador.
+El presente manual describe el funcionamiento del sistema **fall-detection-system** desde la perspectiva del usuario final y del cuidador.
+
+Su objetivo es explicar de manera clara y estructurada cómo acceder al sistema, interpretar la información mostrada y utilizar sus principales funcionalidades.
+
+---
 
 ## 3.2 Acceso al sistema
 
-El acceso se realiza mediante usuario y contraseña.  
-La interfaz mostrada depende del rol del usuario.
+El acceso a la aplicación se realiza mediante autenticación con:
+
+- Correo electrónico y contraseña
+- Inicio de sesión mediante proveedor externo (Google)
+
+Tras la autenticación, la interfaz se adapta automáticamente en función del rol asignado al usuario (persona usuaria o cuidador).
+
+El sistema incorpora mecanismos de control de acceso que restringen determinadas funcionalidades según el perfil autenticado.
+
+---
 
 ## 3.3 Uso para personas usuarias
 
-Las personas usuarias pueden:
-- Consultar el estado del dispositivo
-- Ver alertas registradas
-- Utilizar el botón de emergencia
+Las personas usuarias disponen de las siguientes funcionalidades:
+
+- Consulta del estado del dispositivo asociado.
+- Visualización del historial de eventos registrados.
+- Activación manual de alerta mediante el botón de emergencia físico.
+
+El sistema monitoriza de forma continua la actividad del dispositivo IoT y registra automáticamente cualquier evento de caída detectado.
+
+---
 
 ## 3.4 Uso para cuidadores
 
-Los cuidadores pueden:
+El perfil de cuidador dispone de funcionalidades ampliadas para la supervisión de múltiples usuarios.
 
-- Visualizar alertas de caídas
-- Consultar el historial de eventos
-- Identificar el usuario y dispositivo asociados
+Entre sus capacidades principales se incluyen:
+
+- Visualización en tiempo real de alertas de caída.
+- Consulta detallada del historial de eventos.
+- Identificación del usuario y dispositivo asociados a cada evento.
+- Análisis gráfico de la información registrada.
+
+---
 
 ### 3.4.1 Gestión de alertas
 
-Cuando se detecta una caída:
-1. El sistema registra el evento
-2. Se genera una alerta visible
-3. El cuidador puede actuar en consecuencia
+Cuando el sistema detecta una caída confirmada, el flujo es el siguiente:
+
+1. El backend registra el evento en la base de datos.
+2. Se genera una alerta visible en la interfaz web.
+3. El cuidador puede consultar los detalles del evento.
+4. Se posibilita la actuación inmediata en función del contexto.
+
+Este mecanismo permite una respuesta rápida ante situaciones de riesgo.
