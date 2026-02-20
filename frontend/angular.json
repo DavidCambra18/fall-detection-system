@@ -22,7 +22,8 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/assets"
             ],
             "styles": [
               "src/styles.css"
@@ -62,7 +63,6 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "buildTarget": "frontend:build",
-            "proxyConfig": "proxy.conf.json",
             "headers": {
               "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
               "Cross-Origin-Embedder-Policy": "unsafe-none"

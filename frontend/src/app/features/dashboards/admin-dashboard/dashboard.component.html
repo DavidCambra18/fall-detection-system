@@ -1,4 +1,4 @@
-@if (activeEmergency()) {
+@if (activeEmergency() && authService.currentUser()?.role_id !== 1) {
   <div class="fixed inset-0 pointer-events-none z-100 border-8 md:border-16 border-red-500/20 shadow-[inset_0_0_100px_rgba(239,68,68,0.3)] animate-pulse"></div>
 
   <div class="fixed top-4 md:top-8 left-1/2 -translate-x-1/2 z-110 w-[95%] max-w-xl px-4 animate-in slide-in-from-top duration-500">
@@ -74,7 +74,6 @@
 
   <div class="bg-white p-6 md:p-10 rounded-4xl md:rounded-[3rem] border border-slate-100 shadow-sm mb-8 md:mb-12">
     <h2 class="text-lg md:text-xl font-black text-slate-800 uppercase italic tracking-tighter mb-8 md:mb-10">Actividad Global (24h)</h2>
-    
     <div class="overflow-x-auto pb-4">
       <div class="flex items-end justify-between h-48 min-w-150 gap-2 px-2">
         @for (data of activityData(); track data.hour) {
@@ -114,8 +113,8 @@
                 <div class="h-8 bg-slate-50 rounded-lg p-1 flex items-end gap-0.5 overflow-hidden">
                    @for (point of dev.history; track $index) {
                       <div [style.height.%]="Math.abs(point[axis]) * 4 + 10"
-                           [ngClass]="point.fall_detected ? 'bg-red-500' : 'bg-blue-400'"
-                           class="flex-1 rounded-sm"></div>
+                            [ngClass]="point.fall_detected ? 'bg-red-500' : 'bg-blue-400'"
+                            class="flex-1 rounded-sm"></div>
                    }
                 </div>
               </div>
