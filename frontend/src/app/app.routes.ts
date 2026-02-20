@@ -20,8 +20,13 @@ import { UsuarioUsersComponent } from './features/users/usuario-users/usuario-us
 
 // DISPOSITIVOS
 import { DevicesComponent } from './features/devices/devices.component';
+import { WelcomeComponent } from './features/welcome/welcome';
 
 export const routes: Routes = [
+
+  { path: '', component: WelcomeComponent }, // Página de inicio vacía
+  { path: 'login', component: LoginComponent },
+
   // Rutas Públicas
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
