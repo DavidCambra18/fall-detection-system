@@ -105,8 +105,7 @@ La comunicación entre los distintos elementos del sistema se realiza de la sigu
 
 ## 1.4 Diagrama de arquitectura
 
-📌 **Aquí se incluirá el diagrama de arquitectura del sistema**  
-Archivo: `arquitectura-general.png`
+![Diagrama de arquitectura](./arquitectura-general.png)
 
 ---
 
@@ -122,5 +121,4 @@ El flujo operativo del sistema puede describirse en las siguientes etapas:
 6. Almacenamiento persistente en PostgreSQL.
 7. Visualización de la alerta en el frontend y generación de notificaciones.
 
-📌 **Aquí se incluirá el diagrama de flujo de detección de caídas**  
-Archivo: `diagrama-flujo-deteccion.png`
+![Diagrama de flujo de detección de caídas](./diagrama-flujo-deteccion.png)

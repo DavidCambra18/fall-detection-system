@@ -55,5 +55,4 @@ Este diseño garantiza integridad referencial y coherencia entre usuarios, dispo
 
 ## 2.4 Diagrama Entidad-Relación
 
-📌 **Aquí se incluirá el diagrama ER del sistema**  
-Archivo: `diagrama-er.png`
+![Diagrama ER del sistema](./diagrama-er.png)
