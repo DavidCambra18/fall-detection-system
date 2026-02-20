@@ -12,6 +12,7 @@ const char* ssid = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
 const char* serverUrl = SERVER_URL;
 
+WiFiClientSecure secureClient;
 Adafruit_MPU6050 mpu;
 sensors_event_t a, g, temp; 
 String deviceId;
@@ -32,9 +33,7 @@ const unsigned long debounceDelay = 500;
 // --- Funciones ---
 
 String getDeviceId() {
-    String id = WiFi.macAddress();
-    id.replace(":", "");
-    return id;
+return "ESP32-004";
 }
 
 float calculateInclination(float x, float y, float z) {
@@ -45,44 +44,51 @@ float calculateInclination(float x, float y, float z) {
 
 void sendData(float x, float y, float z, bool fall) {
     if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("ERROR: WiFi desconectado.");
-        return;
+        Serial.println("WiFi perdido. Reconectando...");
+        WiFi.disconnect();
+        WiFi.begin(ssid, password);
+        
+        int wait = 0;
+        while (WiFi.status() != WL_CONNECTED && wait < 20) {
+            delay(500);
+            Serial.print(".");
+            wait++;
+        }
+        
+        if (WiFi.status() != WL_CONNECTED) {
+            Serial.println("\nERROR: No se pudo restablecer el WiFi.");
+            return; 
+        }
+        Serial.println("\n✓ WiFi restablecido.");
     }
 
-    WiFiClientSecure *client = new WiFiClientSecure;
-    
-    if(!client) {
-        Serial.println("Error: No se pudo crear cliente HTTPS");
-        return;
-    }
-
-    // CRÍTICO: Deshabilitar verificación SSL para Vercel
-    client->setInsecure();
+    // 1. Limpiar cualquier conexión fantasma antes de empezar
+    secureClient.stop(); // <--- AÑADIR ESTO
+    secureClient.setInsecure();
     
     HTTPClient http;
-    
+    // 2. CRÍTICO: Render no se lleva bien con la reutilización de sesiones
+    http.setReuse(false); // <--- CAMBIAR A FALSE
+
     Serial.println("\n========== ENVIANDO DATOS ==========");
     Serial.printf("URL: %s\n", serverUrl);
     Serial.printf("Device ID: %s\n", deviceId.c_str());
-    Serial.printf("Estado de Caída (fallDetected): %s\n", fall ? "TRUE (PELIGRO)" : "FALSE (TODO BIEN)");
+    Serial.printf("Estado de Caída: %s\n", fall ? "TRUE (PELIGRO)" : "FALSE (TODO BIEN)");
 
-    // IMPORTANTE: Usar el cliente seguro con begin()
-    if (!http.begin(*client, serverUrl)) {
+    if (!http.begin(secureClient, serverUrl)) {
         Serial.println("ERROR: No se pudo iniciar conexión HTTP");
-        delete client;
         return;
     }
 
-    http.setTimeout(10000); // 10 segundos de timeout
+    http.setTimeout(50000); 
     http.addHeader("Content-Type", "application/json");
     http.addHeader("User-Agent", "ESP32-FallDetector/1.0");
 
-    // Crear JSON
     StaticJsonDocument<256> doc;
     doc["deviceId"] = deviceId;
-    doc["accX"] = serialized(String(x, 2)); // Limitar decimales
-    doc["accY"] = serialized(String(y, 2));
-    doc["accZ"] = serialized(String(z, 2));
+    doc["accX"] = x;
+    doc["accY"] = y;
+    doc["accZ"] = z;
     doc["fallDetected"] = fall;
 
     String requestBody;
@@ -104,7 +110,9 @@ void sendData(float x, float y, float z, bool fall) {
     }
     
     http.end();
-    delete client;
+    
+    // 3. Liberar la memoria SSL inmediatamente después de usarla
+    secureClient.stop(); // <--- AÑADIR ESTO AL FINAL
     Serial.println("====================================\n");
 }
 
@@ -118,18 +126,47 @@ void setup() {
     Serial.printf("Device ID: %s\n", deviceId.c_str());
     
     pinMode(BUTTON_PIN, INPUT_PULLUP);
-    Wire.begin(21, 22); 
+    
+    Serial.println("Inicializando I2C...");
+    Wire.begin(21, 22); // SDA=21, SCL=22
+    Wire.setClock(400000); // 400kHz
+    delay(100); // Tiempo para estabilizar
 
-    Serial.println("Inicializando MPU6050...");
-    if (!mpu.begin()) {
-        Serial.println("FALLO MPU6050.");
-        while (1) { delay(100); } 
+    Serial.println("Buscando MPU6050...");
+    if (!mpu.begin(0x68, &Wire)) { // Dirección I2C explícita 0x68
+        Serial.println("FALLO MPU6050. Verifica conexiones:");
+        Serial.println("  - VCC → 3.3V");
+        Serial.println("  - GND → GND");
+        Serial.println("  - SDA → GPIO 21");
+        Serial.println("  - SCL → GPIO 22");
+        Serial.println("\nBuscando dispositivos I2C...");
+        
+        // Escaneo I2C
+        byte count = 0;
+        for (byte i = 1; i < 127; i++) {
+            Wire.beginTransmission(i);
+            if (Wire.endTransmission() == 0) {
+                Serial.printf("Dispositivo encontrado en 0x%02X\n", i);
+                count++;
+            }
+        }
+        if (count == 0) {
+            Serial.println("No se encontró ningún dispositivo I2C.");
+        }
+        while (1) { delay(100); }
     }
     Serial.println("✓ MPU6050 inicializado");
     mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
 
     WiFi.mode(WIFI_STA);
+    
+    // Configura DNS manuales (Google y Cloudflare) para evitar el error "DNS Failed"
+    IPAddress dns1(8, 8, 8, 8);
+    IPAddress dns2(1, 1, 1, 1);
+    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, dns1, dns2);
+
     WiFi.begin(ssid, password);
+    WiFi.setSleep(false); // <--- AÑADE ESTA LÍNEA
     Serial.print("Conectando WiFi");
     
     int attempts = 0;
