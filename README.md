@@ -1,95 +1,150 @@
-# **FALL DETECTION SYSTEM**
+# FALL DETECTION SYSTEM
 
-## Descripción del proyecto
-Este proyecto consiste en el diseño y desarrollo de un sistema asistencial integral para mejorar la seguridad y autonomía de personas mayores o con movilidad reducida. El sistema detecta caídas mediante un dispositivo IoT y centraliza la información en una plataforma web para que cuidadores y administradores puedan actuar ante emergencias.
+Sistema inteligente de detección de caídas basado en arquitectura IoT y plataforma web full-stack.
 
+---
 
-## 📂 Estructura del Repositorio
+## 📌 Descripción del Proyecto
 
-```text
+**Fall Detection System** es una solución tecnológica orientada a mejorar la seguridad y autonomía de personas mayores o con movilidad reducida.
+
+El sistema combina:
+
+- Un **dispositivo IoT basado en ESP32** que monitoriza continuamente la aceleración.
+- Un **backend con procesamiento en tiempo real**.
+- Una **plataforma web** para la gestión y visualización de eventos.
+- Una arquitectura de base de datos híbrida para optimizar rendimiento y persistencia.
+
+Cuando se detecta una posible caída, el sistema procesa los datos en tiempo real y, si se confirma el evento, genera una alerta visible para cuidadores o administradores.
+
+---
+
+# 🏗️ Arquitectura General
+
+El sistema se compone de cuatro capas principales:
+
+1. **Captura de datos** (ESP32 + acelerómetro + botón de emergencia)
+2. **Procesamiento en tiempo real** (Redis)
+3. **Persistencia de información** (PostgreSQL)
+4. **Visualización y gestión** (Frontend web)
+
+El procesamiento intensivo se realiza en memoria mediante Redis, mientras que los eventos confirmados se almacenan de forma persistente en PostgreSQL.
+
+---
+
+# 📂 Estructura del Repositorio
+
 fall-detection-system/
 │
-├── device/
+├── device/ # Código y esquema del ESP32
 │
-├── backend/
+├── backend/ # API REST (Node.js + Express + TypeScript)
 │
-├── frontend/
+├── frontend/ # Aplicación web (React + Next.js + TypeScript)
 │
-├── docs/
+├── docs/ # Documentación técnica y funcional
 │
 ├── README.md
 │
 └── .gitignore
-```
 
-## 🛠️ Especificaciones Técnicas
+---
 
-### 1. Dispositivo IoT (ESP32)
-* **Hardware**: Placa ESP32, sensor acelerómetro, inclinómetro, LED/Buzzer y pulsador de emergencia.
-* **Funcionalidades**: Lectura continua del sensor, detección de evento sospechoso de caída e identificación del dispositivo (ID o MAC).
-* **Comunicación**: Envío de datos al backend vía HTTP REST o MQTT.
-* **Conexionado**: Esquema de conexion en la carpeta device/esp32/esquema
+# 🛠️ Especificaciones Técnicas
 
-### 2. Backend (API REST)
-* **Tecnologías**: Node.js + Express + TypeScript.
-* **Funcionalidades principales**:
-    * **Autenticación y autorización**.
-    * **Recepción de datos** enviados por el ESP32.
-    * **Gestión integral de**: Usuarios, Dispositivos y Eventos de caída.
-    * **API REST documentada**.
-* **Seguridad**: Login protegido, endpoints restringidos por roles y validación de datos.
-* **Base de datos**: Uso de una base de datos relacional.
+## 1️⃣ Dispositivo IoT (ESP32)
 
-### 3. Frontend Web
-* **Tecnologías**: React con diseño responsive.
-* **Funcionalidades principales** :
-    * **Login**.
-    * **Panel principal (Dashboard)**.
-    * **Listado de dispositivos**.
-    * **Historial de eventos**.
-    * **Alertas de caídas**.
-    * **Gráficas (opcional)**.
-    * **Diferente vista según rol**.
+**Hardware:**
+- Placa ESP32
+- Acelerómetro externo
+- Botón físico de emergencia
+- Sistema de señalización (LED/Buzzer)
 
-## 🔑 Gestión de Usuarios y Roles
+**Funcionalidades:**
+- Lectura continua de valores de aceleración.
+- Evaluación preliminar de eventos sospechosos.
+- Identificación única del dispositivo.
+- Envío de datos al backend en formato JSON.
+
+---
+
+## 2️⃣ Backend (API REST)
+
+**Tecnologías:**
+- Node.js
+- Express
+- TypeScript
+- Redis (procesamiento en memoria)
+- PostgreSQL (persistencia relacional)
+
+**Responsabilidades:**
+- Autenticación y autorización basada en roles.
+- Recepción de datos enviados por el ESP32.
+- Procesamiento en tiempo real mediante Redis.
+- Evaluación de umbrales de aceleración.
+- Registro persistente de eventos confirmados.
+- Gestión de Usuarios, Dispositivos y Eventos.
+- Protección de endpoints mediante middleware de seguridad.
+
+---
+
+## 3️⃣ Frontend Web
+
+**Tecnologías:**
+- React
+- Next.js
+- TypeScript
+- Tailwind CSS
+
+**Funcionalidades principales:**
+- Sistema de Login.
+- Dashboard principal.
+- Gestión de usuarios.
+- Gestión de dispositivos.
+- Historial de eventos.
+- Visualización gráfica de datos.
+- Diferenciación de vistas según rol.
+- Integraciones externas (ChatGPT, Discord).
+
+---
+
+# 🔐 Gestión de Usuarios y Roles
+
+El sistema implementa control de acceso basado en roles:
+
 | Rol | Funcionalidades |
-| :--- | :--- |
-| **Admin** | Gestión de usuarios y dispositivos. |
-| **Cuidador** | Visualiza alertas y estado. |
-| **Usuario** | Asociado a un dispositivo. |
+|------|----------------|
+| **Administrador** | Gestión global de usuarios y dispositivos. |
+| **Cuidador** | Visualización de alertas y seguimiento de usuarios asociados. |
+| **Usuario** | Asociado a un dispositivo monitorizado. |
 
-## 📄 Documentación Adicional
-En la carpeta `/docs` se encuentran disponibles los siguientes entregables:
-* Diagrama de arquitectura y de flujo de detección.
-* Diagrama Entidad-Relación (ER).
-* Manual de usuario y manual técnico.
-* Reparto de tareas del grupo.
+---
 
+# 🗄️ Arquitectura de Base de Datos
 
-## 🛠️ Configuración de la Base de Datos en local
+El sistema utiliza una arquitectura híbrida:
 
-El sistema utiliza una arquitectura híbrida con **PostgreSQL 15** (persistencia) y **Redis 7** (tiempo real).
+- **Redis** → Procesamiento en tiempo real y cálculo de umbrales.
+- **PostgreSQL** → Almacenamiento persistente y estructurado.
 
-### Pre-requisitos
-* Docker y Docker Compose instalados.
+### Flujo de datos:
 
-### Despliegue
-**Configurar variables de entorno:**
-   Copia el archivo de plantilla y edita las credenciales si es necesario
+1. El ESP32 envía lecturas al backend.
+2. Redis procesa los valores y determina si existe caída (`fallDetected = true/false`).
+3. Solo los eventos confirmados se almacenan en PostgreSQL.
+4. El frontend consulta la API y muestra la información correspondiente.
 
-### Acceder a las bases de datos
-**Comando para acceder a la base de datos SQL en docker**
-docker exec -it {nombre_contenedor} psql -U {nombre_usuario} -d {nombre_bd}
+---
 
-**Comando para acceder a la base de datos Redis en docker**
-sudo docker exec -it {nombre_bd} redis-cli
+# 📄 Documentación
 
-### Interactuar con la base de datos
-**Guía de comandos básicos para interactuar con la base de datos**
-| Acción               | PostgreSQL (Relacional)    | Redis (Clave-Valor)  |
-|----------------------|----------------------------|----------------------|
-| Listar contenido     | \dt (Tablas)               | KEYS *               |
-| Ver datos            | SELECT * FROM users;       | GET nombre_llave     |
-| Insertar             | INSERT INTO users ...      | SET llave valor      |
-| Borrar todo          | DROP TABLE users;          | FLUSHALL             |
-| Salir                | \q                         | exit                 |
+En la carpeta `/docs` se incluye:
+
+- Diagrama de arquitectura del sistema.
+- Diagrama de flujo de detección de caídas.
+- Diagrama Entidad-Relación (ER).
+- Manual de usuario.
+- Manual técnico.
+- Reparto de tareas del equipo.
+
+La documentación ha sido elaborada siguiendo criterios profesionales de estructuración y trazabilidad.
